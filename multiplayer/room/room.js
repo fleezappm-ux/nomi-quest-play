@@ -6,7 +6,7 @@ import QRCode from './vendor/qrcode.mjs';
 import { attachTen } from './ten.js?v=0.4';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.5');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.6');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -15,6 +15,7 @@ let uid, db, slot = null, room, connected = false, busy = false;
 let roomStop, connectionStop, disconnectTask, expiryTimer;
 let generation = 0;
 let tenStop;
+let sharePhase;
 function savedSession() { try { const s=JSON.parse(localStorage.getItem('nq-room-session')); return validRoom(s?.roomId) && /^[0-5]$/.test(String(s.slot)) ? s : null; } catch { return null; } }
 function resumeOffer() { $('resumeBox').hidden = !savedSession(); }
 const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
@@ -27,7 +28,7 @@ function errorText(error) {
   if (/permission|denied/i.test(error?.code || error?.message || '')) return '参加できませんでした。部屋の期限・状態、または通信設定を確認してください。';
   return error?.message || '通信に失敗しました。接続を確認して、もう一度お試しください。';
 }
-function show(id) { for (const section of ['home','lobby','started']) $(section).hidden = section !== id; }
+function show(id) { if(id==='home')$('share').hidden=true; for (const section of ['home','lobby','started']) $(section).hidden = section !== id; }
 function ownName() { const name = $('name').value.trim(); if (!name || name.length > 20) throw new Error('名前を1〜20文字で入力してください。'); localStorage.setItem('nq-room-name', name); return name; }
 async function action(fn) { if (busy) return; busy = true; controls(); message(''); try { await fn(); } catch (e) { message(errorText(e)); } finally { busy = false; controls(); } }
 function members() { return Object.entries(room?.slots || {}).sort((a,b)=>Number(a[0])-Number(b[0])); }
@@ -47,6 +48,9 @@ function render() {
   const list = members(), host = room.meta.hostUid === uid;
   $('share').hidden = !host; $('start').hidden = !host; $('close').hidden = !host;
   const expired = room.meta.expiresAt <= Date.now();
+  $('share').hidden = !host || expired || room.meta.state==='closed';
+  const phase=roomId+':'+room.meta.state;
+  if(sharePhase!==phase){$('share').open=room.meta.state==='lobby';sharePhase=phase;}
   $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
   $('ready').hidden = !active();
   $('ready').textContent = room.slots?.[slot]?.ready ? '✓ 準備OK · 取り消す' : '準備OKにする';
