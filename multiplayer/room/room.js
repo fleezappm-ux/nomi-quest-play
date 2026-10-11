@@ -32,7 +32,7 @@ function controls() {
   $('join').disabled = !uid || !connected || busy;
   $('ready').disabled = !connected || busy || !active();
   const list = members();
-  $('start').disabled = !connected || busy || !active() || list.length < 3 || !list.every(([,p])=>p.ready && p.connected);
+  $('start').disabled = !connected || busy || !active() || list.length < 2 || !list.every(([,p])=>p.ready && p.connected);
   for (const id of ['leave','close','returnHome']) $(id).disabled = busy || !connected;
 }
 function render() {
@@ -40,7 +40,7 @@ function render() {
   const list = members(), host = room.meta.hostUid === uid;
   $('share').hidden = !host; $('start').hidden = !host; $('close').hidden = !host;
   const expired = room.meta.expiresAt <= Date.now();
-  $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 3人以上で開始`;
+  $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
   $('ready').hidden = !active();
   $('ready').textContent = room.slots?.[slot]?.ready ? '準備OKを取り消す' : '準備OK';
   for (const id of ['players','startedPlayers']) {
