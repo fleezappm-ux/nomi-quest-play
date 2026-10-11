@@ -3,6 +3,7 @@ import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } f
 import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
+import { attachTen } from './ten.js';
 
 const $ = id => document.getElementById(id);
 const homeUrl = new URL('./', location.href).href;
@@ -12,6 +13,7 @@ let roomId = validRoom(params.get('room')) ? params.get('room') : null;
 let uid, db, slot = null, room, connected = false, busy = false;
 let roomStop, connectionStop, disconnectTask, expiryTimer;
 let generation = 0;
+let tenStop;
 const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
 $('homeLink').href = homeUrl;
 $('inviteJoin').hidden = !roomId;
@@ -52,6 +54,7 @@ function render() {
     }));
   }
   show(!expired && room.meta.state === 'started' ? 'started' : 'lobby');
+  if(room.meta.state==='started' && !tenStop && !expired){tenStop=attachTen({db,roomId,uid,players:list.map(([slot,p])=>({...p,slot})),hostUid:room.meta.hostUid,message});}
   controls();
 }
 async function watch(id, ownSlot) {
@@ -72,7 +75,7 @@ async function watch(id, ownSlot) {
     } catch(e){message(errorText(e));}
   });
 }
-async function detach() { ++generation;roomStop?.();connectionStop?.();roomStop=connectionStop=null;clearTimeout(expiryTimer);if(disconnectTask){await disconnectTask.cancel().catch(()=>{});disconnectTask=null;} }
+async function detach() { tenStop?.();tenStop=null; ++generation;roomStop?.();connectionStop?.();roomStop=connectionStop=null;clearTimeout(expiryTimer);if(disconnectTask){await disconnectTask.cancel().catch(()=>{});disconnectTask=null;} }
 async function leave() {
   if(slot!==null && roomId){const path=`rooms/${roomId}/slots/${slot}`; if(active() && slot!=='0')await set(ref(db,path),null);else await set(ref(db,path+'/connected'),false);}
   await detach();localStorage.removeItem('nq-room-session');roomId=null;slot=null;room=null;history.replaceState(null,'',homeUrl);$('inviteJoin').hidden=true;show('home');
