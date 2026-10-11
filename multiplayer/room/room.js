@@ -3,7 +3,7 @@ import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } f
 import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js';
+import { attachTen } from './ten.js?v=0.3';
 
 const $ = id => document.getElementById(id);
 const homeUrl = new URL('./', location.href).href;

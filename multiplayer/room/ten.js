@@ -1,5 +1,5 @@
 import { ref, set, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
-import { shufflePlayers, currentTurn } from './turn.js';
+import { shufflePlayers, currentTurn } from './turn.js?v=0.3';
 export function attachTen({db,roomId,uid,players,hostUid,message}) {
  const box=document.getElementById('tenGame'),host=uid===hostUid,base=`sessions/${roomId}`;
  let state,own,answers={},began=null,elapsed=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false;
