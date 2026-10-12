@@ -5,9 +5,9 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
  const root=document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
  let dockButtons=0,dockNotes=0;
- const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変'};
+ const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変',tapking:'連'};
  const seenPrompts={vote:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,majority:majorityPrompts,mind:mindPrompts};
- let state,own,answers={},began=null,elapsed=null,batteryDraft='',pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
+ let state,own,answers={},began=null,elapsed=null,batteryDraft='',tapStart=null,tapCount=0,tapTimer=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  const txt=(tag,cls,text)=>{const n=el(tag,text);n.className=cls;return n;};
@@ -27,7 +27,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),txt('span','av',avatars[Number(p?.slot)]||'🍻'),txt('span','nm',p?.name||'確認中')));});
   return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats);
  }
- const art={ten:1,battery:1,buttons:1,vote:1,majority:1,king:1};
+ const art={ten:1,battery:1,buttons:1,vote:1,majority:1,king:1,tapking:1,danger:1,mission:1,mind:1};
  const fb={reaction:['アクション','ハートを最速でタップ！','♥'],danger:['スリル','行く？ 行かない？','誘'],mission:['ミッション','キス顔に挑戦！','唇'],mind:['予想','相手の答えを読め！','読']};
  function cardFace(card,cls=''){
   if(art[card]){const i=document.createElement('img');i.className='cface art '+cls;i.setAttribute('src','img/card-'+card+'.webp');i.setAttribute('alt',cards[card].title);i.setAttribute('draggable','false');return i;}
@@ -42,7 +42,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   const turn=currentTurn(state,players),card=state.card||'ten';
   top.append(turnBar(turn));
   if(state.phase==='draw'){
-   box.append(div('deck',cardBack()),el('h2','カードを引こう'),el('p','山札は10枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら…'));
+   box.append(div('deck',cardBack()),el('h2','カードを引こう'),el('p','山札は11枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王'));
    if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=drawCard();return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
@@ -93,6 +93,9 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   else if(card==='battery'){
    const label=el('label','充電残量（％）'),input=document.createElement('input');input.type='number';input.min='0';input.max='100';input.step='1';input.inputMode='numeric';input.value=batteryDraft;input.disabled=pending;input.oninput=()=>{batteryDraft=input.value;};label.append(input);box.append(label);
    button('充電残量を送信',()=>{const value=Number(batteryDraft);if(!batteryDraft.trim()||!Number.isInteger(value)||value<0||value>100){message('充電残量は0〜100の整数で入力してください。');return;}return set(ref(db,`${base}/answers/${state.round}/${uid}`),value);},pending);
+  }else if(card==='tapking'){
+   if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がDRINK＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}
+   else{const pad=txt('button','tapbig','TAP！'),cnt=txt('p','tapcount','0回');pad.onpointerdown=(e)=>{e?.preventDefault?.();tapCount++;cnt.textContent=tapCount+'回';};pad.onclick=null;box.append(cnt,pad);}
   }else if(elapsed!==null){box.append(el('p','計測完了。結果を送信してください。'));button('結果を送信',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),elapsed),pending);}
   else if(began!==null){box.append(el('p','10秒だと思ったらSTOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
   else{box.append(el('p','時計を見ずに10秒を狙おう。自分のタイミングでSTART。'));button('START',async()=>{began=performance.now();},pending);}
@@ -166,6 +169,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   const detailFor=(p)=>{const v=state.results?.[p.uid];
    if(card==='ten')return typeof v==='number'?(v/1000).toFixed(3)+'秒':'';
    if(card==='battery')return typeof v==='number'?v+'％':'';
+   if(card==='tapking')return typeof v==='number'?v+'回':'';
    if(card==='reaction')return typeof v==='number'?(v<REACTION_FAIL?v+'ms':'失敗'):'';
    if(card==='buttons')return p.uid===turn.uid&&typeof v==='number'?`ボタン ${v+1}`:'';
    if(card==='mission')return p.uid===turn.uid&&typeof v==='number'?(v===1?'キス顔 完了！':'パス（できない）'):'';
@@ -182,6 +186,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   let verdict=losers.length?`${losers.map(r=>r.p.name).join('・')} の負け！`:'今回は誰も飲みません 🎉';
   let sub='';
   if(card==='battery')sub=`今回は ${state.direction}！`;
+  if(card==='tapking')sub='タップが最も少ない人がDRINK';
   if(card==='mission')sub=state.results?.[turn.uid]===1?'💋 ミッション成功！ DRINKなし':'ミッション失敗… 担当がDRINK＋1';
   if(card==='buttons')sub=state.buttonOutcome===0?'✨ 回避！':state.buttonOutcome===1?'今回の担当が対象':'全員が対象';
   if(card==='vote')sub=`お題：${votePrompts[state.prompt]??''} ／ 得票1位がDRINK`;
@@ -287,7 +292,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
  }
  stops.push(onValue(ref(db,base+'/state'),snap=>{
   state=snap.val();buttonDeck=buttonDecks[state?.round];if(seenPrompts[state?.card]&&typeof state.prompt==='number')seenPrompts[state.card].add(state.prompt);
-  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();
+  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';tapStart=null;tapCount=0;clearTimeout(tapTimer);tapTimer=null;own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();
    if(state){const round=state.round;settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
     if(host)answerStop=onValue(ref(db,`${base}/answers/${round}`),v=>{if(round!==roundSeen||dead)return;answers=v.val()||{};render();settle();},()=>message('集計の取得に失敗しました。'));
    }
