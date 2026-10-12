@@ -1,22 +1,23 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.26';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.25';
+import { attachTen } from './ten.js?v=0.26';
+import { attachNpcs, npcNames } from './npc.js?v=0.26';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.25');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.26'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
-let roomId = validRoom(params.get('room')) ? params.get('room') : null;
+let roomId = !isLocal && validRoom(params.get('room')) ? params.get('room') : null;
 let uid, db, slot = null, room, connected = false, busy = false;
 let roomStop, connectionStop, disconnectTask, expiryTimer;
 let generation = 0;
-let tenStop;
+let tenStop, npcGame;
 let sharePhase;
-function savedSession() { try { const s=JSON.parse(localStorage.getItem('nq-room-session')); return validRoom(s?.roomId) && /^[0-5]$/.test(String(s.slot)) ? s : null; } catch { return null; } }
+function savedSession() { if (isLocal) return null; try { const s=JSON.parse(localStorage.getItem('nq-room-session')); return validRoom(s?.roomId) && /^[0-5]$/.test(String(s.slot)) ? s : null; } catch { return null; } }
 function resumeOffer() { $('resumeBox').hidden = !savedSession(); }
 const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
 $('homeLink').href = homeUrl;
@@ -48,7 +49,7 @@ function render() {
   const list = members(), host = room.meta.hostUid === uid;
   $('share').hidden = !host; $('start').hidden = !host; $('close').hidden = !host;
   const expired = room.meta.expiresAt <= Date.now();
-  $('share').hidden = !host || expired || room.meta.state==='closed';
+  $('share').hidden = isLocal || !host || expired || room.meta.state==='closed';
   const phase=roomId+':'+room.meta.state;
   if(sharePhase!==phase){$('share').open=room.meta.state==='lobby';sharePhase=phase;}
   $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
@@ -65,7 +66,7 @@ function render() {
     }));
   }
   show(!expired && room.meta.state === 'started' ? 'started' : 'lobby');
-  if(room.meta.state==='started' && !tenStop && !expired){tenStop=attachTen({db,roomId,uid,players:list.map(([slot,p])=>({...p,slot})),hostUid:room.meta.hostUid,message});}
+  if(room.meta.state==='started' && !tenStop && !expired){const ps=list.map(([slot,p])=>({...p,slot}));tenStop=attachTen({db,roomId,uid,players:ps,hostUid:room.meta.hostUid,message});if(isLocal)npcGame=attachNpcs({db,roomId,npcs:ps.filter(p=>p.uid!==uid),players:ps,hostUid:room.meta.hostUid,message});}
   controls();
 }
 async function watch(id, ownSlot) {
@@ -73,7 +74,7 @@ async function watch(id, ownSlot) {
   const link=new URL(homeUrl);link.searchParams.set('room',id);
   history.replaceState(null,'',link); $('shareUrl').value=link.href;
   QRCode.toCanvas($('qr'),link.href,{width:256,margin:2}, e=>{if(e) message('QR表示に失敗しました。招待リンクを使ってください。');});
-  localStorage.setItem('nq-room-session',JSON.stringify({roomId:id,slot}));
+  if(!isLocal)localStorage.setItem('nq-room-session',JSON.stringify({roomId:id,slot}));
   roomStop=onValue(ref(db,`rooms/${id}`),snap=>{if(token!==generation)return;room=snap.val(); render(); if(room?.meta){clearTimeout(expiryTimer);expiryTimer=setTimeout(render,Math.max(0,room.meta.expiresAt-Date.now())+50);}},e=>message(errorText(e)));
   connectionStop=onValue(ref(db,'.info/connected'),async snap=>{
     if (!snap.val() || token!==generation) return;
@@ -86,7 +87,7 @@ async function watch(id, ownSlot) {
     } catch(e){message(errorText(e));}
   });
 }
-async function detach() { tenStop?.();tenStop=null; ++generation;roomStop?.();connectionStop?.();roomStop=connectionStop=null;clearTimeout(expiryTimer);if(disconnectTask){disconnectTask.cancel().catch(()=>{});disconnectTask=null;} }
+async function detach() { tenStop?.();tenStop=null;npcGame?.stop();npcGame=null; ++generation;roomStop?.();connectionStop?.();roomStop=connectionStop=null;clearTimeout(expiryTimer);if(disconnectTask){disconnectTask.cancel().catch(()=>{});disconnectTask=null;} }
 async function leave() {
   const previous=roomId, previousSlot=slot;
   await detach(); roomId=null;slot=null;room=null;
@@ -108,7 +109,9 @@ $('homeLink').onclick=e=>{e.preventDefault();return action(leave);};
 $('create').onclick=()=>action(async()=>{
   if(savedSession() && !window.confirm('新しい部屋を作りますか？前の部屋への復帰ボタンは新しい部屋に切り替わります。'))return;
   const name=ownName(); const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
-  await set(ref(db,`rooms/${id}`),{meta:{hostUid:uid,state:'lobby',createdAt:serverTimestamp(),expiresAt:Date.now()+12*60*60*1000},slots:{0:{uid,name,ready:false,connected:true,joinedAt:serverTimestamp()}}});
+  const slots={0:{uid,name,ready:false,connected:true,joinedAt:serverTimestamp()}};
+  if(isLocal)for(let i=1;i<=Number($('npcCount').value);i++)slots[i]={uid:'npc'+i,name:npcNames[i-1]+'（NPC）',ready:true,connected:true,joinedAt:serverTimestamp()};
+  await set(ref(db,`rooms/${id}`),{meta:{hostUid:uid,state:'lobby',createdAt:serverTimestamp(),expiresAt:Date.now()+12*60*60*1000},slots});
   await watch(id,0);
 });
 $('join').onclick=()=>action(async()=>{
@@ -138,6 +141,13 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 $('keep').onclick=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
 
 try {
+  if (isLocal) {
+    db=getDatabase();uid='me';connected=true;
+    $('connection').textContent='練習モード';$('connection').dataset.ok='1';
+    $('npcBox').hidden=false;$('npcLink').hidden=true;$('inviteJoin').hidden=true;
+    $('lead').innerHTML='通信なしの練習モード。<br>NPCが自動で答えて進みます。';
+    controls();
+  } else {
   const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getDatabase(app);
   await setPersistence(auth,browserLocalPersistence);const user=auth.currentUser || (await signInAnonymously(auth)).user;uid=user.uid;
   onValue(ref(db,'.info/connected'),snap=>{connected=!!snap.val();$('connection').textContent=connected?'接続OK':'再接続中';$('connection').dataset.ok=connected?'1':'0';controls();});
@@ -146,4 +156,5 @@ try {
   // A plain home URL always opens home. Only an explicit room URL auto-recovers.
   if(saved && roomId===saved.roomId)await resume(saved);
   controls();
+  }
 }catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
