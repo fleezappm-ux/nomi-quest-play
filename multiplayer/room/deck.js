@@ -2,9 +2,10 @@
 export const cards = {
  ten: {title:'10秒ジャスト', rule:'時計を見ずに10秒を狙ってSTOP。10秒から最も遠い人が対象。同率は全員。'},
  buttons: {title:'そのボタン、押して大丈夫？',rule:'今回の担当が謎ボタンを1つ選ぶ。中身は回避・自分が対象・全員が対象。配置は毎回シャッフル。'},
+ reaction: {title:'ドキドキしてんじゃねーよ！',rule:'色ではなく形がハートのものをタップ（青いハートも正解）。最速の人はお助けを獲得、最遅・失敗の人はDRINK＋1。早押し・違う形・3秒無反応は失敗。全員失敗ならお助けなし。'},
  battery: {title:'充電マウント合戦！', rule:'今の充電残量を入力。全員の回答後にHIGH／LOWを抽選。HIGHは最も多い人、LOWは最も少ない人。同率は全員対象。'}
 };
-export function drawCard(random=Math.random) {return ['ten','battery','buttons'][Math.min(2,Math.floor(random()*3))];}
+export function drawCard(random=Math.random) {return ['ten','battery','buttons','reaction'][Math.min(3,Math.floor(random()*4))];}
 export function drawDirection(random=Math.random) {return random()<0.5?'HIGH':'LOW';}
 export function targetsFor(card, results, direction) {
  const entries=Object.entries(results);
@@ -34,4 +35,13 @@ export function decideCredit({base,barrierSlot,usedSlot,choice}){
  if(choice==='use')return{amount:0,spend:barrierSlot};
  if(choice==='skip')return{amount:base,spend:null};
  return null;
+}
+
+// Reaction card: answers are milliseconds (0-2999); 3000 means failed (too early, wrong shape, or timeout).
+export const REACTION_FAIL=3000;
+export function winnersFor(results){
+ const valid=Object.entries(results||{}).filter(([,v])=>typeof v==='number'&&v<REACTION_FAIL);
+ if(!valid.length)return [];
+ const best=Math.min(...valid.map(([,v])=>v));
+ return valid.filter(([,v])=>v===best).map(([uid])=>uid);
 }
