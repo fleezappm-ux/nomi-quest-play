@@ -6,3 +6,20 @@
 .shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:.8rem 0}
 .shape{font-size:2.2rem;line-height:1;padding:1rem 0}
 .shape.pink{color:#ff5fa2}.shape.blue{color:#5fa8ff}
+
+.status{background:#2b233f;border:1px solid #564569;border-radius:18px;padding:12px 14px;margin:14px 0}
+.status .stat{margin:6px 0}.status .label{display:block;font-size:13px;color:#d5cce9;margin:0}
+.status .big{display:block;font-size:34px;font-weight:900;color:#ffd16c;line-height:1.2}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}.chip{display:inline-block;margin:0;padding:6px 12px;border-radius:20px;background:#ffd16c;color:#281c0e;font-weight:800;font-size:15px}.chip.none{background:#3a3050;color:#9b8fb4;font-weight:600}
+.help,.fine{font-size:12px;color:#c8bddf;margin:2px 0;line-height:1.5}.status .stat .help{display:block}
+.board{background:#2b233f;border:2px solid #ffd16c;border-radius:20px;padding:14px;margin:16px 0}
+.verdict{font-size:24px;line-height:1.4;margin:6px 0;text-align:center}.sub{text-align:center;font-weight:800;color:#ffd16c;margin:4px 0 10px;font-size:17px}
+.rows{display:grid;gap:8px;margin:10px 0}.row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"who cups" "detail cups";gap:2px 10px;padding:12px 14px;border-radius:14px;align-items:center}
+.row .who{grid-area:who;font-size:18px;font-weight:800}.row .detail{grid-area:detail;font-size:13px;color:#d5cce9;min-height:1em}.row .cups{grid-area:cups;font-size:22px;font-weight:900;white-space:nowrap}
+.row.lose{background:#5a2433;border:2px solid #ff7b8f}.row.lose .cups{color:#ffd1d9}.row.safe{background:#1e3b34;border:1px solid #3f7a62}.row.safe .cups{color:#9de8bd;font-size:16px}
+.mine{font-weight:800;text-align:center;font-size:17px;color:#ffd16c}
+.rwrap{position:relative;width:230px;margin:12px auto}.rpointer{text-align:center;font-size:30px;color:#fff;line-height:1}
+.wheel{position:relative;width:230px;height:230px;border-radius:50%;background:conic-gradient(#ffd16c 0 180deg,#e8485f 180deg 360deg);border:6px solid #fff;box-shadow:0 0 24px #0008}
+.wheel span{position:absolute;top:50%;transform:translateY(-50%);font-weight:900;font-size:20px}.wheel .h1{right:14px;color:#281c0e}.wheel .h2{left:26px;color:#fff}
+.wheel.spinning{animation:nqspin 3.2s cubic-bezier(.12,.7,.18,1) forwards}
+@keyframes nqspin{from{transform:rotate(0)}to{transform:rotate(var(--stop))}}
