@@ -199,3 +199,12 @@ footer p{color:var(--mute)}
 .tapbig{height:min(46vh,300px);border-radius:28px;font-family:var(--disp);font-size:46px;letter-spacing:.06em;background:radial-gradient(circle at 50% 35%,#7fe4ff,#1c9ad0);color:#04202c;border:3px solid #021018;box-shadow:0 8px 0 #0b5a7a,inset 0 0 0 3px #bff1ff99;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .tapbig:active:not(:disabled){transform:translateY(6px);box-shadow:0 2px 0 #0b5a7a}
 .tapcount{font-family:var(--disp);font-size:34px;text-align:center;color:var(--amber)!important}
+
+/* tie-break roulette */
+.pickwin{height:60px;overflow:hidden;border-radius:16px;border:2px solid var(--amber);background:var(--s1);box-shadow:0 0 24px #f3b73f44;position:relative}
+.pickwin::before,.pickwin::after{content:"";position:absolute;left:0;right:0;height:14px;z-index:1;pointer-events:none}
+.pickwin::before{top:0;background:linear-gradient(var(--s1),transparent)}.pickwin::after{bottom:0;background:linear-gradient(transparent,var(--s1))}
+.pickreel{display:grid;animation:nqpick 3.2s cubic-bezier(.12,.7,.18,1) forwards}
+.pickitem{display:block;height:60px;line-height:60px;text-align:center;font-family:var(--disp);font-size:26px;color:var(--ink)}
+@keyframes nqpick{from{transform:translateY(0)}to{transform:translateY(var(--stop))}}
+@media (prefers-reduced-motion:reduce){.pickreel{animation-duration:.01ms!important}}
