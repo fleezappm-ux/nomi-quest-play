@@ -119,7 +119,7 @@ footer p{color:var(--mute)}
 .stage label{margin:0}
 
 /* cards: illustrated faces (img) or the same frame drawn in CSS when no art exists yet */
-.k-ten{--c:#f6c453}.k-battery{--c:#52c7f2}.k-buttons{--c:#ff6fb0}.k-vote{--c:#8bd44a}.k-majority{--c:#ff9a3c}.k-king{--c:#b36bff}.k-reaction{--c:#ff7aa8}.k-danger{--c:#ff5a4d}.k-mission{--c:#ff4f6d}.k-mind{--c:#34d6c5}.k-tapking{--c:#52c7f2}
+.k-ten{--c:#f6c453}.k-battery{--c:#52c7f2}.k-buttons{--c:#ff6fb0}.k-vote{--c:#8bd44a}.k-majority{--c:#ff9a3c}.k-king{--c:#b36bff}.k-reaction{--c:#ff7aa8}.k-danger{--c:#ff5a4d}.k-mission{--c:#ff4f6d}.k-mind{--c:#34d6c5}.k-tapking{--c:#52c7f2}.k-check{--c:#7fd8c8}
 .cface{display:block;width:100%;aspect-ratio:380/644;border-radius:12px;user-select:none;-webkit-user-drag:none}
 .cface.fb{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7% 6% 8%;text-align:center;color:#1b1206;border:3px solid color-mix(in srgb,var(--c) 70%,#000);background:radial-gradient(circle at 50% 46%,#fff7 0,transparent 55%),repeating-conic-gradient(from 0deg at 50% 46%,color-mix(in srgb,var(--c) 72%,#fff) 0 7deg,var(--c) 7deg 14deg);box-shadow:inset 0 0 0 2px #fff8,inset 0 0 18px #0003}
 .cface.fb .tag{align-self:stretch;padding:2px 0;border-radius:8px;background:#100c07;color:var(--c);font-size:.62em;font-weight:900;letter-spacing:.08em}
@@ -208,3 +208,6 @@ footer p{color:var(--mute)}
 .pickitem{display:block;height:60px;line-height:60px;text-align:center;font-family:var(--disp);font-size:26px;color:var(--ink)}
 @keyframes nqpick{from{transform:translateY(0)}to{transform:translateY(var(--stop))}}
 @media (prefers-reduced-motion:reduce){.pickreel{animation-duration:.01ms!important}}
+
+.turnnext{text-align:center;font-size:12px;font-weight:800;color:var(--faint);margin:-4px 0 0}
+.turnmeta>span{font-size:14px;color:var(--ink);font-weight:900}

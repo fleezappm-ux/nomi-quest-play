@@ -6,6 +6,7 @@ export const majorityPrompts=[["海派","山派"],["朝型","夜型"],["甘い�
 export const mindPrompts=["合コンで最初に連絡先を聞きそうな人は？", "酔って告白しそうな人は？", "酔うと脱ぎ出しそうな人は？", "旅行先でナンパされたらついて行きそうな人は？", "泣き上戸になりそうな人は？", "二次会で最後まで残っていそうな人は？", "友達の恋人にこっそり惚れそうな人は？", "ドッキリに一番引っかかりそうな人は？", "ジェットコースターで叫びまくりそうな人は？", "勢いで人生を変える決断をしそうな人は？", "話を盛りがちな人は？", "深夜に元恋人へ連絡しそうな人は？", "宝くじが当たったら真っ先に仕事を辞めそうな人は？", "ホストやキャバクラにハマりそうな人は？", "結婚が一番早そうな人は？", "浮気がバレて土下座していそうな人は？", "終電を逃しても平気そうな人は？", "初対面でも誰とでも仲良くなれそうな人は？", "朝まで飲んでも元気そうな人は？", "酔って財布を落としそうな人は？"];
 export function pickPrompt(seen,random=Math.random,size=votePrompts.length){const all=Array.from({length:size},(_,i)=>i),left=all.filter(i=>!seen.has(i));const pool=left.length?left:all;return pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];}
 export const cards = {
+ check: {title:'休憩ターン',rule:'今の自分の状態を選ぶと、全員の状態が見える。DRINKはなし。無理せず、水も飲もう。'},
  muttsuri: {title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がDRINK＋1（同率1位はルーレットで1人）。'},
  tapking: {title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がDRINK＋1（同数ならルーレットで1人）。'},
  majority: {title:'多数派だと思った？',rule:'A/Bの二択に全員が秘密で回答。多数派がDRINK＋1。同数ならルーレットで1人がDRINK＋1。'},
@@ -30,7 +31,7 @@ export function targetsFor(card, results, direction) {
 
 export function shuffleButtons(random=Math.random){const a=[0,1,2];for(let i=2;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-function drinkBase(state,uid,players){if(state.phase!=='results')return 0;if(state.card==='majority')return state.side===2||state.results?.[uid]===state.side?1:0;if(state.card==='vote'||state.card==='muttsuri'||state.card==='mind'){const slot=players?.find(p=>p.uid===uid)?.slot;return slot!==undefined&&state.topVotes!==undefined&&Number(state.votes?.[slot])===state.topVotes?1:0;}if(state.card==='mission'){const actor=state.order[(state.round-1)%state.order.length];return uid===actor&&state.results?.[actor]===0?1:0;}if(state.card==='king'){const o=dangerOutcome(state);return o&&uid===o.target&&!o.accepted?2:0;}if(state.card==='danger'){const o=dangerOutcome(state);if(!o)return 0;return uid===o.actor?(!o.accepted?1:o.fate==='HELL'?2:0):uid===o.target&&o.accepted&&o.fate==='HELL'?2:0;}if(state.card==='buttons'){const actor=state.order[(state.round-1)%state.order.length];return state.buttonOutcome===2||state.buttonOutcome===1&&uid===actor?1:0;}return targetsFor(state.card||'ten',state.results,state.direction).includes(uid)?1:0;}
+function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='check')return 0;if(state.card==='majority')return state.side===2||state.results?.[uid]===state.side?1:0;if(state.card==='vote'||state.card==='muttsuri'||state.card==='mind'){const slot=players?.find(p=>p.uid===uid)?.slot;return slot!==undefined&&state.topVotes!==undefined&&Number(state.votes?.[slot])===state.topVotes?1:0;}if(state.card==='mission'){const actor=state.order[(state.round-1)%state.order.length];return uid===actor&&state.results?.[actor]===0?1:0;}if(state.card==='king'){const o=dangerOutcome(state);return o&&uid===o.target&&!o.accepted?2:0;}if(state.card==='danger'){const o=dangerOutcome(state);if(!o)return 0;return uid===o.actor?(!o.accepted?1:o.fate==='HELL'?2:0):uid===o.target&&o.accepted&&o.fate==='HELL'?2:0;}if(state.card==='buttons'){const actor=state.order[(state.round-1)%state.order.length];return state.buttonOutcome===2||state.buttonOutcome===1&&uid===actor?1:0;}return targetsFor(state.card||'ten',state.results,state.direction).includes(uid)?1:0;}
 
 // Items follow game-src/core.js at v0.6.49. Trial 0.9 only lets the barrier act; cute and angel are carried but not usable yet.
 export const items={
@@ -81,3 +82,9 @@ export function rewardees(state){
 export function drinkAward(state,uid,players){const b=drinkBase(state,uid,players);return state.pick&&uid!==state.pick?0:b;}
 export function tiedTargets(state,players){return players.filter(p=>drinkBase(state,p.uid,players)>0).map(p=>p.uid);}
 export const tieCards=['ten','battery','tapking','vote','muttsuri','mind','majority'];
+// break turn: after every n laps of n players (n*n draws) one round is a break; the other rounds draw as usual
+export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],['😵','そろそろキツい'],['🚰','水が欲しい']];
+export const breakPeriod=n=>n*n+1;
+export const isBreak=(round,n)=>round%breakPeriod(n)===0;
+export const turnsToBreak=(round,n)=>breakPeriod(n)-round%breakPeriod(n);
+export function cardForRound(round,n,random=Math.random){return isBreak(round,n)?'check':drawCard(random);}
