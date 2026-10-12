@@ -1,12 +1,12 @@
 import {ref,set,update,onValue,runTransaction} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
-import {cards,votePrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees} from './deck.js?v=0.19';
+import {cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees} from './deck.js?v=0.19';
 export function attachTen({db,roomId,uid,players,hostUid,message}) {
  const root=document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
  let dockButtons=0,dockNotes=0;
- const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変',tapking:'連'};
- const seenPrompts={vote:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,majority:majorityPrompts,mind:mindPrompts};
+ const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変',muttsuri:'隠',tapking:'連'};
+ const seenPrompts={vote:new Set(),muttsuri:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,muttsuri:muttsuriPrompts,majority:majorityPrompts,mind:mindPrompts};
  let state,own,answers={},began=null,elapsed=null,batteryDraft='',tapStart=null,tapCount=0,tapTimer=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
@@ -27,7 +27,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),txt('span','av',avatars[Number(p?.slot)]||'🍻'),txt('span','nm',p?.name||'確認中')));});
   return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats);
  }
- const art={ten:1,battery:1,buttons:1,vote:1,majority:1,king:1,tapking:1,danger:1,mission:1,mind:1};
+ const art={ten:1,battery:1,buttons:1,vote:1,muttsuri:1,majority:1,king:1,tapking:1,danger:1,mission:1,mind:1};
  const fb={reaction:['アクション','ハートを最速でタップ！','♥'],danger:['スリル','行く？ 行かない？','誘'],mission:['ミッション','キス顔に挑戦！','唇'],mind:['予想','相手の答えを読め！','読']};
  function cardFace(card,cls=''){
   if(art[card]){const i=document.createElement('img');i.className='cface art '+cls;i.setAttribute('src','img/card-'+card+'.webp');i.setAttribute('alt',cards[card].title);i.setAttribute('draggable','false');return i;}
@@ -42,7 +42,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   const turn=currentTurn(state,players),card=state.card||'ten';
   top.append(turnBar(turn));
   if(state.phase==='draw'){
-   box.append(div('deck',cardBack()),el('h2','カードを引こう'),el('p','山札は11枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王'));
+   box.append(div('deck',cardBack()),el('h2','カードを引こう'),el('p','山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
    if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=drawCard();return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
@@ -72,8 +72,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    return;
   }
   if(card==='danger'||card==='king'){dangerUi(turn);return;}
-  if(card==='vote'){
-   box.append(el('h3',`お題：${votePrompts[state.prompt]??'確認中'}`));
+  if(card==='vote'||card==='muttsuri'){
+   box.append(el('h3',`お題：${promptLists[card][state.prompt]??'確認中'}`));
    if(typeof own==='number')box.append(el('p','投票済み · 全員の投票を待っています。（誰に入れたかは他の人には見えません）'));
    else{box.append(el('p','当てはまりそうな人に1票。匿名です。'));for(const p of players)button(p.uid===uid?`${p.name}（自分）`:p.name,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
    if(host)box.append(el('p',`投票 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
@@ -173,7 +173,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    if(card==='reaction')return typeof v==='number'?(v<REACTION_FAIL?v+'ms':'失敗'):'';
    if(card==='buttons')return p.uid===turn.uid&&typeof v==='number'?`ボタン ${v+1}`:'';
    if(card==='mission')return p.uid===turn.uid&&typeof v==='number'?(v===1?'キス顔 完了！':'パス（できない）'):'';
-   if(card==='vote')return `${Number(state.votes?.[p.slot])||0}票`;
+   if(card==='vote'||card==='muttsuri')return `${Number(state.votes?.[p.slot])||0}票`;
    if(card==='majority'||card==='mind'){const pr=promptLists[card][state.prompt]||[],lab=typeof v==='number'?`${v===0?'A':'B'}：${pr[v]??''}`:'';
     if(card==='majority')return lab;
     return p.uid===turn.uid?`本当の答え ${lab}`:`予想 ${lab}（${v===state.results?.[turn.uid]?'当たり':'外れ'}）`;}
@@ -189,7 +189,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   if(card==='tapking')sub='タップが最も少ない人がDRINK';
   if(card==='mission')sub=state.results?.[turn.uid]===1?'💋 ミッション成功！ DRINKなし':'ミッション失敗… 担当がDRINK＋1';
   if(card==='buttons')sub=state.buttonOutcome===0?'✨ 回避！':state.buttonOutcome===1?'今回の担当が対象':'全員が対象';
-  if(card==='vote')sub=`お題：${votePrompts[state.prompt]??''} ／ 得票1位がDRINK`;
+  if(card==='vote'||card==='muttsuri')sub=`お題：${promptLists[card][state.prompt]??''} ／ 得票1位がDRINK`;
   if(card==='majority'){const nb=players.filter(p=>state.results?.[p.uid]===1).length;sub=`A ${players.length-nb}人 / B ${nb}人 ／ ${state.side===2?'同数！全員DRINK':'多数派がDRINK'}`;}
   if(card==='mind'){const pr=promptLists.mind[state.prompt]||[],a=state.results?.[turn.uid];sub=`${byUid.get(turn.uid)?.name||'担当'}の答え：${a===0?'A':'B'}：${pr[a]??''}`;}
   if(card==='king'){const o=dangerOutcome(state);sub=o.accepted?'👑 命令に従いました！ DRINKなし':'🙅 命令を拒否！ 拒否した人がDRINK＋2';}
@@ -281,7 +281,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    results={[actor]:a,[t.uid]:answers[t.uid]};if(!king&&answers[t.uid]===1)fate=Math.random()<0.5?'HEAVEN':'HELL';
   }else if(mission){if(typeof answers[actor]!=='number')return;}else if(buttons?(!buttonDeck||typeof answers[actor]!=='number'):!players.every(p=>typeof answers[p.uid]==='number'))return;
   let votes=null,topVotes=null;
-  if(state.card==='vote'){const c={};for(const p of players)c[p.slot]=0;for(const p of players)c[answers[p.uid]]=(c[answers[p.uid]]||0)+1;votes=c;topVotes=Math.max(...Object.values(c));}
+  if(state.card==='vote'||state.card==='muttsuri'){const c={};for(const p of players)c[p.slot]=0;for(const p of players)c[answers[p.uid]]=(c[answers[p.uid]]||0)+1;votes=c;topVotes=Math.max(...Object.values(c));}
   let side=null;
   if(state.card==='majority'){const S=players.reduce((a,p)=>a+answers[p.uid],0),N=players.length;side=2*S===N?2:2*S>N?1:0;}
   settling=true;const round=state.round,direction=state.card==='battery'?drawDirection():null,buttonOutcome=buttons?buttonDeck[answers[actor]]:null;
