@@ -3,10 +3,10 @@ import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } f
 import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.12';
+import { attachTen } from './ten.js?v=0.13';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.12');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.13');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');

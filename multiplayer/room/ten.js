@@ -3,7 +3,7 @@ import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
 import {cards,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees} from './deck.js?v=0.12';
 export function attachTen({db,roomId,uid,players,hostUid,message}) {
  const box=document.getElementById('tenGame'),host=uid===hostUid,base=`sessions/${roomId}`;
- let state,own,answers={},began=null,elapsed=null,batteryDraft='',pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
+ let state,own,answers={},began=null,elapsed=null,batteryDraft='',pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  const txt=(tag,cls,text)=>{const n=el(tag,text);n.className=cls;return n;};
@@ -25,6 +25,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
   }
+  if(state.phase==='measuring'&&flipRound!==state.round){flipCard(card);return;}
   box.append(el('h2',cards[card].title),el('p',cards[card].rule));
   if(state.phase==='results'){
    if(card==='danger'){
@@ -136,6 +137,13 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    div('rows',...rows.map(r=>div('row '+(r.amt>0?'lose':'safe'),txt('span','who',r.p.name),txt('span','detail',[r.detail,gets.has(r.p.uid)?'🎁お助けGET':''].filter(Boolean).join(' · ')),txt('span','cups',r.amt>0?`🍺 ${r.amt}杯`:'セーフ')))),
    txt('p','fine','バリア・天使の分け前で減らせます（使う・使わないは本人だけが選びます）。'));
  }
+ function flipCard(card){
+  const ms=globalThis.__nqFlipMs??1600;
+  if(!flipTimer){flipStart=performance.now();const round=state.round;flipTimer=setTimeout(()=>{flipTimer=null;if(dead)return;flipRound=round;render();},ms);}
+  const c=div('flipcard',div('face back',txt('span','mark','NOMI'),txt('span','mark','QUEST')),div('face front',txt('span','kind','CARD'),txt('strong','name',cards[card].title)));
+  c.style.animationDelay=-Math.max(0,performance.now()-flipStart)+'ms';
+  box.append(txt('h3','verdict','カードが引かれた！'),div('flipwrap',c));
+ }
  function roulette(fate){
   const spinMs=globalThis.__nqSpinMs??3200;
   if(!spinTimer){spinStart=performance.now();const round=state.round;spinTimer=setTimeout(()=>{spinTimer=null;if(dead)return;spinRound=round;render();},spinMs);}
@@ -206,7 +214,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
  }
  stops.push(onValue(ref(db,base+'/state'),snap=>{
   state=snap.val();buttonDeck=buttonDecks[state?.round];
-  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();
+  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();
    if(state){const round=state.round;settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
     if(host)answerStop=onValue(ref(db,`${base}/answers/${round}`),v=>{if(round!==roundSeen||dead)return;answers=v.val()||{};render();settle();},()=>message('集計の取得に失敗しました。'));
    }
@@ -225,5 +233,5 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
  stops.push(onValue(ref(db,`personal/${roomId}/${uid}/spent`),snap=>{spentMap=snap.val()||{};render();settleOwn();},()=>{spentMap={};message('お助けの使用状況を取得できませんでした。');render();}));
  if(host)stops.push(onValue(ref(db,base+'/buttonDeck'),snap=>{buttonDecks=snap.val()||{};buttonDeck=buttonDecks[state?.round];settle();},()=>message('ボタンの準備を取得できませんでした。')));
  if(host){const order=shufflePlayers(players);runTransaction(ref(db,base+'/state'),s=>s?undefined:{round:1,phase:'draw',order,accounting:true},{applyLocally:false}).catch(()=>message('ゲーム接続ルールの反映が必要です。'));}
- return()=>{dead=true;clearTimeout(spinTimer);rxClear();inviteStop?.();stops.forEach(fn=>fn());answerStop?.();ownStop?.();settledStop?.();box.replaceChildren();};
+ return()=>{dead=true;clearTimeout(spinTimer);clearTimeout(flipTimer);rxClear();inviteStop?.();stops.forEach(fn=>fn());answerStop?.();ownStop?.();settledStop?.();box.replaceChildren();};
 }
