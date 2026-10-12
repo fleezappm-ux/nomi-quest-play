@@ -1,17 +1,19 @@
-import {ref,set,onValue,runTransaction} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
+import {ref,set,update,onValue,runTransaction} from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
-import {cards,drawCard,drawDirection,targetsFor,shuffleButtons} from './deck.js?v=0.7';
+import {cards,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward} from './deck.js?v=0.8';
 export function attachTen({db,roomId,uid,players,hostUid,message}) {
  const box=document.getElementById('tenGame'),host=uid===hostUid,base=`sessions/${roomId}`;
- let state,own,answers={},began=null,elapsed=null,batteryDraft='',pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={};
+ let state,own,answers={},began=null,elapsed=null,batteryDraft='',pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,recording=false,recordedRound=null,recordError=false;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  function button(text,fn,disabled=false){const b=el('button',text);b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};box.append(b);}
- function nextButton(){if(host)button('次のターン',()=>{const round=state.round,order=state.order||shufflePlayers(players);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='results'?{round:round+1,phase:'draw',order}:undefined,{applyLocally:false});},pending||state.round>=100);
+ function nextButton(){if(host)button('次のターン',()=>{const round=state.round,order=state.order||shufflePlayers(players);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='results'?{round:round+1,phase:'draw',order,accounting:true}:undefined,{applyLocally:false});},pending||recording||recordedRound!==state.round||state.round>=100);
    else box.append(el('p','ホストが次のターンへ進むのを待っています。'));}
  function render(){
   if(dead)return;box.replaceChildren();
   if(!state){box.append(el('p',host?'ゲームを準備しています…':'ホストのゲーム準備を待っています…'));return;}
+  box.append(el('p',drinks===null?'あなたのDRINKを確認しています…':`あなたのDRINK：${drinks}`));
+  box.append(el('p','合計はあなたの画面だけに表示。実際に飲む必要はありません。'));
   const turn=currentTurn(state,players),card=state.card||'ten';
   box.append(el('p',`ターン ${state.round} · ${turn.cycle}巡目`),el('h2',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`));
   const orderList=el('ol','');turn.order.forEach((id,i)=>orderList.append(el('li',`${byUid.get(id)?.name||'確認中'}${i===turn.index?' ← 今ここ':''}`)));box.append(orderList);
@@ -23,10 +25,11 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   }
   box.append(el('h2',cards[card].title),el('p',cards[card].rule));
   if(state.phase==='results'){
+   if(host&&recordedRound!==state.round){box.append(el('p',recordError?'カウントの保存を確認できませんでした。':'全員分のカウントを保存しています…'));if(recordError)button('カウント保存を再試行',recordDrinks,recording);}
    if(card==='buttons'){
     const chosen=state.results?.[turn.uid];
     box.append(el('p',`${byUid.get(turn.uid)?.name}：ボタン ${chosen+1}`),el('h3',state.buttonOutcome===0?'✨ 回避！':state.buttonOutcome===1?'今回の担当が対象':'全員が対象'));
-    box.append(el('p','個人DRINK・お助けはまだ未接続です。実際に飲む必要はありません。'));
+    box.append(el('p','対象者のDRINKを＋1。お助けは次の工程です。'));
     nextButton();return;
    }
    const entries=players.map(p=>({...p,value:state.results?.[p.uid]}));
@@ -34,7 +37,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    if(card==='battery')box.append(el('h3',`今回は ${state.direction}！`));
    const targets=new Set(targetsFor(card,state.results,state.direction)),list=el('ul','');
    for(const p of entries)list.append(el('li',`${p.name}：${card==='ten'?(p.value/1000).toFixed(3)+'秒':p.value+'％'}${targets.has(p.uid)?' · 今回の対象':''}`));
-   box.append(list,el('p','同率は全員対象。個人DRINK・お助けへの加算はまだ未接続です。実際に飲む必要はありません。'));
+   box.append(list,el('p','同率は全員対象。対象者のDRINKを＋1。お助けは次の工程です。'));
    nextButton();
    return;
   }
@@ -53,6 +56,12 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   else{box.append(el('p','時計を見ずに10秒を狙おう。自分のタイミングでSTART。'));button('START',async()=>{began=performance.now();},pending);}
   if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
  }
+ async function recordDrinks(){
+  if(dead||!host||recording||state?.phase!=='results'||recordedRound===state.round)return;
+  recording=true;recordError=false;const round=state.round;
+  const values=Object.fromEntries(players.map(p=>[`personal/${roomId}/${p.uid}/drinks/${round}`,drinkAward(state,p.uid,players)]));
+  render();try{await update(ref(db),values);if(state?.round===round)recordedRound=round;}catch{recordError=true;message('カウントを保存できませんでした。再接続後に保存を再試行してください。');}finally{recording=false;if(!dead)render();}
+ }
  async function settle(){
   if(dead||!host||settling||state?.phase!=='measuring')return;
   const actor=currentTurn(state,players).uid,buttons=state.card==='buttons';
@@ -70,9 +79,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
    }
   }
   if(host&&state?.card==='buttons'&&state.phase==='measuring')runTransaction(ref(db,`${base}/buttonDeck/${state.round}`),d=>d?undefined:shuffleButtons(),{applyLocally:false}).catch(()=>message('ボタンの準備に失敗しました。再接続してください。'));
-  render();settle();
+  render();settle();recordDrinks();
  },()=>message('ゲーム接続ルールが未反映、または部屋が終了しています。')));
+ stops.push(onValue(ref(db,`personal/${roomId}/${uid}/drinks`),snap=>{drinks=Object.values(snap.val()||{}).reduce((a,v)=>a+v,0);render();},()=>{drinks=null;message('自分のDRINKを取得できませんでした。再接続してください。');render();}));
  if(host)stops.push(onValue(ref(db,base+'/buttonDeck'),snap=>{buttonDecks=snap.val()||{};buttonDeck=buttonDecks[state?.round];settle();},()=>message('ボタンの準備を取得できませんでした。')));
- if(host){const order=shufflePlayers(players);runTransaction(ref(db,base+'/state'),s=>s?undefined:{round:1,phase:'draw',order},{applyLocally:false}).catch(()=>message('ゲーム接続ルールの反映が必要です。'));}
+ if(host){const order=shufflePlayers(players);runTransaction(ref(db,base+'/state'),s=>s?undefined:{round:1,phase:'draw',order,accounting:true},{applyLocally:false}).catch(()=>message('ゲーム接続ルールの反映が必要です。'));}
  return()=>{dead=true;stops.forEach(fn=>fn());answerStop?.();ownStop?.();box.replaceChildren();};
 }

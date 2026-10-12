@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#19152d"><title>NOMI QUEST｜みんなで遊ぶ</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="room.css?v=0.7"></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#19152d"><title>NOMI QUEST｜みんなで遊ぶ</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="room.css?v=0.8"></head>
 <body><main>
-<header><span class="brand">NOMI QUEST</span><span class="badge">通信試作 0.7</span></header>
+<header><span class="brand">NOMI QUEST</span><span class="badge">通信試作 0.8</span></header>
 <p id="connection" role="status">接続を準備しています…</p>
 <details id="share" hidden><summary>招待・復帰QRを表示</summary><div class="qrPanel"><canvas id="qr" aria-label="この部屋への招待QRコード"></canvas><p>参加済みの人は、もう一度このQRを読むと復帰できます。<br>同じスマホ・同じブラウザで開いてください。</p><button id="copy" class="secondary">招待リンクをコピー</button><input id="shareUrl" readonly aria-label="招待リンク"></div></details>
 <section id="home"><h1>それぞれのスマホで、<br>同じ部屋に集まろう。</h1><p>名前を決めて、飲み会のメンバーを招待。</p><label>あなたの名前<input id="name" maxlength="20" autocomplete="nickname" placeholder="トシ"></label><button id="create" disabled>みんなで遊ぶ · 部屋をつくる</button><div id="inviteJoin" hidden><p>招待が届いています</p><button id="join" disabled>この部屋に参加する</button></div><div id="resumeBox" hidden><p>前の部屋が保存されています。ホームに戻っても参加情報は残ります。</p><button id="resume" class="secondary" disabled>前の部屋に戻る</button></div><details><summary>招待リンクから参加</summary><label>招待リンク<input id="invite" type="url" placeholder="招待リンクを貼り付け"></label><button id="openInvite" class="secondary">参加画面を開く</button></details></section>
 <section id="lobby" hidden><h1 id="roomTitle">みんなの待合室</h1><p id="roomState"></p><ul id="players"></ul><button id="ready">準備OK</button><button id="start" hidden>全員でスタート</button><button id="leave" class="secondary">ホームへ戻る（復帰できます）</button><button id="close" class="secondary" hidden>この部屋を終了</button></section>
-<section id="started" hidden><h1>みんな、つながった！</h1><p>全員に開始の合図が届きました。</p><div id="tenGame"></div><p class="notice">3枚のカード抽選・ターン・回答共有の通信テスト。個人DRINK・お助けと残りのカードは次の工程です。</p><ul id="startedPlayers"></ul><button id="returnHome" class="secondary">ホームへ戻る（復帰できます）</button></section>
+<section id="started" hidden><h1>みんな、つながった！</h1><p>全員に開始の合図が届きました。</p><div id="tenGame"></div><p class="notice">3枚のカード抽選・ターン・回答共有の通信テスト。個人DRINKを記録。お助けと残りのカードは次の工程です。</p><ul id="startedPlayers"></ul><button id="returnHome" class="secondary">ホームへ戻る（復帰できます）</button></section>
 <p id="message" role="alert"></p><footer><button id="keep" class="textButton">次の飲み会でも遊ぶ · ホームに残す</button><p id="keepHelp" hidden>Android：Chromeの⋮ →「ホーム画面に追加」。<br>iPhone：Safariの共有 →「ホーム画面に追加」。<br>部屋の招待ではなく、このホームを保存してください。</p><a id="homeLink" href="./">NOMI QUESTのホーム</a></footer>
-</main><script type="module" src="room.js?v=0.7"></script></body></html>
+</main><script type="module" src="room.js?v=0.8"></script></body></html>
