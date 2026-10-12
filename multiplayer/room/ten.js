@@ -27,14 +27,22 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),txt('span','av',avatars[Number(p?.slot)]||'🍻'),txt('span','nm',p?.name||'確認中')));});
   return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats);
  }
- function cardHead(card){const h=div('cardhead k-'+card,txt('span','glyph',glyphs[card]||'札'),txt('h2','',cards[card].title),txt('p','',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
+ const art={ten:1,battery:1,buttons:1,vote:1,majority:1,king:1};
+ const fb={reaction:['アクション','ハートを最速でタップ！','♥'],danger:['スリル','行く？ 行かない？','誘'],mission:['ミッション','キス顔に挑戦！','唇'],mind:['予想','相手の答えを読め！','読']};
+ function cardFace(card,cls=''){
+  if(art[card]){const i=document.createElement('img');i.className='cface art '+cls;i.setAttribute('src','img/card-'+card+'.webp');i.setAttribute('alt',cards[card].title);i.setAttribute('draggable','false');return i;}
+  const f=fb[card]||['カード','',glyphs[card]||'札'];
+  return div('cface fb k-'+card+' '+cls,txt('span','tag',f[0]),txt('strong','ttl',cards[card].title),txt('span','big',f[2]),txt('span','dsc',f[1]));
+ }
+ function cardBack(cls=''){const i=document.createElement('img');i.className='cback '+cls;i.setAttribute('src','img/back.webp');i.setAttribute('alt','NOMI QUESTのカード');i.setAttribute('draggable','false');return i;}
+ function cardHead(card){const h=div('cardhead k-'+card,cardFace(card,'thumb'),txt('h2','',cards[card].title),txt('p','',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
  function paint(){
   if(!state){box.append(el('p',host?'ゲームを準備しています…':'ホストのゲーム準備を待っています…'));return;}
   top.append(statusPanel());box.className='stage '+state.phase;
   const turn=currentTurn(state,players),card=state.card||'ten';
   top.append(turnBar(turn));
   if(state.phase==='draw'){
-   box.append(div('deck',txt('span','mark','NOMI'),txt('span','mark','QUEST')),el('h2','カードを引こう'),el('p','山札は10枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら…'));
+   box.append(div('deck',cardBack()),el('h2','カードを引こう'),el('p','山札は10枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら…'));
    if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=drawCard();return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
@@ -189,7 +197,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message}) {
  function flipCard(card){
   const ms=globalThis.__nqFlipMs??1600;
   if(!flipTimer){flipStart=performance.now();const round=state.round;flipTimer=setTimeout(()=>{flipTimer=null;if(dead)return;flipRound=round;render();},ms);}
-  const c=div('flipcard',div('face back',txt('span','mark','NOMI'),txt('span','mark','QUEST')),div('face front k-'+card,txt('span','glyph',glyphs[card]||'札'),txt('strong','name',cards[card].title)));
+  const c=div('flipcard',div('face back',cardBack()),div('face front k-'+card,cardFace(card)));
   c.style.animationDelay=-Math.max(0,performance.now()-flipStart)+'ms';
   box.append(txt('h3','verdict','カードが引かれた！'),div('flipwrap',c));
  }
