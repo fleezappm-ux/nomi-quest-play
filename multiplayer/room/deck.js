@@ -16,3 +16,22 @@ export function targetsFor(card, results, direction) {
 export function shuffleButtons(random=Math.random){const a=[0,1,2];for(let i=2;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 export function drinkAward(state,uid,players){if(state.phase!=='results')return 0;if(state.card==='buttons'){const actor=state.order[(state.round-1)%state.order.length];return state.buttonOutcome===2||state.buttonOutcome===1&&uid===actor?1:0;}return targetsFor(state.card||'ten',state.results,state.direction).includes(uid)?1:0;}
+
+// Items follow game-src/core.js at v0.6.49. Trial 0.9 only lets the barrier act; cute and angel are carried but not usable yet.
+export const items={
+ barrier:{icon:'🛡️',name:'バリア',desc:'今回のDRINKを1回だけ完全回避。',usable:true},
+ cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'ミッション・王様の指示を1回パス。このテストではまだ使えません。',usable:false},
+ angel:{icon:'👼',name:'天使の分け前',desc:'DRINKが＋2以上のとき＋1に減らす。このテストではまだ使えません。',usable:false}
+};
+export const itemKinds=Object.keys(items);
+export function drawItem(random=Math.random){return itemKinds[Math.min(itemKinds.length-1,Math.floor(random()*itemKinds.length))];}
+// base: DRINK from drinkAward. choice: 'use' | 'skip' | undefined. barrierSlot/usedSlot: slot keys or undefined.
+// Returns {amount,spend} to record now, or null while the player still has to choose.
+export function decideCredit({base,barrierSlot,usedSlot,choice}){
+ if(usedSlot!==undefined)return{amount:0,spend:null};
+ if(base===0)return{amount:0,spend:null};
+ if(barrierSlot===undefined)return{amount:base,spend:null};
+ if(choice==='use')return{amount:0,spend:barrierSlot};
+ if(choice==='skip')return{amount:base,spend:null};
+ return null;
+}
