@@ -3,10 +3,10 @@ import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } f
 import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.17';
+import { attachTen } from './ten.js?v=0.18';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.17');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.18');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -140,10 +140,10 @@ $('keep').onclick=async()=>{if(roomId){message('まず「NOMI QUESTのホーム�
 try {
   const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getDatabase(app);
   await setPersistence(auth,browserLocalPersistence);const user=auth.currentUser || (await signInAnonymously(auth)).user;uid=user.uid;
-  onValue(ref(db,'.info/connected'),snap=>{connected=!!snap.val();$('connection').textContent=connected?'接続できました':'接続が切れています · 再接続を待っています';controls();});
+  onValue(ref(db,'.info/connected'),snap=>{connected=!!snap.val();$('connection').textContent=connected?'接続OK':'再接続中';$('connection').dataset.ok=connected?'1':'0';controls();});
   resumeOffer();
   const saved=savedSession();
   // A plain home URL always opens home. Only an explicit room URL auto-recovers.
   if(saved && roomId===saved.roomId)await resume(saved);
   controls();
-}catch(e){$('connection').textContent='接続できませんでした';message(errorText(e));}
+}catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
