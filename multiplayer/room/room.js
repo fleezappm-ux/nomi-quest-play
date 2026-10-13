@@ -1,13 +1,14 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.26';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.27';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.26';
-import { attachNpcs, npcNames } from './npc.js?v=0.26';
+import { attachTen } from './ten.js?v=0.27';
+import { attachNpcs, npcNames } from './npc.js?v=0.27';
+import { attachOni, attachOniBots } from './oni.js?v=0.27';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.26'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.27'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -41,7 +42,7 @@ function controls() {
   $('ready').disabled = !connected || busy || !active();
   const list = members();
   $('start').disabled = !connected || busy || !active() || list.length < 2 || !list.every(([,p])=>p.ready && p.connected);
-  for (const id of ['leave','returnHome']) $(id).disabled = busy;
+  for (const id of ['leave','returnHome','modeCards','modeOni']) $(id).disabled = busy;
   $('close').disabled = busy || !connected;
 }
 function render() {
@@ -53,6 +54,10 @@ function render() {
   const phase=roomId+':'+room.meta.state;
   if(sharePhase!==phase){$('share').open=room.meta.state==='lobby';sharePhase=phase;}
   $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
+  const mode = room.meta.mode === 'oni' ? 'oni' : 'cards';
+  $('modeText').textContent = mode === 'oni' ? '🏃 ミニゲーム：鬼ごっこ' : '🃏 カードゲーム';
+  $('modeSeg').hidden = !(host && active());
+  $('modeCards').setAttribute('aria-pressed', String(mode === 'cards')); $('modeOni').setAttribute('aria-pressed', String(mode === 'oni'));
   $('ready').hidden = !active();
   $('ready').textContent = room.slots?.[slot]?.ready ? '✓ 準備OK · 取り消す' : '準備OKにする';
   $('ready').setAttribute('aria-pressed',String(!!room.slots?.[slot]?.ready));
@@ -66,7 +71,16 @@ function render() {
     }));
   }
   show(!expired && room.meta.state === 'started' ? 'started' : 'lobby');
-  if(room.meta.state==='started' && !tenStop && !expired){const ps=list.map(([slot,p])=>({...p,slot}));tenStop=attachTen({db,roomId,uid,players:ps,hostUid:room.meta.hostUid,message});if(isLocal)npcGame=attachNpcs({db,roomId,npcs:ps.filter(p=>p.uid!==uid),players:ps,hostUid:room.meta.hostUid,message});}
+  if(room.meta.state==='started' && !tenStop && !expired){
+    const ps=list.map(([slot,p])=>({...p,slot}));
+    if(mode==='oni'){
+      tenStop=attachOni({db,roomId,uid,players:ps,hostUid:room.meta.hostUid,message});
+      if(isLocal)npcGame=attachOniBots({db,roomId,bots:ps.filter(p=>p.uid!==uid).map(p=>({uid:p.uid})),message});
+    }else{
+      tenStop=attachTen({db,roomId,uid,players:ps,hostUid:room.meta.hostUid,message});
+      if(isLocal)npcGame=attachNpcs({db,roomId,npcs:ps.filter(p=>p.uid!==uid),players:ps,hostUid:room.meta.hostUid,message});
+    }
+  }
   controls();
 }
 async function watch(id, ownSlot) {
@@ -130,6 +144,8 @@ $('join').onclick=()=>action(async()=>{
   }
   throw new Error('この部屋は6人で満員です。');
 });
+$('modeCards').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'cards'));
+$('modeOni').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'oni'));
 $('ready').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/slots/${slot}/ready`),!room.slots[slot].ready));
 $('start').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/state`),'started'));
 $('close').onclick=()=>action(async()=>{if(window.confirm('全員の部屋を終了しますか？終了後はこのゲームへ戻れません。'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');});
