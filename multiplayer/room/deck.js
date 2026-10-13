@@ -20,7 +20,9 @@ export const cards = {
  reaction: {title:'ドキドキしてんじゃねーよ！',rule:'色ではなく形がハートのものをタップ（青いハートも正解）。最速の人はお助けを獲得、最遅・失敗の人はDRINK＋1。早押し・違う形・3秒無反応は失敗。全員失敗ならお助けなし。'},
  battery: {title:'充電マウント合戦！', rule:'今の充電残量を入力。全員の回答後にHIGH／LOWを抽選。HIGHは最も多い人、LOWは最も少ない人。同率はルーレットで1人。'}
 };
-export function drawCard(random=Math.random) {return ['ten','battery','buttons','reaction','danger','mission','king','vote','majority','mind','tapking','muttsuri'][Math.min(11,Math.floor(random()*12))];}
+const DRAW=['ten','battery','buttons','reaction','danger','mission','king','vote','majority','mind','tapking','muttsuri'],DRAW_WEIGHT={king:0.35};
+// 王様の命令は出やすすぎたので、他のカードの約1/3の出やすさにしている。
+export function drawCard(random=Math.random) {const w=DRAW.map(c=>DRAW_WEIGHT[c]??1);let r=random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<DRAW.length;i++){if(r<w[i])return DRAW[i];r-=w[i];}return DRAW[DRAW.length-1];}
 export function drawDirection(random=Math.random) {return random()<0.5?'HIGH':'LOW';}
 export function targetsFor(card, results, direction) {
  const entries=Object.entries(results);
