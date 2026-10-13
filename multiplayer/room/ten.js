@@ -1,4 +1,5 @@
 import {ref,set,update,onValue,runTransaction} from './fb.js?v=0.28';
+import {showItemFx} from './itemfx.js?v=0.28';
 import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
 import {cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees} from './deck.js?v=0.28';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
@@ -9,6 +10,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
  const VL=new Set(['vote','muttsuri','mind']);
  const seenPrompts={vote:new Set(),muttsuri:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,muttsuri:muttsuriPrompts,majority:majorityPrompts,mind:mindPrompts};
  let state,own,answers={},began=null,elapsed=null,batteryDraft='',tapStart=null,tapCount=0,tapTimer=null,pickRound=null,pickTimer=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
+ let spentSeen=false;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  const txt=(tag,cls,text)=>{const n=el(tag,text);n.className=cls;return n;};
@@ -322,7 +324,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   render();settleOwn();
  },()=>{grantFailed=true;itemMap={};message('お助けを取得できませんでした。');render();}));
  stops.push(onValue(ref(db,`personal/${roomId}/${uid}/grants`),snap=>{grantMap=snap.val()||{};render();settleOwn();},()=>{grantMap={};message('お助けの獲得状況を取得できませんでした。');render();}));
- stops.push(onValue(ref(db,`personal/${roomId}/${uid}/spent`),snap=>{spentMap=snap.val()||{};render();settleOwn();},()=>{spentMap={};message('お助けの使用状況を取得できませんでした。');render();}));
+ stops.push(onValue(ref(db,`personal/${roomId}/${uid}/spent`),snap=>{const next=snap.val()||{};if(spentSeen)for(const [slot,r] of Object.entries(next))if(spentMap?.[slot]===undefined&&r===state?.round)showItemFx(itemMap?.[slot]);spentSeen=true;spentMap=next;render();settleOwn();},()=>{spentMap={};message('お助けの使用状況を取得できませんでした。');render();}));
  if(host)stops.push(onValue(ref(db,base+'/buttonDeck'),snap=>{buttonDecks=snap.val()||{};buttonDeck=buttonDecks[state?.round];settle();},()=>message('ボタンの準備を取得できませんでした。')));
  if(host){const order=shufflePlayers(players);runTransaction(ref(db,base+'/state'),s=>s?undefined:{round:1,phase:'draw',order,actor:order[0],accounting:true},{applyLocally:false}).catch(()=>message('ゲーム接続ルールの反映が必要です。'));}
  return()=>{dead=true;clearTimeout(spinTimer);clearTimeout(flipTimer);rxClear();inviteStop?.();stops.forEach(fn=>fn());answerStop?.();ownStop?.();settledStop?.();box.replaceChildren();};
