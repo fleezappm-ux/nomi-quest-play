@@ -273,3 +273,4 @@ select{display:block;width:100%;margin-top:8px;padding:15px 16px;border:1.5px so
 @keyframes fx-ring{from{transform:scale(.3);opacity:1}to{transform:scale(7);opacity:0}}
 @keyframes fx-spark{from{transform:rotate(calc(var(--a)*1deg)) translateY(0);opacity:1}to{transform:rotate(calc(var(--a)*1deg)) translateY(-150px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.fx-ring,.fx-spark{display:none}.fx-icon{animation:none}}
+a.feedback{display:inline-block;margin:0 0 10px;color:var(--amber);font-weight:900;text-decoration:underline}

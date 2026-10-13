@@ -5,6 +5,7 @@ import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
 import { attachTen } from './ten.js?v=0.28';
 import { attachNpcs, npcNames } from './npc.js?v=0.28';
+import { FEEDBACK_URL } from './feedback-config.js?v=0.28';
 import { attachOni, attachOniBots } from './oni.js?v=0.28';
 
 const $ = id => document.getElementById(id);
@@ -174,3 +175,5 @@ try {
   controls();
   }
 }catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
+
+{const a=document.getElementById('feedback');if(a&&/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//.test(FEEDBACK_URL)){a.href=FEEDBACK_URL;a.hidden=false;}}
