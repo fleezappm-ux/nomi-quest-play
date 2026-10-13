@@ -1,14 +1,14 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.27';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.28';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.27';
-import { attachNpcs, npcNames } from './npc.js?v=0.27';
-import { attachOni, attachOniBots } from './oni.js?v=0.27';
+import { attachTen } from './ten.js?v=0.28';
+import { attachNpcs, npcNames } from './npc.js?v=0.28';
+import { attachOni, attachOniBots } from './oni.js?v=0.28';
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.27'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.28'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');

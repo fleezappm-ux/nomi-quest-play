@@ -247,3 +247,15 @@ select{display:block;width:100%;margin-top:8px;padding:15px 16px;border:1.5px so
 .o-beer{font:400 16px var(--disp);color:var(--amber);white-space:nowrap}.o-mute{color:var(--mute);font-weight:500;font-size:13px;margin:0}
 .o-log{display:grid;gap:4px;font-size:14px;color:var(--mute);margin:0;padding:0;list-style:none}.o-log li b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.o-tok,.o-timer i{transition:none}.o-item{animation:none}}
+/* 鬼ごっこ（リアルタイム版） */
+.o-aw{position:relative}.o-aw canvas{display:block;width:100%;aspect-ratio:1;border-radius:16px;border:2px solid var(--line);background:#120e0a;touch-action:none;user-select:none;-webkit-user-select:none}
+.o-fin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000a;border-radius:16px;animation:o-fin .45s ease-out;pointer-events:none}.o-fin[hidden]{display:none}
+.o-f1{font:400 64px var(--disp);color:var(--amber);letter-spacing:4px;text-shadow:0 4px 0 #9a6d12,0 0 24px #f3b73f88;transform:rotate(-4deg)}.o-f1.o-cnt{font-size:96px}.o-f2{margin-top:10px;font-weight:900;color:#fff;font-size:16px;text-align:center}
+@keyframes o-fin{from{opacity:0;transform:scale(1.5)}to{opacity:1;transform:scale(1)}}
+.o-time{font:400 18px var(--disp)}
+.o-resh{text-align:center;padding:6px 0}.o-rt1{font:400 44px var(--disp);color:var(--amber);letter-spacing:3px;text-shadow:0 3px 0 #9a6d12}.o-rt2{font-weight:900;font-size:15px}.o-rt3{color:var(--mute);margin-top:6px;font-size:13px}.o-rt3 b{color:var(--ink)}
+.o-rr{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}.o-rr:last-child{border:0}
+.o-av{flex:none;width:84px;height:84px;background:url(img/oni-sprites.webp) no-repeat;background-size:672px 672px}
+.o-rn{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.o-rn b{font-size:16px}.o-rn small{color:var(--mute);width:100%}.o-rn em{font-style:normal}
+.o-bd{font:400 12px var(--disp);padding:3px 8px;border-radius:99px;letter-spacing:1px}.o-bd.b-ok{background:#1f6b5f;color:#9ff5e6}.o-bd.b-ng{background:#7a2b25;color:#ffb3a8}.o-bd.b-oni{background:#5a2a6e;color:#e6b8ff}
+.o-rb{font:400 22px var(--disp);color:var(--amber);white-space:nowrap}.o-safe{font-size:15px;color:#9ff5e6}
