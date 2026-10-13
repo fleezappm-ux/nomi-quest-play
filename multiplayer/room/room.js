@@ -7,6 +7,9 @@ import { attachTen } from './ten.js?v=0.28';
 import { attachNpcs, npcNames } from './npc.js?v=0.28';
 import { FEEDBACK_URL } from './feedback-config.js?v=0.28';
 import { attachOni, attachOniBots } from './oni.js?v=0.28';
+import { ensureAdult } from './agegate.js?v=0.28';
+// 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
+await ensureAdult();
 
 const $ = id => document.getElementById(id);
 const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.28'); if (isLocal) homePage.searchParams.set('npc','1');
