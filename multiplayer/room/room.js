@@ -7,6 +7,7 @@ import { attachTen } from './ten.js?v=0.28';
 import { attachNpcs, npcNames } from './npc.js?v=0.28';
 import { FEEDBACK_URL } from './feedback-config.js?v=0.28';
 import { attachOni, attachOniBots } from './oni.js?v=0.28';
+import { track, logEnabled } from './telemetry.js?v=0.28';
 import { ensureAdult } from './agegate.js?v=0.28';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
@@ -130,7 +131,7 @@ $('create').onclick=()=>action(async()=>{
   const slots={0:{uid,name,ready:false,connected:true,joinedAt:serverTimestamp()}};
   if(isLocal)for(let i=1;i<=Number($('npcCount').value);i++)slots[i]={uid:'npc'+i,name:npcNames[i-1]+'（NPC）',ready:true,connected:true,joinedAt:serverTimestamp()};
   await set(ref(db,`rooms/${id}`),{meta:{hostUid:uid,state:'lobby',createdAt:serverTimestamp(),expiresAt:Date.now()+12*60*60*1000},slots});
-  await watch(id,0);
+  await watch(id,0);track('create',{uid,room:id,name});
 });
 $('join').onclick=()=>action(async()=>{
   const name=ownName();if(!validRoom(roomId))throw new Error('招待リンクが正しくありません。');
@@ -139,20 +140,20 @@ $('join').onclick=()=>action(async()=>{
   // Fixed slots + transactions prevent a seventh participant and double reservation.
   for(let i=0;i<6;i++){
     const snap=await get(ref(db,`rooms/${roomId}/slots/${i}`));
-    if(snap.val()?.uid===uid){await watch(roomId,i);return;}
+    if(snap.val()?.uid===uid){await watch(roomId,i);track('rejoin',{uid,room:roomId,name});return;}
   }
   if(meta.state!=='lobby')throw new Error('ゲームは開始済みです。参加済みの端末から戻ってください。');
   for(let i=1;i<6;i++){
     const result=await runTransaction(ref(db,`rooms/${roomId}/slots/${i}`),p=>p ? undefined : {uid,name,ready:false,connected:true,joinedAt:serverTimestamp()},{applyLocally:false});
-    if(result.committed){await watch(roomId,i);return;}
+    if(result.committed){await watch(roomId,i);track('join',{uid,room:roomId,name,slot:i});return;}
   }
   throw new Error('この部屋は6人で満員です。');
 });
 $('modeCards').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'cards'));
 $('modeOni').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'oni'));
 $('ready').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/slots/${slot}/ready`),!room.slots[slot].ready));
-$('start').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/state`),'started'));
-$('close').onclick=()=>action(async()=>{if(window.confirm('全員の部屋を終了しますか？終了後はこのゲームへ戻れません。'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');});
+$('start').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'started');track('start',{uid,room:roomId,game:room?.meta?.mode==='oni'?'oni':'cards',n:members().length,names:members().map(([,p])=>p.name).join('/')});});
+$('close').onclick=()=>action(async()=>{if(window.confirm('全員の部屋を終了しますか？終了後はこのゲームへ戻れません。')){await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});}});
 $('leave').onclick=()=>action(leave);$('returnHome').onclick=()=>action(leave);
 $('copy').onclick=()=>action(async()=>{try{await navigator.clipboard.writeText($('shareUrl').value);message('招待リンクをコピーしました。');}catch{$('shareUrl').select();message('招待リンクを長押ししてコピーしてください。');}});
 $('openInvite').onclick=()=>{try{const url=new URL($('invite').value);if(url.origin!==location.origin || url.pathname!==new URL(homeUrl).pathname || !validRoom(url.searchParams.get('room')))throw new Error();location.href=url.href;}catch{message('NOMI QUESTの招待リンクを貼り付けてください。');}};
@@ -169,7 +170,7 @@ try {
     controls();
   } else {
   const app=initializeApp(firebaseConfig),auth=getAuth(app);db=getDatabase(app);
-  await setPersistence(auth,browserLocalPersistence);const user=auth.currentUser || (await signInAnonymously(auth)).user;uid=user.uid;
+  await setPersistence(auth,browserLocalPersistence);const user=auth.currentUser || (await signInAnonymously(auth)).user;uid=user.uid;track('open',{uid,room:roomId||''});
   onValue(ref(db,'.info/connected'),snap=>{connected=!!snap.val();$('connection').textContent=connected?'接続OK':'再接続中';$('connection').dataset.ok=connected?'1':'0';controls();});
   resumeOffer();
   const saved=savedSession();
@@ -179,4 +180,5 @@ try {
   }
 }catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
 
+{const n=document.getElementById('logNote');if(n&&logEnabled)n.hidden=false;}
 {const a=document.getElementById('feedback');if(a&&/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//.test(FEEDBACK_URL)){a.href=FEEDBACK_URL;a.hidden=false;}}

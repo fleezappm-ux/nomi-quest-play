@@ -283,3 +283,4 @@ a.feedback{display:inline-block;margin:0 0 10px;color:var(--amber);font-weight:9
 .agegate-check input{width:26px;height:26px;margin:0;accent-color:var(--amber)}
 .agegate-go{margin:0;width:100%;padding:15px;border:0;border-radius:14px;background:var(--amber);color:var(--on-amber);font-weight:900;font-size:18px;box-shadow:0 3px 0 #9a6d12}.agegate-go:disabled{opacity:.35;box-shadow:none}
 .agegate-under{margin:0;background:none;border:0;color:var(--mute);text-decoration:underline;font-size:14px;padding:8px}
+.logNote{margin:0 0 .6rem;font-size:.74rem;line-height:1.5;color:var(--muted,#9a8f7a);text-align:center}
