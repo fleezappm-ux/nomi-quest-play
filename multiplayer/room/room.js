@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.32';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.33';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.32';
-import { attachNpcs, npcNames } from './npc.js?v=0.32';
-import { FEEDBACK_URL } from './feedback-config.js?v=0.32';
-import { attachOni, attachOniBots } from './oni.js?v=0.32';
-import { track, logEnabled } from './telemetry.js?v=0.32';
-import { ensureAdult } from './agegate.js?v=0.32';
+import { attachTen } from './ten.js?v=0.33';
+import { attachNpcs, npcNames } from './npc.js?v=0.33';
+import { FEEDBACK_URL } from './feedback-config.js?v=0.33';
+import { attachOni, attachOniBots } from './oni.js?v=0.33';
+import { track, logEnabled } from './telemetry.js?v=0.33';
+import { ensureAdult } from './agegate.js?v=0.33';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.32'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.33'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -57,7 +57,7 @@ function controls() {
 function render() {
   if (!room?.meta) { message('この部屋は見つかりません。招待を確認してください。'); return; }
   const list = members(), host = room.meta.hostUid === uid;
-  $('share').hidden = !host; $('start').hidden = !host; $('close').hidden = !host; $('closeGame').hidden = !(host && room.meta.state==='started');
+  $('share').hidden = !host; $('start').hidden = !host; $('close').hidden = !host; $('hostZone').hidden = !(host && room.meta.state==='started');
   const expired = room.meta.expiresAt <= Date.now();
   $('share').hidden = isLocal || !host || expired || room.meta.state==='closed';
   const phase=roomId+':'+room.meta.state;
@@ -188,5 +188,13 @@ try {
   }
 }catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
 
+{const w=document.getElementById('wish');if(w&&logEnabled){
+ w.hidden=false;
+ const opts=['🔞 お色気・18禁ネタ','🧠 心理戦・読み合い','⚡ 早押し・反射神経','🗳️ 投票・暴露トーク','🎤 お題・モノマネ','🏃 ミニゲーム（鬼ごっこ系）','👑 王様・罰ゲーム系','🎲 運まかせ・ルーレット系'],chosen=new Set(),chips=document.getElementById('wishChips'),send=document.getElementById('wishSend'),txt=document.getElementById('wishText');
+ const upd=()=>{send.disabled=!(chosen.size||txt.value.trim());};
+ for(const o of opts){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=o;b.setAttribute('aria-pressed','false');b.onclick=()=>{const on=!chosen.has(o);on?chosen.add(o):chosen.delete(o);b.setAttribute('aria-pressed',String(on));upd();};chips.append(b);}
+ txt.addEventListener('input',upd);
+ send.onclick=()=>{track('wish',{game:[...chosen].join(' / '),names:txt.value.trim(),name:$('name').value.trim()});send.disabled=true;document.getElementById('wishThanks').hidden=false;chosen.clear();txt.value='';for(const b of chips.children)b.setAttribute('aria-pressed','false');setTimeout(()=>{document.getElementById('wishThanks').hidden=true;upd();},6000);};
+}}
 {const n=document.getElementById('logNote');if(n&&logEnabled)n.hidden=false;}
 {const a=document.getElementById('feedback');if(a&&/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//.test(FEEDBACK_URL)){a.href=FEEDBACK_URL;a.hidden=false;}}

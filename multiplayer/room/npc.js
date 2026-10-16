@@ -1,13 +1,13 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get} from './fb.js?v=0.32';
-import {attachTen} from './ten.js?v=0.32';
+import {ref,set,get} from './fb.js?v=0.33';
+import {attachTen} from './ten.js?v=0.33';
 import {currentTurn} from './turn.js?v=0.4';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
 export function npcAnswer({card,isActor,isTarget,slots,others,rand=Math.random}){
  const int=n=>Math.floor(rand()*n),pick=a=>a[int(a.length)];
  switch(card){
-  case 'buttons':return isActor?int(3):undefined;
+  case 'buttons':return isActor?int(2):undefined;
   case 'mission':return isActor?(rand()<0.8?1:0):undefined;
   case 'danger':case 'king':return isActor?pick(others):isTarget?(rand()<0.7?1:0):undefined;
   case 'vote':case 'muttsuri':case 'mind':return pick(slots);
@@ -26,6 +26,11 @@ export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
  async function act(u){
   if(dead||u.busy)return;
   const d=u.n.db||db,st=(await get(ref(d,base+'/state'))).val();
+  if(st&&!dead&&st.phase==='results'&&st.card==='check'){
+   const nk=st.round+':nv';if(u.key!==nk){u.key=nk;u.due=Date.now()+(1500+Math.random()*2500)*scale;}
+   if(Date.now()>=u.due&&u.nv!==st.round){u.nv=st.round;u.busy=true;try{await set(ref(d,`${base}/nv/${st.round}/${u.n.uid}`),true);}catch{}finally{u.busy=false;}}
+   return;
+  }
   if(!st||dead||st.phase==='results')return;
   const key=st.round+':'+st.phase;
   if(u.key!==key){u.key=key;u.due=Date.now()+(900+Math.random()*2600)*scale;}

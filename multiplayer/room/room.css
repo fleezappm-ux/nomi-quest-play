@@ -302,3 +302,17 @@ input.bad{border-color:#ff5a4a;box-shadow:0 0 0 3px #ff5a4a55;animation:nameShak
 .helppanel{margin-top:14px;padding:14px;border:1.5px solid var(--amber);border-radius:16px;background:var(--s1)}
 .helppanel h4{margin:0 0 6px;font-size:17px;color:var(--amber)}
 .helppanel p{font-size:14px;line-height:1.65;margin:8px 0;color:var(--ink)}
+
+.hostZone{margin:44px 0 12px;padding-top:16px;border-top:1px dashed var(--line);text-align:center}
+.hostZone p{margin:0 0 6px;font-size:12px;color:var(--faint)}
+.dangerBtn{width:auto;display:inline-block;padding:10px 18px;font-size:14px;background:transparent;color:#ff8b7d;border:1.5px solid #ff8b7d77;box-shadow:none;font-weight:700}
+.dangerBtn:active:not(:disabled){transform:none;background:#ff5a4a22;box-shadow:none}
+
+.wish{margin:18px 0 6px;padding:2px 14px 14px;border:1px solid var(--line);border-radius:16px;background:var(--s1)}
+.wish summary{padding:12px 0;font-weight:800;color:var(--ink)}
+.wish p{margin:4px 0 10px;font-size:13px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+button.chip{width:auto;margin:0;padding:9px 13px;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font-size:14px;font-weight:700;box-shadow:none}
+button.chip[aria-pressed="true"]{background:linear-gradient(#fad06a,#eba52b);color:var(--on-amber);border-color:#130b02}
+button.chip:active{transform:none}
+.wishLabel{margin-top:14px}
