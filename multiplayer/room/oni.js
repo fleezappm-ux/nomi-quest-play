@@ -1,9 +1,9 @@
 // 鬼ごっこ（リアルタイム版ミニゲーム）の画面と進行。
 // 自分の位置は自分の端末で動かして1秒に約8回送り、他の人の位置は少し遅らせてなめらかに見せる。
 // 捕まった・拾った・出口・時間切れの判定は、ホストの端末だけが行う。
-import {ref,set,update,onValue,isLocal} from './fb.js?v=0.28';
-import * as RT from './onirt.js?v=0.28';
-import MET from './onimeta.js?v=0.28';
+import {ref,set,update,onValue,isLocal} from './fb.js?v=0.29';
+import * as RT from './onirt.js?v=0.29';
+import MET from './onimeta.js?v=0.29';
 const {N,EXIT,TIME,ODDS,ITEM_ICON}=RT;
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const arr=v=>Array.isArray(v)?v:v&&typeof v==='object'?Object.values(v):[];

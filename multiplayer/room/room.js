@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.28';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.29';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.28';
-import { attachNpcs, npcNames } from './npc.js?v=0.28';
-import { FEEDBACK_URL } from './feedback-config.js?v=0.28';
-import { attachOni, attachOniBots } from './oni.js?v=0.28';
-import { track, logEnabled } from './telemetry.js?v=0.28';
-import { ensureAdult } from './agegate.js?v=0.28';
+import { attachTen } from './ten.js?v=0.29';
+import { attachNpcs, npcNames } from './npc.js?v=0.29';
+import { FEEDBACK_URL } from './feedback-config.js?v=0.29';
+import { attachOni, attachOniBots } from './oni.js?v=0.29';
+import { track, logEnabled } from './telemetry.js?v=0.29';
+import { ensureAdult } from './agegate.js?v=0.29';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.28'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.29'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -28,6 +28,10 @@ function resumeOffer() { $('resumeBox').hidden = !savedSession(); }
 const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
 $('homeLink').href = homeUrl;
 $('inviteJoin').hidden = !roomId;
+// 招待リンク・QRから来た人には「参加」だけを見せる（部屋づくり・テストは出さない）
+if(roomId&&!isLocal){$('create').hidden=true;$('npcLink').hidden=true;$('inviteHead').hidden=false;$('lead').hidden=true;document.querySelector('.hero')?.classList.add('compact');}
+function needName(){const e=$('name');e.classList.add('bad');$('nameErr').hidden=false;e.focus();e.scrollIntoView({block:'center',behavior:'smooth'});}
+$('name').addEventListener('input',()=>{$('name').classList.remove('bad');$('nameErr').hidden=true;});
 $('name').value = localStorage.getItem('nq-room-name') || '';
 
 function message(text) { $('message').textContent = text; }
@@ -76,6 +80,8 @@ function render() {
     }));
   }
   show(!expired && room.meta.state === 'started' ? 'started' : 'lobby');
+  { const closed=room.meta.state==='closed'; $('installAsk').hidden=!closed || isStandalone();
+    if(closed){const ios=/iPhone|iPad|iPod/.test(navigator.userAgent); $('installYes').hidden=ios&&!installPrompt; $('installIos').hidden=!(ios&&!installPrompt);} }
   if(room.meta.state==='started' && !tenStop && !expired){
     const ps=list.map(([slot,p])=>({...p,slot}));
     if(mode==='oni'){
@@ -110,7 +116,7 @@ async function detach() { tenStop?.();tenStop=null;npcGame?.stop();npcGame=null;
 async function leave() {
   const previous=roomId, previousSlot=slot;
   await detach(); roomId=null;slot=null;room=null;
-  history.replaceState(null,'',homeUrl);$('inviteJoin').hidden=true;show('home');resumeOffer();
+  history.replaceState(null,'',homeUrl);$('inviteJoin').hidden=true;$('create').hidden=false;$('npcLink').hidden=isLocal;$('inviteHead').hidden=true;$('lead').hidden=false;show('home');resumeOffer();
   // Keep the seat and recovery record. Returning home is a pause, including offline.
   if(previous && previousSlot!==null && connected)set(ref(db,`rooms/${previous}/slots/${previousSlot}/connected`),false).catch(()=>{});
 }
@@ -125,15 +131,15 @@ async function resume(s=savedSession()) {
 }
 $('resume').onclick=()=>action(()=>resume());
 $('homeLink').onclick=e=>{e.preventDefault();return action(leave);};
-$('create').onclick=()=>action(async()=>{
+$('create').onclick=()=>{if(!$('name').value.trim()){needName();return;}return action(async()=>{
   if(savedSession() && !window.confirm('新しい部屋を作りますか？前の部屋への復帰ボタンは新しい部屋に切り替わります。'))return;
   const name=ownName(); const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
   const slots={0:{uid,name,ready:false,connected:true,joinedAt:serverTimestamp()}};
   if(isLocal)for(let i=1;i<=Number($('npcCount').value);i++)slots[i]={uid:'npc'+i,name:npcNames[i-1]+'（NPC）',ready:true,connected:true,joinedAt:serverTimestamp()};
   await set(ref(db,`rooms/${id}`),{meta:{hostUid:uid,state:'lobby',createdAt:serverTimestamp(),expiresAt:Date.now()+12*60*60*1000},slots});
   await watch(id,0);track('create',{uid,room:id,name});
-});
-$('join').onclick=()=>action(async()=>{
+});};
+$('join').onclick=()=>{if(!$('name').value.trim()){needName();return;}return action(async()=>{
   const name=ownName();if(!validRoom(roomId))throw new Error('招待リンクが正しくありません。');
   const meta=(await get(ref(db,`rooms/${roomId}/meta`))).val();
   if(!meta || meta.state==='closed' || meta.expiresAt <= Date.now())throw new Error('部屋は終了済み、または期限切れです。');
@@ -148,7 +154,7 @@ $('join').onclick=()=>action(async()=>{
     if(result.committed){await watch(roomId,i);track('join',{uid,room:roomId,name,slot:i});return;}
   }
   throw new Error('この部屋は6人で満員です。');
-});
+});};
 $('modeCards').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'cards'));
 $('modeOni').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'oni'));
 $('ready').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/slots/${slot}/ready`),!room.slots[slot].ready));
@@ -156,9 +162,10 @@ $('start').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/s
 $('close').onclick=()=>action(async()=>{if(window.confirm('全員の部屋を終了しますか？終了後はこのゲームへ戻れません。')){await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});}});
 $('leave').onclick=()=>action(leave);$('returnHome').onclick=()=>action(leave);
 $('copy').onclick=()=>action(async()=>{try{await navigator.clipboard.writeText($('shareUrl').value);message('招待リンクをコピーしました。');}catch{$('shareUrl').select();message('招待リンクを長押ししてコピーしてください。');}});
-$('openInvite').onclick=()=>{try{const url=new URL($('invite').value);if(url.origin!==location.origin || url.pathname!==new URL(homeUrl).pathname || !validRoom(url.searchParams.get('room')))throw new Error();location.href=url.href;}catch{message('NOMI QUESTの招待リンクを貼り付けてください。');}};
 let installPrompt;
+function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
+$('installYes').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
 $('keep').onclick=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
 
 try {

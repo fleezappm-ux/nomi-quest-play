@@ -59,7 +59,7 @@ summary{cursor:pointer;color:var(--mute);font-weight:700;font-size:14px;padding:
 .steps{display:flex;gap:8px;margin:22px 0 4px;padding:0;list-style:none}
 .steps li{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 10px 9px;font-size:12px;font-weight:700;color:var(--mute);line-height:1.45}
 .steps li b{display:block;font-family:var(--disp);font-weight:400;font-size:18px;color:var(--amber);line-height:1.2}
-#inviteJoin{margin-top:18px;padding:16px;border-radius:18px;background:var(--s2);border:1.5px solid var(--amber)}
+#inviteJoin{margin-top:0}
 #inviteJoin p{color:var(--ink);font-weight:900}
 #inviteJoin button{margin-top:10px}
 #resumeBox{margin-top:18px;border:1.5px solid var(--line);background:var(--s1);border-radius:18px;padding:14px 16px 16px}
@@ -284,3 +284,21 @@ a.feedback{display:inline-block;margin:0 0 10px;color:var(--amber);font-weight:9
 .agegate-go{margin:0;width:100%;padding:15px;border:0;border-radius:14px;background:var(--amber);color:var(--on-amber);font-weight:900;font-size:18px;box-shadow:0 3px 0 #9a6d12}.agegate-go:disabled{opacity:.35;box-shadow:none}
 .agegate-under{margin:0;background:none;border:0;color:var(--mute);text-decoration:underline;font-size:14px;padding:8px}
 .logNote{margin:0 0 .6rem;font-size:.74rem;line-height:1.5;color:var(--muted,#9a8f7a);text-align:center}
+
+.nameLabel{margin-top:22px;font-size:15px;color:var(--ink)}
+.nameLabel input{border-color:var(--amber);font-size:19px}
+input.bad{border-color:#ff5a4a;box-shadow:0 0 0 3px #ff5a4a55;animation:nameShake .35s}
+.nameErr{margin:8px 0 0;color:#ff7b6d;font-weight:800;font-size:14px}
+@keyframes nameShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){input.bad{animation:none}}
+.inviteHead{margin:18px 0 0;font-size:18px;font-weight:800;line-height:1.6;color:var(--ink)}
+.hero.compact{padding-top:18px}
+.textButton.small{font-size:12px;color:var(--mute);display:block;margin:22px auto 0;text-align:center;font-weight:500}
+.installAsk{margin:16px 0;padding:18px;border:1.5px solid var(--amber);border-radius:16px;background:var(--s1)}
+.installAsk h2{margin:0 0 6px;font-size:20px}
+.installAsk p{margin:6px 0;line-height:1.7}
+.settle p.verdict{font-size:19px;line-height:1.5;margin:10px 0}
+.settle h3.verdict{font-size:26px}
+.helppanel{margin-top:14px;padding:14px;border:1.5px solid var(--amber);border-radius:16px;background:var(--s1)}
+.helppanel h4{margin:0 0 6px;font-size:17px;color:var(--amber)}
+.helppanel p{font-size:14px;line-height:1.65;margin:8px 0;color:var(--ink)}
