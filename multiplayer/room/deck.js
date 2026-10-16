@@ -22,7 +22,9 @@ export const cards = {
 };
 const DRAW=['ten','battery','buttons','reaction','danger','mission','king','vote','majority','mind','tapking','muttsuri'],DRAW_WEIGHT={ten:0.5,battery:0.5,reaction:0.5,tapking:0.5,vote:2,muttsuri:2,mind:2,majority:2,king:0.35};
 // 出やすさ：1人ずつ計るカード(10秒・充電・ドキドキ・タップ王)は控えめ、みんなで盛り上がる投票系(変態を探せ・むっつり・お前なら・多数派)は多め、王様は少なめ、他は標準(1)。
-export function drawCard(random=Math.random) {const w=DRAW.map(c=>DRAW_WEIGHT[c]??1);let r=random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<DRAW.length;i++){if(r<w[i])return DRAW[i];r-=w[i];}return DRAW[DRAW.length-1];}
+// 1人用のカードは、次の休憩までに同じものは1回まで（引いた分は除外して抽選する）
+export const SOLO_CARDS=['ten','battery','reaction','tapking'];
+export function drawCard(random=Math.random,exclude=[]) {const w=DRAW.map(c=>exclude.includes(c)?0:(DRAW_WEIGHT[c]??1));let r=random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<DRAW.length;i++){if(r<w[i])return DRAW[i];r-=w[i];}return DRAW[DRAW.length-1];}
 export function drawDirection(random=Math.random) {return random()<0.5?'HIGH':'LOW';}
 export function targetsFor(card, results, direction) {
  const entries=Object.entries(results);
@@ -89,7 +91,7 @@ export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],
 export const breakPeriod=()=>2; // 休憩は人数に関係なく2ターンごと（固定）
 export const isBreak=(round,n)=>round%breakPeriod(n)===0;
 export const turnsToBreak=(round,n)=>breakPeriod(n)-round%breakPeriod(n);
-export function cardForRound(round,n,random=Math.random){return isBreak(round,n)?'check':drawCard(random);}
+export function cardForRound(round,n,random=Math.random,exclude=[]){return isBreak(round,n)?'check':drawCard(random,exclude);}
 
 // ---- Tickets and the break-turn settlement ----------------------------------------------------------------
 // Every lost round credits tickets (personal drinks/{round}). At a break turn R the tickets of the rounds since the previous break are totalled;
