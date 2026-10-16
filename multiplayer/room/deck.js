@@ -86,7 +86,7 @@ export function tiedTargets(state,players){return players.filter(p=>drinkBase(st
 export const tieCards=['ten','battery','tapking','vote','muttsuri','mind','majority'];
 // break turn: after every n laps of n players (n*n draws) one round is a break; the other rounds draw as usual
 export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],['😵','そろそろキツい'],['🚰','水が欲しい']];
-export const breakPeriod=n=>n*n+1;
+export const breakPeriod=()=>2; // 休憩は人数に関係なく2ターンごと（固定）
 export const isBreak=(round,n)=>round%breakPeriod(n)===0;
 export const turnsToBreak=(round,n)=>breakPeriod(n)-round%breakPeriod(n);
 export function cardForRound(round,n,random=Math.random){return isBreak(round,n)?'check':drawCard(random);}
