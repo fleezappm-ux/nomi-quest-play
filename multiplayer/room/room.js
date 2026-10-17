@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.33';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=0.36';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=0.33';
-import { attachNpcs, npcNames } from './npc.js?v=0.33';
-import { FEEDBACK_URL } from './feedback-config.js?v=0.33';
-import { attachOni, attachOniBots } from './oni.js?v=0.33';
-import { track, logEnabled } from './telemetry.js?v=0.33';
-import { ensureAdult } from './agegate.js?v=0.33';
+import { attachTen } from './ten.js?v=0.36';
+import { attachNpcs, npcNames } from './npc.js?v=0.36';
+import { FEEDBACK_URL } from './feedback-config.js?v=0.36';
+import { attachOni, attachOniBots } from './oni.js?v=0.36';
+import { track, logEnabled } from './telemetry.js?v=0.36';
+import { ensureAdult } from './agegate.js?v=0.36';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.33'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','0.36'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -51,7 +51,7 @@ function controls() {
   $('ready').disabled = !connected || busy || !active();
   const list = members();
   $('start').disabled = !connected || busy || !active() || list.length < 2 || !list.every(([,p])=>p.ready && p.connected);
-  for (const id of ['leave','returnHome','modeCards','modeOni','closeGame']) $(id).disabled = busy;
+  for (const id of ['leave','returnHome','modeCards','modeOni','closeGame','endPlain','endSettle']) $(id).disabled = busy;
   $('close').disabled = busy || !connected;
 }
 function render() {
@@ -159,8 +159,13 @@ $('modeCards').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'c
 $('modeOni').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'oni'));
 $('ready').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/slots/${slot}/ready`),!room.slots[slot].ready));
 $('start').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'started');track('start',{uid,room:roomId,game:room?.meta?.mode==='oni'?'oni':'cards',n:members().length,names:members().map(([,p])=>p.name).join('/')});});
-$('closeGame').onclick=()=>$('close').onclick();
+$('closeGame').onclick=()=>{$('endChoice').hidden=false;$('closeGame').hidden=true;};
+$('endCancel').onclick=()=>{$('endChoice').hidden=true;$('closeGame').hidden=false;};
+$('endPlain').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});});
+$('endSettle').onclick=()=>action(async()=>{await set(ref(db,`sessions/${roomId}/fin`),true);$('endChoice').hidden=true;$('closeGame').hidden=false;message('最終精算を表示しました。ホストが画面の「これでゲームを終了する」を押すと終わります。');track('close_settle',{uid,room:roomId});});
 $('close').onclick=()=>action(async()=>{if(window.confirm('ゲームを終了しますか？全員の画面が終了になり、このゲームへは戻れません。')){await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});}});
+// アプリ内ブラウザ（LINEなど）の注意喚起
+{const ua=navigator.userAgent||'';if(/Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|KAKAOTALK|Twitter|Snapchat|TikTok|BytedanceWebview|musical_ly/i.test(ua)){$('inapp').hidden=false;$('inappCopy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);message('リンクをコピーしました。SafariかChromeに貼り付けて開いてください。');}catch{message('リンクを長押ししてコピーしてください。');}};}}
 $('leave').onclick=()=>action(leave);$('returnHome').onclick=()=>action(leave);
 $('copy').onclick=()=>action(async()=>{try{await navigator.clipboard.writeText($('shareUrl').value);message('招待リンクをコピーしました。');}catch{$('shareUrl').select();message('招待リンクを長押ししてコピーしてください。');}});
 let installPrompt;
