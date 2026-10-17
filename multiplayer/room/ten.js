@@ -1,18 +1,18 @@
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=0.36';
-import {showItemFx} from './itemfx.js?v=0.36';
+import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=0.38';
+import {showItemFx} from './itemfx.js?v=0.38';
 import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
-import {ALL_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=0.36';
-export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=0.38';
+export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
  let dockButtons=0,dockNotes=0;
  const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変',muttsuri:'隠',tapking:'連',check:'休'};
  const VL=new Set(['vote','muttsuri','mind']);
- let lastCard=null;const missionDone=new Set(),specialSeen=new Set(),seenPrompts={vote:new Set(),muttsuri:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,muttsuri:muttsuriPrompts,majority:majorityPrompts,mind:mindPrompts};
+ let lastCard=null,countedRound=0;const soloAt={};const missionDone=new Set(),specialSeen=new Set(),seenPrompts={vote:new Set(),muttsuri:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,muttsuri:muttsuriPrompts,majority:majorityPrompts,mind:mindPrompts};
  // 同じ部屋の中で、お題やキス顔が重ならないように、使った分をこのスマホにも記録しておく（再読み込みしても残る）
  const seenKey='nq-seen-'+roomId;
- function saveSeen(){try{localStorage.setItem(seenKey,JSON.stringify({m:[...missionDone],s:[...specialSeen],p:Object.fromEntries(Object.entries(seenPrompts).map(([k,v])=>[k,[...v]]))}));}catch{}}
- try{const o=JSON.parse(localStorage.getItem(seenKey)||'null');if(o){for(const u of o.m||[])missionDone.add(u);for(const c of o.s||[])if(ALL_CARDS.includes(c))specialSeen.add(c);for(const [k,v] of Object.entries(o.p||{}))if(seenPrompts[k])for(const x of v)if(typeof x==='number')seenPrompts[k].add(x);}}catch{}
+ function saveSeen(){try{localStorage.setItem(seenKey,JSON.stringify({m:[...missionDone],s:[...specialSeen],c:countedRound,l:soloAt,p:Object.fromEntries(Object.entries(seenPrompts).map(([k,v])=>[k,[...v]]))}));}catch{}}
+ try{const o=JSON.parse(localStorage.getItem(seenKey)||'null');if(o){for(const u of o.m||[])missionDone.add(u);for(const c of o.s||[])if(ALL_CARDS.includes(c))specialSeen.add(c);if(typeof o.c==='number')countedRound=o.c;for(const [k,v] of Object.entries(o.l||{}))if(SOLO_CARDS.includes(k)&&typeof v==='number')soloAt[k]=v;for(const [k,v] of Object.entries(o.p||{}))if(seenPrompts[k])for(const x of v)if(typeof x==='number')seenPrompts[k].add(x);}}catch{}
  let state,own,answers={},began=null,elapsed=null,batteryDraft='',tapStart=null,tapCount=0,tapTimer=null,pickRound=null,pickTimer=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
  let fin=false,spentSeen=false,allDrinks={},allDrinksStops=[],tqMap={},tqStop,cuteMode=null,nvMap={},nvStop,settlePage=false;
  const stops=[],byUid=new Map(players.map(p=>[p.uid,p]));
@@ -71,7 +71,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   top.append(turnBar(turn));
   if(state.phase==='draw'){
    box.append(div('deck',cardBack()),el('h2',isBreak(state.round,turn.order.length)?'休憩ターン！':'カードを引こう'),el('p',isBreak(state.round,turn.order.length)?'今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったチケットを精算します（お助けカードも使えます）。':'山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
-   if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=cardForRound(round,turn.order.length,Math.random,[...specialSeen,...(lastCard?[lastCard]:[]),...(missionDone.has(uid)?['mission']:[])]);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
+   if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=cardForRound(round,turn.order.length,Math.random,[...specialSeen,...SOLO_CARDS.filter(c=>soloAt[c]!==undefined&&round-soloAt[c]<SOLO_COOLDOWN),...(lastCard?[lastCard]:[]),...(missionDone.has(uid)?['mission']:[])]);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
   }
@@ -153,7 +153,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   if(!itemsReady()){box.append(el('p','あなたのお助けを確認しています…'));return;}
   if(winnerNow())box.append(el('p',grantPending()?'お助けを受け取っています…':itemMap['1']!==undefined&&itemMap['2']!==undefined&&grantMap[String(state.round)]===undefined?(state.card==='reaction'?'あなたが最速！':'HEAVEN！')+'ただしお助けは3つまで持てます。':(state.card==='reaction'?'あなたが最速！':'HEAVEN！')+'お助けを1つ獲得しました。'));
     if(!settledMap[uid]){
-   if(ownError)button('カウント保存を再試行',()=>settleOwn(),ownBusy);
+   const bs=freeSlot('barrier'),mineNow=drinkAward(state,uid,players);
+   if(drinkMap?.[String(state.round)]===undefined&&mineNow>0&&bs!==undefined&&choice===undefined&&!usedInfo()){
+    box.append(div('helppanel',txt('h4','','🛡️ バリアを使いますか？'),txt('p','help',`今回のチケットは＋${mineNow}枚。バリアを使うと、今回のチケットがなしになります。`),(()=>{const act=div('acts');for(const [label,pk,cls] of [['🛡️ バリアを使う（チケットなし）','barrier',''],['使わずに受ける','skip','secondary']]){const b=el('button',label);if(cls)b.className=cls;b.disabled=ownBusy;dockButtons++;b.onclick=()=>settleOwn(pk);act.append(b);}return act;})()));
+   }else if(ownError)button('カウント保存を再試行',()=>settleOwn(),ownBusy);
    else box.append(el('p','あなたのカウントを保存しています…'));
   }else{const mine=drinkMap?.[String(state.round)];box.append(txt('p','mine',typeof mine==='number'?(mine>0?`あなたの今回のチケット：＋${mine}枚`:'あなたの今回のチケット：なし'):'あなたのチケットは確定しました。'));}
   const waiting=players.filter(p=>!settledMap[p.uid]);
@@ -169,8 +172,9 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   if(pick)choice=pick;
   const round=state.round,has=drinkMap[String(round)]!==undefined;
   if(has&&settledMap[uid])return;
-  // tickets only: items are used by hand at the break-turn settlement, never when a ticket is credited
-  const baseNow=drinkAward(state,uid,players),plan=has?null:{amount:baseNow,spend:null};
+  // バリアを持っている人は、チケットをもらう前に「使う／使わない」を選ぶ（選ぶまで確定しない）
+  if(bot&&choice===undefined)choice='skip'; // 練習のNPCは、バリアを使わずに受ける
+  const baseNow=drinkAward(state,uid,players),plan=has?null:decideCredit({base:baseNow,barrierSlot:freeSlot('barrier'),used:usedInfo(),choice});
   if(!has&&!plan){render();return;}
   ownBusy=true;ownError=false;render();
   try{
@@ -202,7 +206,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   const ready=itemMap&&(Object.keys(itemMap).length>0||grantFailed);
   const chips=div('chips',...itemKinds.map(k=>txt('span','chip'+(counts[k]?'':' none'),`${items[k].icon} ${shortName[k]} ×${counts[k]||0}`)));
   const held=itemKinds.filter(k=>counts[k]).map(k=>txt('p','help',`${items[k].icon}${items[k].name}：${items[k].desc}`));
-  const more=document.createElement('details');more.className='helpbox';more.append(el('summary','お助けの説明'),...held,...(held.length?[]:[txt('p','help','お助けカードは、休憩ターンの精算で自分の判断で使えます。（バリア：テキーラ無効／天使：代わりに飲む／可愛い：なすりつけ）')]),txt('p','fine','この表示はあなたの画面だけ。実際に飲む必要はありません。'));
+  const more=document.createElement('details');more.className='helpbox';more.append(el('summary','お助けの説明'),...held,...(held.length?[]:[txt('p','help','お助けカード（バリア）は、チケットをもらう時に「使う」を選ぶと、そのチケットがなしになります。休憩のテキーラ1杯にも使えます。')]),txt('p','fine','この表示はあなたの画面だけ。実際に飲む必要はありません。'));
   const tk=myTickets();
   return div('status',
    div('stat',txt('span','label','🎫 チケット'),txt('span','big',tk===null?'確認中…':`${tk.now}枚`),txt('span','help',tk&&tk.carryIn?`（持ち越し${tk.carryIn}枚込み）3枚でテキーラ1杯`:'3枚でテキーラ1杯')),
@@ -240,7 +244,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
   if(card==='reaction'&&!gets.size)sub='全員失敗！ お助けなし';
   return div('board',txt('h3','verdict',verdict),...(sub?[txt('p','sub',sub)]:[]),
    div('rows',...rows.map(r=>div('row '+(r.amt>0?'lose':'safe'),txt('span','av',avatars[Number(r.p.slot)]||'🍻'),txt('span','who',r.p.name),txt('span','detail',[r.detail,gets.has(r.p.uid)?'🎁お助けGET':''].filter(Boolean).join(' · ')),txt('span','cups',r.amt>0?`🎫 ＋${r.amt}枚`:'セーフ')))),
-   txt('p','fine','チケットは、休憩ターンでまとめて精算します。お助けカードも、そのときに使えます。'));
+   txt('p','fine','チケット3枚でテキーラ1杯。休憩ターンでまとめて精算します。バリアはチケットをもらう時にも使えます。'));
  }
 
  // ---- break turn: ticket settlement (one tequila) and hand-used helper cards --------------------------------
@@ -410,7 +414,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given}) {
  }
  stops.push(onValue(ref(db,base+'/fin'),v=>{fin=v.val()===true;if(fin)ensureAllDrinks();render();},()=>{}));
  stops.push(onValue(ref(db,base+'/state'),snap=>{
-  state=snap.val();if(state?.card==='mission'&&Array.isArray(state.order)){const a=state.order[(state.round-1)%state.order.length];if(a&&!missionDone.has(a)){missionDone.add(a);saveSeen();}}if(state?.card){lastCard=state.card;if(ALL_CARDS.includes(state.card)&&!specialSeen.has(state.card)){specialSeen.add(state.card);if(specialSeen.size>=ALL_CARDS.length)specialSeen.clear();saveSeen();}}buttonDeck=buttonDecks[state?.round];if(seenPrompts[state?.card]&&typeof state.prompt==='number'&&!seenPrompts[state.card].has(state.prompt)){seenPrompts[state.card].add(state.prompt);saveSeen();}
+  state=snap.val();if(state?.card==='mission'&&Array.isArray(state.order)){const a=state.order[(state.round-1)%state.order.length];if(a&&!missionDone.has(a)){missionDone.add(a);saveSeen();}}if(state?.card){lastCard=state.card;if(state.round>countedRound&&ALL_CARDS.includes(state.card)){countedRound=state.round;if(SOLO_CARDS.includes(state.card))soloAt[state.card]=state.round;else specialSeen.add(state.card);const left=LAP_CARDS.filter(c=>!specialSeen.has(c)),n=state.order?.length||1,nr=isBreak(state.round+1,n)?state.round+2:state.round+1,nextA=state.order?.[(nr-1)%n];if(!left.length||(left.length===1&&left[0]==='mission'&&missionDone.has(nextA)))specialSeen.clear();saveSeen();}}buttonDeck=buttonDecks[state?.round];if(seenPrompts[state?.card]&&typeof state.prompt==='number'&&!seenPrompts[state.card].has(state.prompt)){seenPrompts[state.card].add(state.prompt);saveSeen();}
   if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';tapStart=null;tapCount=0;clearTimeout(tapTimer);tapTimer=null;own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;pickRound=null;clearTimeout(pickTimer);pickTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();tqStop?.();tqMap={};cuteMode=null;nvStop?.();nvStop=null;nvMap={};settlePage=false;
    if(state){const round=state.round;tqStop=onValue(ref(db,`${base}/tq/${round}`),v=>{if(round!==roundSeen||dead)return;tqMap=v.val()||{};render();},()=>{tqMap={};});if(isBreak(round,players.length))nvStop=onValue(ref(db,`${base}/nv/${round}`),v=>{if(round!==roundSeen||dead)return;nvMap=v.val()||{};render();maybeAdvance();},()=>{nvMap={};});settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();maybeAdvance();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
     if(host)answerStop=onValue(ref(db,`${base}/answers/${round}`),v=>{if(round!==roundSeen||dead)return;answers=v.val()||{};render();settle();},()=>message('集計の取得に失敗しました。'));

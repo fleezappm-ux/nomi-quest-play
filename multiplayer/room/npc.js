@@ -1,6 +1,6 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get} from './fb.js?v=0.36';
-import {attachTen} from './ten.js?v=0.36';
+import {ref,set,get} from './fb.js?v=0.38';
+import {attachTen} from './ten.js?v=0.38';
 import {currentTurn} from './turn.js?v=0.4';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
@@ -22,7 +22,7 @@ export function npcAnswer({card,isActor,isTarget,slots,others,rand=Math.random})
 const walk=n=>[n,...Array.from(n?.children||[]).flatMap(walk)];
 export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
  const base=`sessions/${roomId}`,scale=globalThis.__nqNpcMs??1;let dead=false;
- const units=npcs.map(n=>{const root=document.createElement('div');return {n,root,stop:attachTen({db:n.db||db,roomId,uid:n.uid,players,hostUid,message,root}),key:null,due:0,busy:false};});
+ const units=npcs.map(n=>{const root=document.createElement('div');return {n,root,stop:attachTen({db:n.db||db,roomId,uid:n.uid,players,hostUid,message,root,bot:true}),key:null,due:0,busy:false};});
  async function act(u){
   if(dead||u.busy)return;
   const d=u.n.db||db,st=(await get(ref(d,base+'/state'))).val();

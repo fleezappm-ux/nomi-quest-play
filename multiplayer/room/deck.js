@@ -20,10 +20,14 @@ export const cards = {
  reaction: {title:'ドキドキしてんじゃねーよ！',rule:'色ではなく形がハートのものをタップ（青いハートも正解）。最速の人はお助けを獲得、最遅・失敗の人はチケット＋1。早押し・違う形・3秒無反応は失敗。全員失敗ならお助けなし。'},
  battery: {title:'充電マウント合戦！', rule:'今の充電残量を入力。ウソ（ブラフ）を入れてもOK！全員の回答後にHIGH／LOWを抽選。HIGHは最も多い人、LOWは最も少ない人。同率はルーレットで1人。'}
 };
-// 出し方：12種すべてが「山札」方式（1周するまで同じカードは出ない）。
+// 出し方：1人用4種は一度出たら40ターン出ない。ほかの8種は1周するまで重複なし。
 export const SPECIAL_CARDS=['ten','battery','reaction','tapking','buttons','mission','danger','king'];
 export const VOTE_CARDS=['vote','muttsuri','mind','majority'];
 export const ALL_CARDS=[...SPECIAL_CARDS,...VOTE_CARDS];
+// 1人用（それぞれが1人で挑戦するゲーム）は、一度出たら40ターンは出ない。ほかの8種は1周するまで重複なし。
+export const SOLO_CARDS=['ten','battery','reaction','tapking'];
+export const SOLO_COOLDOWN=40;
+export const LAP_CARDS=ALL_CARDS.filter(c=>!SOLO_CARDS.includes(c));
 // exclude：いま出せないカード（山札で引いた分・直前に出たカード・本人がもう引いたキス顔など）
 export function drawCard(random=Math.random,exclude=[]) {
  const left=ALL_CARDS.filter(c=>!exclude.includes(c)),pool=left.length?left:ALL_CARDS;
@@ -44,12 +48,13 @@ function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='
 
 // Items are used by hand at the break-turn settlement (see tequilaOutcome); they no longer act when a ticket is credited.
 export const items={
- barrier:{icon:'🛡️',name:'バリア',desc:'休憩ターンの精算で、自分に来たテキーラ1杯を無効にする。',usable:true},
+ barrier:{icon:'🛡️',name:'バリア',desc:'チケットをもらうとき、または休憩のテキーラが自分に来たとき、使うとそれが無効になる。',usable:true},
  cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'精算でテキーラが自分に来たとき、可愛い顔で誰かになすりつける。',usable:true},
  angel:{icon:'👼',name:'天使の分け前',desc:'精算で負けた人の代わりに、テキーラ1杯を飲んであげる。',usable:true}
 };
 export const itemKinds=Object.keys(items);
-export function drawItem(random=Math.random){return itemKinds[Math.min(itemKinds.length-1,Math.floor(random()*itemKinds.length))];}
+// お助けカードは、いまは「バリア」だけ配る（天使・可愛いは、すでに持っている人のぶんだけ使える）
+export function drawItem(random=Math.random){return 'barrier';}
 // base: tickets from drinkAward. used: {slot,kind} when an item was already spent this round. choice: 'barrier' | 'angel' | 'skip' | undefined.
 // Returns {amount,spend} to record now, or null while the player still has to choose.
 export function decideCredit({base,barrierSlot,angelSlot,cuteSlot,used,choice}){
