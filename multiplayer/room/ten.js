@@ -1,8 +1,8 @@
 import {artPath} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.41';
-import {showItemFx} from './itemfx.js?v=pop0.41';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.41';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=pop0.41';
+import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.42';
+import {showItemFx} from './itemfx.js?v=pop0.42';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.42';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=pop0.42';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -72,7 +72,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   return box2;
  }
  function paint(){
-  if(fin){root.setAttribute('data-card','final');root.setAttribute('data-phase','final');box.className='stage results';box.append(finalUi());ensureAllDrinks();if(host)button('これでゲームを終了する',()=>set(ref(db,`rooms/${roomId}/meta/state`),'closed'),pending);else box.append(el('p','ホストがゲームを終了するのを待っています。'));return;}
+  if(fin){root.setAttribute('data-card','final');root.setAttribute('data-phase','final');box.className='stage results';box.append(finalUi());ensureAllDrinks();if(host)button('これでゲームを終了する',async()=>{if(window.confirm('全員のゲームを終了します。よろしいですか？'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');},pending);else box.append(el('p','ホストがゲームを終了するのを待っています。'));return;}
   if(!state){box.append(el('p',host?'ゲームを準備しています…':'ホストのゲーム準備を待っています…'));return;}
   box.className='stage '+state.phase;
   const turn=currentTurn(state,players),card=state.card||'ten';root.setAttribute('data-card',card);root.setAttribute('data-phase',state.phase);

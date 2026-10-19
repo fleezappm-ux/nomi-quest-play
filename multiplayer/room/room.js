@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.41';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.42';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.41';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.41';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.41';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.41';
-import { track, logEnabled } from './telemetry.js?v=pop0.41';
-import { ensureAdult } from './agegate.js?v=pop0.41';
+import { attachTen } from './ten.js?v=pop0.42';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.42';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.42';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.42';
+import { track, logEnabled } from './telemetry.js?v=pop0.42';
+import { ensureAdult } from './agegate.js?v=pop0.42';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.41'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.42'); if (isLocal) homePage.searchParams.set('npc','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -51,7 +51,8 @@ function controls() {
   $('ready').disabled = !connected || busy || !active();
   const list = members();
   $('start').disabled = !connected || busy || !active() || list.length < 2 || !list.every(([,p])=>p.ready && p.connected);
-  for (const id of ['leave','returnHome','modeCards','modeOni','closeGame','endPlain','endSettle']) $(id).disabled = busy;
+  for (const id of ['leave','returnHome','modeCards','modeOni','closeGame']) $(id).disabled = busy;
+  for(const id of ['endPlain','endSettle']) $(id).disabled=busy||!connected||!$('endAck').checked;
   $('close').disabled = busy || !connected;
 }
 function render() {
@@ -159,10 +160,11 @@ $('modeCards').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'c
 $('modeOni').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/meta/mode`),'oni'));
 $('ready').onclick=()=>action(()=>set(ref(db,`rooms/${roomId}/slots/${slot}/ready`),!room.slots[slot].ready));
 $('start').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'started');track('start',{uid,room:roomId,game:room?.meta?.mode==='oni'?'oni':'cards',n:members().length,names:members().map(([,p])=>p.name).join('/')});});
-$('closeGame').onclick=()=>{$('endChoice').hidden=false;$('closeGame').hidden=true;};
-$('endCancel').onclick=()=>{$('endChoice').hidden=true;$('closeGame').hidden=false;};
-$('endPlain').onclick=()=>action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});});
-$('endSettle').onclick=()=>action(async()=>{await set(ref(db,`sessions/${roomId}/fin`),true);$('endChoice').hidden=true;$('closeGame').hidden=false;message('最終精算を表示しました。ホストが画面の「これでゲームを終了する」を押すと終わります。');track('close_settle',{uid,room:roomId});});
+$('closeGame').onclick=()=>{$('endAck').checked=false;$('endChoice').hidden=false;$('closeGame').hidden=true;controls();$('endCancel').focus();};
+$('endAck').onchange=controls;
+$('endCancel').onclick=()=>{$('endAck').checked=false;$('endChoice').hidden=true;$('closeGame').hidden=false;$('hostZone').open=false;controls();};
+$('endPlain').onclick=()=>{if(!$('endAck').checked)return;return action(async()=>{await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});});};
+$('endSettle').onclick=()=>{if(!$('endAck').checked)return;return action(async()=>{await set(ref(db,`sessions/${roomId}/fin`),true);$('endAck').checked=false;$('endChoice').hidden=true;$('closeGame').hidden=false;$('hostZone').open=false;message('最終精算を表示しました。ホストが画面の「これでゲームを終了する」を押すと終わります。');track('close_settle',{uid,room:roomId});});};
 $('close').onclick=()=>action(async()=>{if(window.confirm('ゲームを終了しますか？全員の画面が終了になり、このゲームへは戻れません。')){await set(ref(db,`rooms/${roomId}/meta/state`),'closed');track('close',{uid,room:roomId});}});
 // アプリ内ブラウザ（LINEなど）の注意喚起
 {const ua=navigator.userAgent||'';if(/Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|KAKAOTALK|Twitter|Snapchat|TikTok|BytedanceWebview|musical_ly/i.test(ua)){$('inapp').hidden=false;$('inappCopy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);message('リンクをコピーしました。SafariかChromeに貼り付けて開いてください。');}catch{message('リンクを長押ししてコピーしてください。');}};}}
