@@ -19,11 +19,12 @@ function build(doc){
  const el=(tag,cls,text)=>{const n=doc.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
  const wrap=el('div','agegate');wrap.setAttribute('role','dialog');wrap.setAttribute('aria-modal','true');wrap.setAttribute('aria-labelledby','agegateTitle');
  const card=el('div','agegate-card');
+ const art=el('img','agegate-art');art.src='img/pop/welcome.webp';art.alt='';art.width=360;art.height=308;
  const title=el('h1','agegate-title',TEXT.title);title.id='agegateTitle';
  const label=el('label','agegate-check');const box=doc.createElement('input');box.type='checkbox';box.id='ageOk';label.append(box,el('span','',TEXT.check));
  const go=el('button','agegate-go',TEXT.start);go.id='ageGo';go.type='button';go.disabled=true;
  const under=el('button','agegate-under',TEXT.under);under.id='ageUnder';under.type='button';
- card.append(title,el('p','agegate-lead',TEXT.lead),el('p','agegate-rule',TEXT.rule),el('p','agegate-care',TEXT.care),label,go,under);
+ card.append(art,title,el('p','agegate-lead',TEXT.lead),el('p','agegate-rule',TEXT.rule),el('p','agegate-care',TEXT.care),label,go,under);
  wrap.append(card);
  return {wrap,card,box,go,under,el};
 }

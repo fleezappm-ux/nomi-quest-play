@@ -1,7 +1,7 @@
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=0.38';
-import {showItemFx} from './itemfx.js?v=0.38';
+import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=0.39';
+import {showItemFx} from './itemfx.js?v=0.39';
 import {shufflePlayers,currentTurn} from './turn.js?v=0.4';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=0.38';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=0.39';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -44,17 +44,13 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),txt('span','av',avatars[Number(p?.slot)]||'🍻'),txt('span','nm',p?.name||'確認中')));});
   const n=turn.order.length;return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats,txt('p','turnnext',isBreak(state.round,n)?'☕ 今回は休憩ターン':`☕ 休憩まであと ${turnsToBreak(state.round,n)} ターン`));
  }
- const art={ten:1,battery:1,buttons:1,vote:1,muttsuri:1,majority:1,king:1,tapking:1,danger:1,mission:1,mind:1};
- const fb={reaction:['アクション','ハートを最速でタップ！','♥'],danger:['スリル','行く？ 行かない？','誘'],mission:['ミッション','キス顔に挑戦！','唇'],mind:['予想','相手の答えを読め！','読'],check:['休憩','みんなの状態チェック','休']};
- function cardFace(card,cls=''){
-  if(art[card]){const i=document.createElement('img');i.className='cface art '+cls;i.setAttribute('src','img/card-'+card+'.webp');i.setAttribute('alt',cards[card].title);i.setAttribute('draggable','false');return i;}
-  const f=fb[card]||['カード','',glyphs[card]||'札'];
-  return div('cface fb k-'+card+' '+cls,txt('span','tag',f[0]),txt('strong','ttl',cards[card].title),txt('span','big',f[2]),txt('span','dsc',f[1]));
- }
+ const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',tapking:'5秒間ひたすら連打！',vote:'一番あやしいのは誰？',muttsuri:'むっつりは誰だ？',majority:'多数派はどっち？',mind:'やってんのは誰だ!?',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック'};
+ function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls;i.setAttribute('src','img/pop/'+card+'.webp');i.setAttribute('alt',alt??cards[card]?.title??'');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
+ function cardFace(card,cls=''){return div('cface pop '+cls,popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
  function cardBack(cls=''){const i=document.createElement('img');i.className='cback '+cls;i.setAttribute('src','img/back.webp');i.setAttribute('alt','NOMI QUESTのカード');i.setAttribute('draggable','false');return i;}
- function cardHead(card){const h=div('cardhead k-'+card,cardFace(card,'thumb'),txt('h2','',cards[card].title),txt('p','',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
+ function cardHead(card){const h=div('cardhead k-'+card,popImg(card,'hero'),txt('h2','',cards[card].title),txt('p','',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
  function finalUi(){
-  const box2=div('settle');box2.append(txt('h3','verdict','🥃 最終精算！'));
+  const box2=div('settle');box2.append(popImg('final','hero','最終精算'),txt('h3','verdict','🥃 最終精算！'));
   if(!drinksReady()){box2.append(txt('p','sub','みんなのチケットを集計しています…'));return box2;}
   const n=players.length,period=breakPeriod(n),R=state.round%period===0?state.round:(Math.floor(state.round/period)+1)*period,done=isBreak(state.round,n)&&state.phase==='results',av=p=>avatars[Number(p.slot)]||'🍻';
   const left={};for(const p of players){const pl=tequilaPlanOne(allDrinks[p.uid],R,n);left[p.uid]=done?pl.carry:pl.tickets+pl.carryIn;}
@@ -268,7 +264,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  }
  function settlementUi(){
   const box2=div('settle');
-  box2.append(txt('h3','verdict','🥃 精算タイム！'));
+  box2.append(popImg('settle','hero','精算タイム'),txt('h3','verdict','🥃 精算タイム！'));
   if(!drinksReady()||!itemsReady()){box2.append(txt('p','sub','みんなのチケットを集計しています…'));return box2;}
   const plan=tequilaPlan(allDrinks,ids(),state.round,players.length),av=p=>avatars[Number(p.slot)]||'🍻';
   box2.append(txt('p','sub','チケット3枚＝テキーラ1杯。あまりは次の休憩に持ち越します。'));
