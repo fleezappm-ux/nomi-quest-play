@@ -1,0 +1,170 @@
+{
+  "environment": "Chromium153 390x844 touch; offline bundle of POP0.41 source; normal timing; no seeded state or forced cards; not Android/live Firebase",
+  "completedTurns": 20,
+  "elapsedSeconds": 136,
+  "actions": [
+    {
+      "at": 10961,
+      "button": "次のターン"
+    },
+    {
+      "at": 16156,
+      "button": "次のターン"
+    },
+    {
+      "at": 16414,
+      "button": "カードを引く"
+    },
+    {
+      "at": 18190,
+      "button": "開始"
+    },
+    {
+      "at": 19459,
+      "button": "ハート"
+    },
+    {
+      "at": 20185,
+      "button": "次のターン"
+    },
+    {
+      "at": 25670,
+      "button": "充電残量を送信"
+    },
+    {
+      "at": 28054,
+      "button": "次のターン"
+    },
+    {
+      "at": 31682,
+      "button": "START（5秒）"
+    },
+    {
+      "at": 36781,
+      "button": "次のターン"
+    },
+    {
+      "at": 37021,
+      "button": "カードを引く"
+    },
+    {
+      "at": 43703,
+      "button": "次のターンへ進む（準備OK）"
+    },
+    {
+      "at": 51223,
+      "button": "START"
+    },
+    {
+      "at": 61260,
+      "button": "STOP"
+    },
+    {
+      "at": 61490,
+      "button": "結果を送信"
+    },
+    {
+      "at": 61802,
+      "button": "次のターン"
+    },
+    {
+      "at": 62056,
+      "button": "カードを引く"
+    },
+    {
+      "at": 64201,
+      "button": "次のターン"
+    },
+    {
+      "at": 75151,
+      "button": "次のターンへ進む（準備OK）"
+    },
+    {
+      "at": 79007,
+      "button": "カードを引く"
+    },
+    {
+      "at": 83172,
+      "button": "次のターン"
+    },
+    {
+      "at": 90593,
+      "button": "従う"
+    },
+    {
+      "at": 90897,
+      "button": "次のターン"
+    },
+    {
+      "at": 99700,
+      "button": "次のターンへ進む（準備OK）"
+    },
+    {
+      "at": 108637,
+      "button": "次のターン"
+    },
+    {
+      "at": 118248,
+      "button": "次のターンへ進む（準備OK）"
+    },
+    {
+      "at": 127170,
+      "button": "承諾する"
+    },
+    {
+      "at": 130419,
+      "button": "次のターン"
+    },
+    {
+      "at": 135167,
+      "button": "次のターン"
+    },
+    {
+      "at": 135495,
+      "button": "これでゲームを終了する"
+    }
+  ],
+  "rounds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "cards": [
+    "mind",
+    "mission",
+    "reaction",
+    "battery",
+    "tapking",
+    "muttsuri",
+    "check",
+    "ten",
+    "vote",
+    "danger",
+    "majority",
+    "king",
+    "buttons"
+  ],
+  "breakSettlement": true,
+  "finalSettlement": true,
+  "homeReturn": true,
+  "pageErrors": [],
+  "externalRequests": []
+}

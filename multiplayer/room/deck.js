@@ -48,7 +48,7 @@ function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='
 
 // Items are used by hand at the break-turn settlement (see tequilaOutcome); they no longer act when a ticket is credited.
 export const items={
- barrier:{icon:'🛡️',name:'バリア',desc:'チケットをもらうとき、または休憩のテキーラが自分に来たとき、使うとそれが無効になる。',usable:true},
+ barrier:{icon:'🛡️',name:'バリア',desc:'精算時に自分に来たテキーラ1杯を無効にする。',usable:true},
  cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'精算でテキーラが自分に来たとき、可愛い顔で誰かになすりつける。',usable:true},
  angel:{icon:'👼',name:'天使の分け前',desc:'精算で負けた人の代わりに、テキーラ1杯を飲んであげる。',usable:true}
 };
@@ -96,28 +96,28 @@ export function rewardees(state){
 export function drinkAward(state,uid,players){const b=drinkBase(state,uid,players);return state.pick&&uid!==state.pick?0:b;}
 export function tiedTargets(state,players){return players.filter(p=>drinkBase(state,p.uid,players)>0).map(p=>p.uid);}
 export const tieCards=['ten','battery','tapking','vote','muttsuri','mind','majority'];
-// break turn: after every n laps of n players (n*n draws) one round is a break; the other rounds draw as usual
+// Settlement starts when pending tickets reach three, rather than on a fixed schedule.
 export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],['😵','そろそろキツい'],['🚰','水が欲しい']];
 export const BREAK_DRAWS=8;
-export const breakPeriod=()=>BREAK_DRAWS+1; // 休憩（精算）ターン：人数に関係なく、カードを8回引くごとに1ターン入る（9ターン目、18ターン目…）
-export const isBreak=(round,n)=>round%breakPeriod(n)===0;
+export const breakPeriod=()=>BREAK_DRAWS+1; // legacy helper, no longer used to schedule settlement
+export const isBreak=()=>false; // 精算はチケット3枚でホストが開始する
 export const turnsToBreak=(round,n)=>breakPeriod(n)-round%breakPeriod(n);
-export function cardForRound(round,n,random=Math.random,exclude=[]){return isBreak(round,n)?'check':drawCard(random,exclude);}
+export function cardForRound(round,n,random=Math.random,exclude=[]){return drawCard(random,exclude);}
 
 // ---- Tickets and the break-turn settlement ----------------------------------------------------------------
 // Every lost round credits tickets (personal drinks/{round}). 3 tickets = 1 tequila. At a break turn R, each player's tickets of the whole game so far
-// (rounds before R) are totalled: tequilas owed = floor(total/3) minus those already settled at earlier breaks; total%3 is carried over automatically.
+// (rounds before R) are totalled against the last completed settlement marker; remainders carry over.
 export const TICKETS_PER_TEQUILA=3;
 export const MAX_TEQUILA=10;
 export function ticketWindow(round,n){const from=Math.max(1,round-breakPeriod(n)+1);return {from,to:round-1};}
 export function sumTickets(map,from,to){let t=0;for(let r=from;r<=to;r++){const v=map?.[r]??map?.[String(r)];if(typeof v==='number')t+=v;}return t;}
 // -> {tickets: this cool, carryIn, total, count: tequilas now, carry: left over after this break}
-export function tequilaPlanOne(map,round,n){
- const {from,to}=ticketWindow(round,n),prev=sumTickets(map,1,from-1),tickets=sumTickets(map,from,to),total=prev+tickets;
+export function tequilaPlanOne(map,round,lastSettlement=0){
+ const from=lastSettlement+1,to=round-1,prev=sumTickets(map,1,from-1),tickets=sumTickets(map,from,to),total=prev+tickets;
  const count=Math.min(MAX_TEQUILA,Math.floor(total/TICKETS_PER_TEQUILA)-Math.floor(prev/TICKETS_PER_TEQUILA));
  return {tickets,carryIn:prev%TICKETS_PER_TEQUILA,total,count,carry:total%TICKETS_PER_TEQUILA};
 }
-export function tequilaPlan(drinkMaps,uids,round,n){const out={};for(const u of uids)out[u]=tequilaPlanOne(drinkMaps?.[u],round,n);return out;}
+export function tequilaPlan(drinkMaps,uids,round,lastSettlement=0){const out={};for(const u of uids)out[u]=tequilaPlanOne(drinkMaps?.[u],round,lastSettlement);return out;}
 // kept for the tickets-this-cool view
 export function ticketsFor(drinkMaps,uids,round,n){const {from,to}=ticketWindow(round,n),out={};for(const u of uids)out[u]=sumTickets(drinkMaps?.[u],from,to);return out;}
 // tq: {b: loser's barrier, c: cute (value = who gets it), x: barrier of that player, a: angel taker}. Returns who finally drinks the one tequila.
