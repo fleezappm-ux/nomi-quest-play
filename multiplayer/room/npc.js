@@ -1,7 +1,7 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get} from './fb.js?v=0.39';
-import {attachTen} from './ten.js?v=0.39';
-import {currentTurn} from './turn.js?v=0.4';
+import {ref,set,get} from './fb.js?v=pop0.40';
+import {attachTen} from './ten.js?v=pop0.40';
+import {currentTurn} from './turn.js?v=pop0.40';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
 export function npcAnswer({card,isActor,isTarget,slots,others,rand=Math.random}){

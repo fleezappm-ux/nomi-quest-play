@@ -1,9 +1,9 @@
 // 鬼ごっこ（リアルタイム版ミニゲーム）の画面と進行。
 // 自分の位置は自分の端末で動かして1秒に約8回送り、他の人の位置は少し遅らせてなめらかに見せる。
 // 捕まった・拾った・出口・時間切れの判定は、ホストの端末だけが行う。
-import {ref,set,update,onValue,isLocal} from './fb.js?v=0.39';
-import * as RT from './onirt.js?v=0.39';
-import MET from './onimeta.js?v=0.39';
+import {ref,set,update,onValue,isLocal} from './fb.js?v=pop0.40';
+import * as RT from './onirt.js?v=pop0.40';
+import MET from './onimeta.js?v=pop0.40';
 const {N,EXIT,TIME,ODDS,ITEM_ICON}=RT;
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const arr=v=>Array.isArray(v)?v:v&&typeof v==='object'?Object.values(v):[];
@@ -184,7 +184,7 @@ export function attachOni({db,roomId,uid,players,hostUid,message,root:given,auto
   root.innerHTML='<div id="o-head"></div><div class="o-aw" id="o-aw"><canvas id="o-cv" aria-label="鬼ごっこの盤面"></canvas><div class="o-fin" id="o-over" hidden></div></div><div id="o-below"></div>';
   root.classList?.add('oni-root');
   cv=root.querySelector('#o-cv');
-  ATL=new Image();ATL.src=new URL('./img/oni-sprites.webp',import.meta.url).href;
+  ATL=new Image();ATL.src=new URL('./art/oni-sprites.webp',import.meta.url).href;
   const pt=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
   cv.onpointerdown=e=>{try{cv.setPointerCapture(e.pointerId);}catch{}[joy.ox,joy.oy]=pt(e);joy.active=true;joy.x=joy.y=0;};
   cv.onpointermove=e=>{if(!joy.active)return;const [x,y]=pt(e);let dx=(x-joy.ox)/34,dy=(y-joy.oy)/34;const m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m;joy.ox+=(x-joy.ox)-dx*34;joy.oy+=(y-joy.oy)-dy*34;}joy.x=Math.abs(dx)<.12?0:dx;joy.y=Math.abs(dy)<.12?0:dy;};
