@@ -62,3 +62,7 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 - 遊ぶゲームを枠＋アイコン（🃏カードゲーム / 👹鬼ごっこ）で表示
 - 通信・DBルールの変更なし
 - Rollback: restore commit 64984ec (GOLD 0.49)
+
+## GOLD 0.50b
+- 待合室「カードゲーム」のアイコンを、NOMI QUESTのカード裏面（ドクロ）に変更
+- Rollback: restore commit d537bee

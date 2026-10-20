@@ -72,7 +72,7 @@ function render() {
   if(sharePhase!==phase){$('share').open=room.meta.state==='lobby';sharePhase=phase;}
   $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
   const mode = room.meta.mode === 'oni' ? 'oni' : 'cards';
-  $('modeText').innerHTML = mode === 'oni' ? '<span class="mi">👹</span><b>鬼ごっこ（ミニゲーム）</b>' : '<span class="mi">🃏</span><b>カードゲーム</b>';
+  $('modeText').innerHTML = mode === 'oni' ? '<span class="mi">👹</span><b>鬼ごっこ（ミニゲーム）</b>' : '<img class="mi mic" src="gold/mode-cards.webp" alt="" width="40" height="60"><b>カードゲーム</b>';
   $('modeSeg').hidden = !(host && active()); $('modeText').hidden = !$('modeSeg').hidden;
   $('modeCards').setAttribute('aria-pressed', String(mode === 'cards')); $('modeOni').setAttribute('aria-pressed', String(mode === 'oni'));
   $('ready').hidden = !active();
