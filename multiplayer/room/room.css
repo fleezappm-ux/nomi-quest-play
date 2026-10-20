@@ -188,3 +188,5 @@ header .brand{display:none}
 .inviteHead{color:#13130b!important;font-weight:800}
 #keep{display:block;margin:14px auto 0;font-size:15px}
 #installLater{display:block;margin:8px auto 0}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#nameBox .nameLabel{margin-top:0}

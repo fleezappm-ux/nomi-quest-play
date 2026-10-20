@@ -50,3 +50,8 @@ Rollback: restore commit 702f745 (GOLD 0.46).
 
 Home-screen icon changed to the gold skull logo (icon-192/512, maskable, apple-touch-icon, favicon). Footer button renamed 「📲 ホームに追加」 and hidden when already installed. End-of-game install ask gets an 「あとで」 button: snoozed 7 days, never shown again after 3 snoozes. Client-side only; no Firebase or rules change. Note: an already installed home-screen icon may keep the old image until re-added.
 Rollback: restore commit c23e346 (GOLD 0.47).
+
+# GOLD 0.49
+
+Nickname field: removed the label above it; placeholder is now 「ここにニックネームを入れてね」 (screen-reader label kept). Client-side only.
+Rollback: restore commit bb1dfff (GOLD 0.48).
