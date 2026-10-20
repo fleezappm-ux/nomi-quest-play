@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.52';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.53';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.52';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.52';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.52';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.52';
-import { track, logEnabled } from './telemetry.js?v=pop0.52';
-import { ensureAdult } from './agegate.js?v=pop0.52';
+import { attachTen } from './ten.js?v=pop0.53';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.53';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.53';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.53';
+import { track, logEnabled } from './telemetry.js?v=pop0.53';
+import { ensureAdult } from './agegate.js?v=pop0.53';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.52'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.53'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -35,7 +35,7 @@ $('name').addEventListener('input',()=>{$('name').classList.remove('bad');$('nam
 $('name').value = localStorage.getItem('nq-room-name') || '';
 let editingName=false;
 function syncName(){const n=(localStorage.getItem('nq-room-name')||'').trim(),has=!!n&&!editingName;$('nameBox').hidden=has;$('welcome').hidden=!has;$('renick').hidden=!n||editingName||!!roomId;if(has)$('welcome').replaceChildren(document.createTextNode('ようこそ、'+n+'さん'),document.createElement('br'),document.createTextNode('今日は何して遊ぶ？'));}
-$('nameOk').onclick=()=>{const v=$('name').value.trim();if(!v||v.length>20){needName();return;}localStorage.setItem('nq-room-name',v);editingName=false;syncName();};
+$('nameOk').onclick=()=>{const v=$('name').value.trim();if(!v||v.length>10){needName();return;}localStorage.setItem('nq-room-name',v);editingName=false;syncName();};
 $('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nameOk').click();}});
 $('renick').onclick=()=>{editingName=true;syncName();$('name').focus();};
 $('tell').onclick=async()=>{const url=new URL('./',location.href);url.search='';const data={title:'NOMI QUEST',text:'飲み会ゲーム「NOMI QUEST」で遊ぼう！',url:url.href};try{if(navigator.share){await navigator.share(data);return;}}catch{return;}try{await navigator.clipboard.writeText(url.href);message('リンクをコピーしました。LINEなどに貼って教えてね。');}catch{message('リンク：'+url.href);}};
