@@ -1,8 +1,8 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.43';
-import {showItemFx} from './itemfx.js?v=pop0.43';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.43';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=pop0.43';
+import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.44';
+import {showItemFx} from './itemfx.js?v=pop0.44';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.44';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.44';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -23,10 +23,13 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const shortName={barrier:'バリア',cute:'可愛い',angel:'天使'};
  function note(text){dock.append(el('p',text));dockNotes++;}
  function button(text,fn,disabled=false,cls=''){const b=el('button',text);if(cls)b.className=cls;dockButtons++;b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};dock.append(b);}
+ let shotN=0;
+ function shot(level,cls=''){const lv=Math.max(0,Math.min(NOTCHES,Number(level)||0)),id='sg'+(++shotN),top=lv>=NOTCHES,d='M8 4H62L55 74Q54.5 82 48 82H22Q15.5 82 15 74Z',w=document.createElement('div');w.className='mug shot'+(top?' top':'')+(cls?' '+cls:'');w.setAttribute('role','img');w.setAttribute('aria-label','ショットメーター '+lv+'/'+NOTCHES);
+  w.innerHTML=`<svg viewBox="-2 -16 86 108" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><path d="${d}"/></clipPath><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd35a"/><stop offset="1" stop-color="#e0971c"/></linearGradient></defs><path class="g-in" d="${d}"/><g clip-path="url(#${id})"><rect class="liq" x="0" y="4" width="70" height="72" fill="url(#${id}g)" style="transform:scaleY(${(lv/NOTCHES).toFixed(3)})"/><rect x="0" y="72" width="70" height="12" fill="rgba(255,255,255,.28)"/><path class="g-tick" d="M0 18.4H70M0 32.8H70M0 47.2H70M0 61.6H70"/></g><path class="g-out" d="${d}"/><path d="M14 10L19 66" class="g-hi"/>${top?'<g class="lime"><path d="M50 4A15 15 0 0 1 80 -2L74 6Z" transform="rotate(-8 60 4)"/><path d="M53 3A12 12 0 0 1 76 -1" class="rind"/></g>':''}</svg>`;return w;}
  function previousSettlement(before=state.round){return Math.max(0,...Object.keys(settlementHistory).map(Number).filter(r=>r<before));}
  function pendingPlan(map,round=state.round+1){return tequilaPlanOne(map,round,previousSettlement(round));}
  function creditsReady(){return historyLoaded&&drinksReady()&&players.every(p=>allDrinks[p.uid]?.[state.round]!==undefined);}
- function thresholdReached(){return creditsReady()&&players.some(p=>pendingPlan(allDrinks[p.uid]).count>0);}
+ function thresholdReached(){return creditsReady()&&state.round-previousSettlement(state.round+1)>=BREAK_DRAWS;}
  async function advanceRound(){
   const round=state.round,order=state.order||shufflePlayers(players);
   if(state.card==='check'&&!nvMap[uid]){const marker=ref(db,`${base}/nv/${round}/${uid}`);if((await get(marker)).val()!==true)await set(marker,true);}
@@ -38,10 +41,11 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  // 休憩ターン：全員が「準備OK」を押したら（満場一致で）ホストの端末が次のターンへ進める。ホストは待たずに進めることもできる。
  let advancing=false;
  function maybeAdvance(){if(!host||dead||advancing||state?.phase!=='results'||state.card!=='check'||state.round>=100)return;if(!players.every(p=>nvMap[p.uid])||!settledAll())return;advancing=true;advanceRound().catch(()=>message('次のターンへ進めませんでした。')).finally(()=>{advancing=false;});}
+ function imDrinker(){try{if(!drinksReady()||!historyLoaded)return false;const plan=tequilaPlan(allDrinks,ids(),state.round,previousSettlement());for(const p of players)for(let j=0;j<plan[p.uid].count;j++){const o=tequilaOutcome(p.uid,chainOf(p.uid,j));if(!o.cancelled&&o.drinker===uid)return true;}}catch{}return false;}
  function breakNext(){
   const ready=players.filter(p=>nvMap[p.uid]).length,me=!!nvMap[uid];
   box.append(txt('p','fine',`次のターンへ：${ready}/${players.length}人が準備OK。全員がそろうと進みます。`));
-  button(me?'✓ 準備OK（みんなを待っています）':'次のターンへ進む（準備OK）',()=>set(ref(db,`${base}/nv/${state.round}/${uid}`),true),me||pending);
+  button(me?'✓ 準備OK（みんなを待っています）':(imDrinker()?'飲んだ → 次へ':'確認して次へ →'),()=>set(ref(db,`${base}/nv/${state.round}/${uid}`),true),me||pending);
   if(host)button('みんなを待たずに次のターンへ（ホスト）',advanceRound,pending||ownBusy||!settledAll()||state.round>=100,'secondary');
  }
  function nextButton(){if(host)button('次のターン',advanceRound,pending||ownBusy||!settledAll()||!creditsReady()||state.round>=100);
@@ -54,20 +58,20 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function turnBar(turn){
   const seats=div('seats');
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),txt('span','av',avatars[Number(p?.slot)]||'🍻'),txt('span','nm',p?.name||'確認中')));});
-  const n=turn.order.length;return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats,txt('p','turnnext',state.card==='check'?'🥃 精算タイム':'🎫 誰かが3枚たまったら精算'));
+  const n=turn.order.length;return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats,txt('p','turnnext',state.card==='check'?'🥃 休憩タイム':(()=>{const k=Math.max(0,BREAK_DRAWS-(state.round-previousSettlement(state.round+1)));return k?`🥃 休憩まで あと${k}ターン`:'🥃 このターンのあと休憩';})()));
  }
  const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',tapking:'5秒間ひたすら連打！',vote:'一番あやしいのは誰？',muttsuri:'むっつりは誰だ？',majority:'多数派はどっち？',mind:'やってんのは誰だ!?',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック'};
  function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls+(isIcon(card)?' icon':'');i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
  function cardFace(card,cls=''){return div('cface pop k-'+card+' '+cls,txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
  function cardBack(cls=''){const back=div('cback '+cls,txt('b','back-brand','NOMI QUEST'),popImg('home','back-art'),txt('span','back-symbol','?'));back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
  function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ひと休み'};const h=div('cardhead k-'+card,txt('span','pop-kicker',categories[card]||'NOMI QUEST'),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
- function finalUi(){
-  const box2=div('settle');box2.append(popImg('final','hero','最終精算'),txt('h3','verdict','🥃 最終精算！'));
-  if(!drinksReady()||!historyLoaded){box2.append(txt('p','sub','みんなのチケットを集計しています…'));return box2;}
+  function finalUi(){
+  const box2=div('settle');box2.append(popImg('final','hero','最終ドリンクタイム'),txt('h3','verdict','🥃 最終ドリンクタイム！'));
+  if(!drinksReady()||!historyLoaded){box2.append(txt('p','sub','みんなのメーターを集計しています…'));return box2;}
   const done=state.card==='check'&&state.phase==='results',av=p=>avatars[Number(p.slot)]||'🍻';
-  const left={};for(const p of players){const pl=pendingPlan(allDrinks[p.uid],done?state.round:state.round+1);left[p.uid]=done?pl.carry:pl.tickets+pl.carryIn;}
-  box2.append(txt('p','sub','残りのチケットは1枚＝テキーラ1杯。これで最後です！'));
-  box2.append(div('rows',...[...players].sort((x,y)=>left[y.uid]-left[x.uid]).map(p=>div('row '+(left[p.uid]?'lose':'safe'),txt('span','av',av(p)),txt('span','who',p.name),txt('span','detail',''),txt('span','cups',left[p.uid]?`🎫 ${left[p.uid]}枚 → 🥃 ×${left[p.uid]}`:'セーフ')))));
+  const plan=tequilaPlan(allDrinks,ids(),done?state.round+1:state.round+1,done?state.round:previousSettlement(state.round+1));
+  box2.append(txt('p','sub',done?'直前の休憩で精算ずみです。おつかれさま！':'最後に、いまのメーターで1回だけ。ライムの人は1杯、いなければ一番多い人（同率は全員）が1杯。'));
+  box2.append(div('rows',...[...players].sort((x,y)=>plan[y.uid].tickets-plan[x.uid].tickets).map(p=>{const q=plan[p.uid];return div('row '+(q.count?'lose':'safe'),txt('span','av',av(p)),txt('span','who',p.name),shot(q.tickets,'rank'),txt('span','cups',q.count?(q.lime?'🍋‍🟩 ライム！1杯':'🥃 1杯'):'セーフ'));})));
   box2.append(txt('p','fine','飲む量は自己申告です。無理せず、水も飲もう 🚰'));
   return box2;
  }
@@ -78,7 +82,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const turn=currentTurn(state,players),card=state.card||'ten';root.setAttribute('data-card',card);root.setAttribute('data-phase',state.phase);
   top.append(turnBar(turn),statusPanel());
   if(state.phase==='draw'){
-   box.append(div('deck',cardBack()),el('h2',isBreak(state.round,turn.order.length)?'休憩ターン！':'カードを引こう'),el('p',isBreak(state.round,turn.order.length)?'今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったチケットを精算します（お助けカードも使えます）。':'山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
+   box.append(div('deck',cardBack()),el('h2',isBreak(state.round,turn.order.length)?'休憩ターン！':'カードを引こう'),el('p',isBreak(state.round,turn.order.length)?'今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったメーターを精算します（お助けカードも使えます）。':'山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
    if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=cardForRound(round,turn.order.length,Math.random,[...specialSeen,...SOLO_CARDS.filter(c=>soloAt[c]!==undefined&&round-soloAt[c]<SOLO_COOLDOWN),...(lastCard?[lastCard]:[]),...(missionDone.has(uid)?['mission']:[])]);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
@@ -94,7 +98,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    if(card==='check')ensureAllDrinks();
    if(state.pick&&pickRound!==state.round&&card!=='check'){pickRoulette();return;}
    if(card==='check'){
-    if(!settlePage){box.append(board(card,turn));button('🥃 精算タイムへ',async()=>{settlePage=true;}, pending);}
+    if(!settlePage){box.append(board(card,turn));button('🥃 ドリンクタイムへ',async()=>{settlePage=true;}, pending);}
     else{root.setAttribute('data-phase','settle');box.append(settlementUi());breakNext();button('← みんなの状態にもどる',async()=>{settlePage=false;},pending,'secondary');}
     return;
    }
@@ -111,7 +115,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(card==='mission'){
    if(turn.uid!==uid)box.append(el('p',`${byUid.get(turn.uid)?.name}がキス顔に挑戦します。みんなで見届けよう！`));
    else if(typeof own==='number')box.append(el('p','報告済み · 結果を待っています。'));
-   else{box.append(el('p','キス顔をやってみせよう（自己申告）。できないときはチケット＋1。'));button('やった！（完了）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('できない（チケット＋1）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+   else{box.append(el('p','キス顔をやってみせよう（自己申告）。できないときはメーター＋1。'));button('やった！（完了）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('できない（メーター＋1）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
    return;
   }
   if(card==='danger'||card==='king'){dangerUi(turn);return;}
@@ -125,7 +129,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(card==='check'){
    ensureAllDrinks();
    box.append(el('h3','今の自分の状態は？'));
-   if(heldKinds().length)box.append(txt('p','help','🎁 お助けカードを持っています。このあとの精算で、使えます。'));
+   if(heldKinds().length)box.append(txt('p','help','🎁 お助けカードを持っています。このあとのドリンクタイムで、使えます。'));
    if(typeof own==='number')box.append(el('p','回答済み · みんなの回答を待っています。'));
    else{box.append(el('p','みんなの状態は、全員が選んだあとに見えます。'));for(const [i,[ic,lab]] of checkStates.entries())button(`${ic} ${lab}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),i),pending);}
    if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
@@ -135,7 +139,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    const pair=promptLists[card][state.prompt]||['確認中','確認中'],mind=false,actorName='';
    box.append(el('h3','A：'+pair[0]+'　／　B：'+pair[1]));
    if(typeof own==='number')box.append(el('p',mind?'回答済み · みんなの回答を待っています。（答えは結果まで秘密）':'回答済み · みんなの回答を待っています。（結果まで秘密）'));
-   else{box.append(el('p',mind?(turn.uid===uid?'あなたの本当の答えを選んでください。みんなが予想します。':`${actorName}の答えを予想してください。`):'自分の答えを選んでください。多数派がチケット＋1。'));
+   else{box.append(el('p',mind?(turn.uid===uid?'あなたの本当の答えを選んでください。みんなが予想します。':`${actorName}の答えを予想してください。`):'自分の答えを選んでください。多数派がメーター＋1。'));
     for(const [i,label] of ['A','B'].entries())button(`${label}：${pair[i]}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),i),pending);}
    if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
    return;
@@ -146,7 +150,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    const label=el('label','充電残量（％）'),input=document.createElement('input');input.type='number';input.min='0';input.max='100';input.step='1';input.inputMode='numeric';input.value=batteryDraft;input.disabled=pending;input.oninput=()=>{batteryDraft=input.value;};label.append(input);box.append(label);
    button('充電残量を送信',()=>{const value=Number(batteryDraft);if(!batteryDraft.trim()||!Number.isInteger(value)||value<0||value>100){message('充電残量は0〜100の整数で入力してください。');return;}return set(ref(db,`${base}/answers/${state.round}/${uid}`),value);},pending);
   }else if(card==='tapking'){
-   if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がチケット＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}
+   if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がメーター＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}
    else{const pad=txt('button','tapbig','TAP！'),cnt=txt('p','tapcount','0回');pad.onpointerdown=(e)=>{e?.preventDefault?.();tapCount++;cnt.textContent=tapCount+'回';};pad.onclick=null;box.append(cnt,pad);}
   }else if(elapsed!==null){box.append(el('p','計測完了。結果を送信してください。'));button('結果を送信',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),elapsed),pending);}
   else if(began!==null){box.append(el('p','10秒だと思ったらSTOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
@@ -164,7 +168,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    const mineNow=drinkAward(state,uid,players);
    if(ownError)button('カウント保存を再試行',()=>settleOwn(),ownBusy);
    else box.append(el('p','あなたのカウントを保存しています…'));
-  }else{const mine=drinkMap?.[String(state.round)];box.append(txt('p','mine',typeof mine==='number'?(mine>0?`あなたの今回のチケット：＋${mine}枚`:'あなたの今回のチケット：なし'):'あなたのチケットは確定しました。'));}
+  }else{const mine=drinkMap?.[String(state.round)];box.append(txt('p','mine',typeof mine==='number'?(mine>0?`あなたの今回のメーター：＋${mine}`:'あなたの今回のメーター：なし'):'あなたのメーターは確定しました。'));}
   const waiting=players.filter(p=>!settledMap[p.uid]);
   if(waiting.length){
    box.append(el('p',`確定待ち：${waiting.map(p=>p.name).join('、')}`));
@@ -178,7 +182,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(pick)choice=pick;
   const round=state.round,has=drinkMap[String(round)]!==undefined;
   if(has&&settledMap[uid])return;
-  // チケットはそのまま記録し、お助けは精算画面でのみ使う。
+  // メーターはそのまま記録し、お助けは精算画面でのみ使う。
   const baseNow=drinkAward(state,uid,players),plan=has?null:{amount:baseNow,spend:null};
   if(!has&&!plan){render();return;}
   ownBusy=true;ownError=false;render();
@@ -211,10 +215,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const ready=itemMap&&(Object.keys(itemMap).length>0||grantFailed);
   const chips=div('chips',...itemKinds.map(k=>txt('span','chip'+(counts[k]?'':' none'),`${items[k].icon} ${shortName[k]} ×${counts[k]||0}`)));
   const held=itemKinds.filter(k=>counts[k]).map(k=>txt('p','help',`${items[k].icon}${items[k].name}：${items[k].desc}`));
-  const more=document.createElement('details');more.className='helpbox';more.append(el('summary','お助けの説明'),...held,...(held.length?[]:[txt('p','help','お助けカードは、誰かのチケットが3枚になった精算時に使えます。バリアはテキーラ1杯を無効にします。')]),txt('p','fine','この表示はあなたの画面だけ。実際に飲む必要はありません。'));
+  const more=document.createElement('details');more.className='helpbox';more.append(el('summary','お助けの説明'),...held,...(held.length?[]:[txt('p','help','お助けカードは、休憩のドリンクタイムで使えます。バリアは1杯を無効にします。')]),txt('p','fine','この表示はあなたの画面だけ。実際に飲む必要はありません。'));
   const tk=myTickets();
   const extra=document.createElement('details');extra.className='inventory-details';extra.append(el('summary',ready?'🎒 お助けカード '+total+'/3枚':'🎒 お助けを確認中'),chips,more);
-  return div('status',div('ticket-mini',txt('span','label','チケット'),txt('b','big',tk===null?'確認中':tk.now+'枚'),txt('span','help',tk&&tk.carryIn?'持ち越し'+tk.carryIn+'枚込み':'3枚で1杯')),extra);
+  return div('status',div('ticket-mini',txt('span','label','ショットメーター'),...(tk===null?[txt('b','big','確認中')]:[shot(tk.now,'mini'),txt('b','big',Math.min(tk.now,NOTCHES)+'/'+NOTCHES)]),txt('span','help','ライム(5)で1杯確定')),extra);
  }
  function board(card,turn){
   const detailFor=(p)=>{const v=state.results?.[p.uid];
@@ -236,18 +240,18 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   let verdict=losers.length?`${losers.map(r=>r.p.name).join('・')} の負け！`:'今回は誰も飲みません 🎉';
   let sub='';
   if(card==='battery')sub=`今回は ${state.direction}！`;
-  if(card==='tapking')sub='タップが最も少ない人がチケット'+(state.pick?'（同数→ルーレット）':'');
+  if(card==='tapking')sub='タップが最も少ない人がメーター'+(state.pick?'（同数→ルーレット）':'');
   if(state.pick&&(card==='ten'||card==='battery'))sub=(sub?sub+' ／ ':'')+'同率→ルーレットで決定';
-  if(card==='mission')sub=state.results?.[turn.uid]===1?'💋 ミッション成功！ チケットなし':'ミッション失敗… 担当がチケット＋1';
+  if(card==='mission')sub=state.results?.[turn.uid]===1?'💋 ミッション成功！ メーターなし':'ミッション失敗… 担当がメーター＋1';
   if(card==='buttons')sub=state.buttonOutcome===1?'今回の担当が対象':'担当以外の全員が対象';
-  if(VL.has(card))sub=`お題：${promptLists[card][state.prompt]??''} ／ 得票1位がチケット${state.pick?'（同率→ルーレット）':''}`;
-  if(card==='majority'){const nb=players.filter(p=>state.results?.[p.uid]===1).length;sub=`A ${players.length-nb}人 / B ${nb}人 ／ ${state.side===2?'同数！ルーレットで1人':'多数派がチケット'}`;}
-  if(card==='king'){const o=dangerOutcome(state);sub=o.accepted?'👑 命令に従いました！ チケットなし':'🙅 命令を拒否！ 拒否した人がチケット＋2';}
-  if(card==='danger'){const o=dangerOutcome(state);sub=!o.accepted?'断られた！ 誘った人がチケット':o.fate==='HEAVEN'?'👼 HEAVEN！ 2人ともお助けGET':'🔥 HELL！ 2人ともチケット＋2';}
+  if(VL.has(card))sub=`お題：${promptLists[card][state.prompt]??''} ／ 得票1位がメーター${state.pick?'（同率→ルーレット）':''}`;
+  if(card==='majority'){const nb=players.filter(p=>state.results?.[p.uid]===1).length;sub=`A ${players.length-nb}人 / B ${nb}人 ／ ${state.side===2?'同数！ルーレットで1人':'多数派がメーター'}`;}
+  if(card==='king'){const o=dangerOutcome(state);sub=o.accepted?'👑 命令に従いました！ メーターなし':'🙅 命令を拒否！ 拒否した人がメーター＋2';}
+  if(card==='danger'){const o=dangerOutcome(state);sub=!o.accepted?'断られた！ 誘った人がメーター':o.fate==='HEAVEN'?'👼 HEAVEN！ 2人ともお助けGET':'🔥 HELL！ 2人ともメーター＋2';}
   if(card==='reaction'&&!gets.size)sub='全員失敗！ お助けなし';
   return div('board',txt('h3','verdict',verdict),...(sub?[txt('p','sub',sub)]:[]),
-   div('rows',...rows.map(r=>div('row '+(r.amt>0?'lose':'safe'),txt('span','av',avatars[Number(r.p.slot)]||'🍻'),txt('span','who',r.p.name),txt('span','detail',[r.detail,gets.has(r.p.uid)?'🎁お助けGET':''].filter(Boolean).join(' · ')),txt('span','cups',r.amt>0?`🎫 ＋${r.amt}枚`:'セーフ')))),
-   txt('p','fine','誰かのチケットが3枚になったら精算。お助けカードは精算時に使えます。'));
+   div('rows',...rows.map(r=>div('row '+(r.amt>0?'lose':'safe'),txt('span','av',avatars[Number(r.p.slot)]||'🍻'),txt('span','who',r.p.name),txt('span','detail',[r.detail,gets.has(r.p.uid)?'🎁お助けGET':''].filter(Boolean).join(' · ')),txt('span','cups',r.amt>0?`🥃 ＋${r.amt}枚`:'セーフ')))),
+   txt('p','fine','8ターンごとに休憩。ライム（メーター5）の人は1杯。お助けカードはドリンクタイムで使えます。'));
  }
 
  // ---- break turn: ticket settlement (one tequila) and hand-used helper cards --------------------------------
@@ -256,7 +260,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const drinksReady=()=>ids().every(u=>allDrinks[u]!==undefined);
  function ensureAllDrinks(){
   if(allDrinksStops.length)return;
-  for(const u of ids())allDrinksStops.push(onValue(ref(db,`personal/${roomId}/${u}/drinks`),snap=>{allDrinks[u]=snap.val()||{};render();maybeSettlement();},()=>{allDrinks[u]={};message('みんなのチケットを取得できませんでした。再接続してください。');render();}));
+  for(const u of ids())allDrinksStops.push(onValue(ref(db,`personal/${roomId}/${u}/drinks`),snap=>{allDrinks[u]=snap.val()||{};render();maybeSettlement();},()=>{allDrinks[u]={};message('みんなのメーターを取得できませんでした。再接続してください。');render();}));
  }
  const heldKinds=()=>itemKinds.filter(k=>freeSlot(k)!==undefined);
  // tequila chains: tqMap[owner][j] = {b,c,x,a}
@@ -269,21 +273,26 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   cuteMode=null;
   await set(ref(db,`personal/${roomId}/${uid}/spent/${slot}`),round);
  }
+  function drinkers(plan){const out=[];for(const p of players)for(let j=0;j<plan[p.uid].count;j++){const o=tequilaOutcome(p.uid,chainOf(p.uid,j));if(!o.cancelled&&o.drinker&&!out.includes(o.drinker))out.push(o.drinker);}return out;}
  function settlementUi(){
-  const box2=div('settle');
-  box2.append(popImg('settle','hero','精算タイム'),txt('h3','verdict','🥃 精算タイム！'));
-  if(!drinksReady()||!historyLoaded||!itemsReady()){box2.append(txt('p','sub','みんなのチケットを集計しています…'));return box2;}
+  const box2=div('settle ddrink');
+  if(!drinksReady()||!historyLoaded||!itemsReady()){box2.append(popImg('settle','hero','ドリンクタイム'),txt('h3','verdict','🥃 ドリンクタイム！'),txt('p','sub','みんなのメーターを集計しています…'));return box2;}
   const plan=tequilaPlan(allDrinks,ids(),state.round,previousSettlement()),av=p=>avatars[Number(p.slot)]||'🍻';
-  box2.append(txt('p','sub','チケット3枚＝テキーラ1杯。あまりは次の精算に持ち越します。'));
-  const total=ids().reduce((a,u)=>a+plan[u].count,0);
-  box2.append(div('rows',...[...players].sort((x,y)=>plan[y.uid].count-plan[x.uid].count||plan[y.uid].tickets-plan[x.uid].tickets).map(p=>{const q=plan[p.uid];return div('row '+(q.count?'lose':'safe'),txt('span','av',av(p)),txt('span','who',p.name),txt('span','detail',`🎫 ${q.tickets}枚`+(q.carryIn?`＋持ち越し${q.carryIn}枚`:'')+(q.carry?` ／ 次回へ${q.carry}枚`:'')),txt('span','cups',q.count?`🥃 ×${q.count}`:'セーフ'));})));
-  if(!total){box2.append(txt('p','verdict','今回はテキーラなし 🎉（あまりは次に持ち越し）'));return box2;}
+  const total=ids().reduce((a,u)=>a+plan[u].count,0),dr=drinkers(plan),anyLime=ids().some(u=>plan[u].lime);
+  if(dr.length){
+   box2.append(div('plaque',txt('span','',dr.map(pname).join('・')+(dr.length===1?'さん':''))));
+   const hero=div('hero-wrap '+(dr.length>1?'toast':'solo'));const im=document.createElement('img');im.src='gold/toast-hero.webp';im.alt='イッテキラー！';im.width=640;im.height=637;im.setAttribute('draggable','false');hero.append(im);box2.append(hero);
+  }else box2.append(popImg('settle','hero','ドリンクタイム'),txt('h3','verdict',total?'全員セーフ！':'今回は、誰も飲まない！'));
+  if(total)box2.append(txt('p','sub',anyLime?'ライム（メーター5）が付いた人は1杯確定。':'ライムなし。一番メーターが多い人が1杯（同率1位は全員1杯）。'));
+  box2.append(div('rows',...[...players].sort((x,y)=>plan[y.uid].tickets-plan[x.uid].tickets).map(p=>{const q=plan[p.uid];return div('row '+(q.count?'lose':'safe'),txt('span','av',av(p)),txt('span','who',p.name),shot(q.tickets,'rank'),txt('span','cups',q.count?(q.lime?'🍋‍🟩 ライム！1杯':'🥃 1杯'):'セーフ'));})));
+  if(!total){box2.append(txt('p','fine','乾杯だけして、次へ。メーターは0に戻ります。'));return box2;}
+  box2.append(txt('p','fine','飲んだら、次へ。メーターは休憩のあと0に戻ります。'));
   // helper cards: one card = one tequila
   const held=heldKinds(),mk=(act,label,fn,cls='')=>{const b=el('button',label);if(cls)b.className=cls;b.disabled=pending;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('お助けを使えませんでした。もう一度試してください。');}finally{pending=false;if(!dead)render();}};dockButtons++;act.append(b);};
   const list=div('tqlist');
   for(const p of players)for(let j=0;j<plan[p.uid].count;j++){
    const chain=chainOf(p.uid,j),out=tequilaOutcome(p.uid,chain),card=div('tqcard '+(out.cancelled?'safe':'lose'));
-   card.append(txt('p','verdict',`🥃 ${p.name}のテキーラ ${j+1}杯目`));
+   card.append(txt('p','verdict',`🥃 ${p.name}に1杯`));
    const log=[];
    if(chain.b)log.push(`🛡️ ${pname(chain.b)}がバリアを使った！`);
    if(chain.c)log.push(`🥺 ${p.name}が可愛い顔で、${pname(chain.c)}になすりつけた！`);
@@ -307,7 +316,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(held.length){
    const panel=div('helppanel',txt('h4','','🎁 お助けカードが使えます！'),txt('p','fine','1枚で1杯分。使うかどうかは自由です。ホストが「次のターン」を押すまで使えます。'));
    for(const k of held){
-    const who=k==='barrier'?'自分にテキーラが来た人が使えます':k==='cute'?'自分のテキーラ1杯を他の人へ（1杯につき1回、相手もバリアで防げます）':'テキーラを飲む人以外が使えます（先に押した人が代わります）';
+    const who=k==='barrier'?'自分に1杯が来た人が使えます':k==='cute'?'自分の1杯を他の人へ（1杯につき1回、相手もバリアで防げます）':'飲む人以外が使えます（先に押した人が代わります）';
     panel.append(txt('p','help',`${items[k].icon} ${items[k].name}：${items[k].desc}（${who}）`));
    }
    box2.append(panel);
@@ -342,20 +351,20 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const king=state.card==='king';
   if(king){
    if(actor===uid){
-    if(typeof own!=='number'){box.append(el('p','👑 あなたが王様！ 命令する相手を1人選んで、声に出して命令しよう。拒否されると相手がチケット＋2。'));for(const p of players)if(p.uid!==uid)button(`${p.name}に命令する`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
+    if(typeof own!=='number'){box.append(el('p','👑 あなたが王様！ 命令する相手を1人選んで、声に出して命令しよう。拒否されると相手がメーター＋2。'));for(const p of players)if(p.uid!==uid)button(`${p.name}に命令する`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
     else box.append(el('p',target?`${name(target)}に命令しました。返事を待っています。`:'命令を送っています…'));
    }else if(target===uid){
-    if(typeof own!=='number'){box.append(el('h3',`👑 ${name(actor)}王様の命令です`),el('p','命令を聞いて、従うか拒否するか選ぼう。拒否するとあなたがチケット＋2。'));button('従う',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('拒否する（チケット＋2）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+    if(typeof own!=='number'){box.append(el('h3',`👑 ${name(actor)}王様の命令です`),el('p','命令を聞いて、従うか拒否するか選ぼう。拒否するとあなたがメーター＋2。'));button('従う',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('拒否する（メーター＋2）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
     else box.append(el('p','返事を送りました。結果を待っています。'));
    }else box.append(el('p',target?`${name(actor)}王様が${name(target)}に命令中。返事待ち…`:`${name(actor)}王様が命令する相手を選んでいます…`));
    if(host&&target&&target!==uid&&typeof answers[target]!=='number')button(`${name(target)}を「拒否」扱いにして進める`,()=>set(ref(db,`${base}/answers/${state.round}/${target}`),0),pending,'secondary');
    return;
   }
   if(actor===uid){
-   if(typeof own!=='number'){box.append(el('p','タイプの人を1人選んで、声に出して誘おう。断られたらあなたがチケット＋1。'));for(const p of players)if(p.uid!==uid)button(`${p.name}を誘う`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
+   if(typeof own!=='number'){box.append(el('p','タイプの人を1人選んで、声に出して誘おう。断られたらあなたがメーター＋1。'));for(const p of players)if(p.uid!==uid)button(`${p.name}を誘う`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
    else box.append(el('p',target?`${name(target)}を誘いました。返事を待っています。`:'誘いを送っています…'));
   }else if(target===uid){
-   if(typeof own!=='number'){box.append(el('h3',`${name(actor)}があなたを誘っています`),el('p','承諾するとルーレット。HEAVENは2人ともお助け、HELLは2人ともチケット＋2。断ると誘った人がチケット＋1（あなたは罰なし）。'));button('承諾する',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('断る',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+   if(typeof own!=='number'){box.append(el('h3',`${name(actor)}があなたを誘っています`),el('p','承諾するとルーレット。HEAVENは2人ともお助け、HELLは2人ともメーター＋2。断ると誘った人がメーター＋1（あなたは罰なし）。'));button('承諾する',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('断る',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
    else box.append(el('p','返事を送りました。結果を待っています。'));
   }else box.append(el('p',target?`${name(actor)}が${name(target)}を誘っています。返事待ち…`:`${name(actor)}が誰かを誘っています…`));
   if(host&&target&&target!==uid&&typeof answers[target]!=='number')button(`${name(target)}を「断った」扱いにして進める`,()=>set(ref(db,`${base}/answers/${state.round}/${target}`),0),pending,'secondary');
@@ -428,7 +437,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(host&&state?.card==='buttons'&&state.phase==='measuring')runTransaction(ref(db,`${base}/buttonDeck/${state.round}`),d=>d?undefined:shuffleButtons(),{applyLocally:false}).catch(()=>message('ボタンの準備に失敗しました。再接続してください。'));
   ensureAllDrinks();render();settle();settleOwn();maybeSettlement();
  },()=>message('ゲーム接続ルールが未反映、または部屋が終了しています。')));
- stops.push(onValue(ref(db,`personal/${roomId}/${uid}/drinks`),snap=>{drinkMap=snap.val()||{};drinks=Object.values(drinkMap).reduce((a,v)=>a+v,0);render();settleOwn();},()=>{drinks=null;message('自分のチケットを取得できませんでした。再接続してください。');render();}));
+ stops.push(onValue(ref(db,`personal/${roomId}/${uid}/drinks`),snap=>{drinkMap=snap.val()||{};drinks=Object.values(drinkMap).reduce((a,v)=>a+v,0);render();settleOwn();},()=>{drinks=null;message('自分のメーターを取得できませんでした。再接続してください。');render();}));
  stops.push(onValue(ref(db,`personal/${roomId}/${uid}/items`),snap=>{
   itemMap=snap.val()||{};
   if(!Object.keys(itemMap).length&&!grantTried){grantTried=true;set(ref(db,`personal/${roomId}/${uid}/items/0`),drawItem()).catch(()=>{grantFailed=true;message('お助けを受け取れませんでした。再接続してください。');render();settleOwn();});}

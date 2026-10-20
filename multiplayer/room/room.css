@@ -143,3 +143,25 @@ button.chip[aria-pressed="true"]{background:linear-gradient(#fbe591,#c28a1c);col
 .qrPanel input{background:#fffbea;color:#13130b;border-color:#13130b}
 .cardhead>.rule,.stage>p,.stage>h3:not(.verdict){color:var(--ink)}
 .logo span{display:block;color:#f4d46f;font-size:.62em;letter-spacing:.3em;-webkit-text-stroke:0;text-shadow:none}
+/* ---- ショットメーター・ドリンクタイム ---- */
+.mug.shot{width:34px;height:44px;border:0;background:none;display:inline-block}
+.mug.shot svg{width:100%;height:100%;display:block;overflow:visible}
+.mug.shot .g-in{fill:rgba(255,255,255,.1)}
+.mug.shot .g-out{fill:none;stroke:#f4d46f;stroke-width:3.5;stroke-linejoin:round}
+.mug.shot .liq{transform-origin:50% 100%;transform-box:fill-box;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.mug.shot .g-hi{stroke:rgba(255,255,255,.4);stroke-width:3;stroke-linecap:round;fill:none}
+.mug.shot .g-tick{stroke:rgba(0,0,0,.28);stroke-width:1.5;fill:none}
+.mug.shot .lime path:first-child{fill:#9be12b;stroke:#0a0805;stroke-width:2.5;stroke-linejoin:round}
+.mug.shot .lime .rind{fill:none;stroke:#2c7a1f;stroke-width:2.5}
+.mug.shot.top{filter:drop-shadow(0 0 10px rgba(155,225,43,.6))}
+.ticket-mini .mug.shot.mini{width:24px;height:31px}
+.row .mug.shot.rank{grid-area:detail;justify-self:start;width:30px;height:39px}
+.ddrink .plaque{margin:4px 0 6px;padding:10px 12px;text-align:center;border:3px solid var(--g1);border-radius:12px;background:#0a0805;box-shadow:0 0 22px rgba(244,212,111,.45);animation:ddrop .45s .1s cubic-bezier(.2,1.4,.4,1) both}
+.ddrink .plaque span{font:400 clamp(24px,7.4vw,34px)/1.25 var(--disp);color:var(--ink)}
+.ddrink .hero-wrap{position:relative;margin:4px -12px 8px;overflow:hidden;-webkit-mask:linear-gradient(#0000,#000 9%,#000 92%,#0000);mask:linear-gradient(#0000,#000 9%,#000 92%,#0000);animation:dslam .6s .15s cubic-bezier(.2,1.3,.3,1) both}
+.ddrink .hero-wrap img{display:block;width:100%;height:auto}
+.ddrink .hero-wrap.solo img{margin-top:-13%}
+@keyframes ddrop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+@keyframes dslam{from{transform:scale(1.5);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.ddrink .plaque,.ddrink .hero-wrap,.mug.shot .liq{animation:none!important;transition:none!important}}
+.ddrink>.hero.icon{width:84px;height:84px;margin:10px auto;display:block}

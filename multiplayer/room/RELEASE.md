@@ -17,3 +17,12 @@ Released 2026-10-20 with explicit user approval to publish ("のせなおす").
 Gold colour theme (black x gold) layered over POP 0.42, using the ChatGPT kit art in `gold/` for the 12 card screens, home and result icons. Game logic, Firebase configuration and database rules are unchanged (client-side look only).
 
 Rollback: restore the files from commit aef0fb2 (POP 0.42).
+
+# GOLD 0.44
+
+Released 2026-10-20 with explicit user approval ("新ルールいれてって").
+
+Shot meter (5 notches, lime = guaranteed drink), a break every 8 turns, drink time (lime holders, else highest meter, ties all drink), and the イッテキラー display. Reuses existing Firebase paths (personal drinks, check turn, nv history); no new writes, no database rules change. EASY (reset after each break) only; EASY/HARD selection, 30-second helper window and the proxy card are not implemented.
+
+Players should create a new room on the new URL so old and new versions are not mixed.
+Rollback: restore the files from commit 0e03bc8 (GOLD 0.43).

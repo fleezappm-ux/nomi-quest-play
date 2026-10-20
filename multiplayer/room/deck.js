@@ -6,18 +6,18 @@ export const majorityPrompts=[["海派","山派"],["朝型","夜型"],["甘い�
 export const mindPrompts=["合コンで最初に連絡先を聞きそうな人は？", "酔って告白しそうな人は？", "酔うと脱ぎ出しそうな人は？", "旅行先でナンパされたらついて行きそうな人は？", "泣き上戸になりそうな人は？", "二次会で最後まで残っていそうな人は？", "友達の恋人にこっそり惚れそうな人は？", "ドッキリに一番引っかかりそうな人は？", "ジェットコースターで叫びまくりそうな人は？", "勢いで人生を変える決断をしそうな人は？", "話を盛りがちな人は？", "深夜に元恋人へ連絡しそうな人は？", "宝くじが当たったら真っ先に仕事を辞めそうな人は？", "ホストやキャバクラにハマりそうな人は？", "結婚が一番早そうな人は？", "浮気がバレて土下座していそうな人は？", "終電を逃しても平気そうな人は？", "初対面でも誰とでも仲良くなれそうな人は？", "朝まで飲んでも元気そうな人は？", "酔って財布を落としそうな人は？","一番最初に寝落ちしそうな人は？","飲み会の会計でもめそうな人は？","道に迷っても聞かなそうな人は？","突然ものまねを始めそうな人は？","帰りのタクシーで爆睡していそうな人は？","昔のあだ名が一番ひどそうな人は？"];
 export function pickPrompt(seen,random=Math.random,size=votePrompts.length){const all=Array.from({length:size},(_,i)=>i),left=all.filter(i=>!seen.has(i));const pool=left.length?left:all;return pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];}
 export const cards = {
- check: {title:'休憩ターン',rule:'今の自分の状態を選ぶと、全員の状態が見える。チケットはなし。無理せず、水も飲もう。'},
- muttsuri: {title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がチケット＋1（同率1位はルーレットで1人）。'},
- tapking: {title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がチケット＋1（同数ならルーレットで1人）。'},
- majority: {title:'多数派だと思った？',rule:'A/Bの二択に全員が秘密で回答。多数派がチケット＋1。同数ならルーレットで1人がチケット＋1。'},
- mind: {title:'やってんのは誰だ!?',rule:'お題に一番「そうしそう」な人に、全員が匿名で1票。得票1位がチケット＋1（同率ならルーレットで1人）。'},
- vote: {title:'変態を探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がチケット＋1（同率1位はルーレットで1人）。'},
- king: {title:'👑 王様の命令',rule:'今回の担当が王様。相手を1人指名して口頭で命令。従えば何もなし、拒否するとチケット＋2。'},
+ check: {title:'休憩ターン',rule:'今の自分の状態を選ぶと、全員の状態が見える。メーターはなし。無理せず、水も飲もう。'},
+ muttsuri: {title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
+ tapking: {title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がメーター＋1（同数ならルーレットで1人）。'},
+ majority: {title:'多数派だと思った？',rule:'A/Bの二択に全員が秘密で回答。多数派がメーター＋1。同数ならルーレットで1人がメーター＋1。'},
+ mind: {title:'やってんのは誰だ!?',rule:'お題に一番「そうしそう」な人に、全員が匿名で1票。得票1位がメーター＋1（同率ならルーレットで1人）。'},
+ vote: {title:'変態を探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
+ king: {title:'👑 王様の命令',rule:'今回の担当が王様。相手を1人指名して口頭で命令。従えば何もなし、拒否するとメーター＋2。'},
  ten: {title:'10秒ジャスト', rule:'時計を見ずに10秒を狙ってSTOP。10秒から最も遠い人が対象。同率はルーレットで1人。'},
- buttons: {title:'そのボタン、押して大丈夫？',rule:'今回の担当が謎ボタンを2つのうち1つ選ぶ。中身は「自分がチケット」か「自分以外の全員がチケット」。配置は毎回シャッフル。'},
- mission: {title:'あなたのキスはどんな顔！？',rule:'今回の担当がキス顔に挑戦。自己申告で完了。できなければチケット＋1。'},
- danger: {title:'GO TO HEAVEN OR HELL',rule:'今回の担当が、タイプの人を1人誘う。断られたら誘った人がチケット＋1（相手は罰なし）。承諾ならルーレット：HEAVENは2人ともお助け獲得、HELLは2人ともチケット＋2。'},
- reaction: {title:'ドキドキしてんじゃねーよ！',rule:'色ではなく形がハートのものをタップ（青いハートも正解）。最速の人はお助けを獲得、最遅・失敗の人はチケット＋1。早押し・違う形・3秒無反応は失敗。全員失敗ならお助けなし。'},
+ buttons: {title:'そのボタン、押して大丈夫？',rule:'今回の担当が謎ボタンを2つのうち1つ選ぶ。中身は「自分がメーター」か「自分以外の全員がメーター」。配置は毎回シャッフル。'},
+ mission: {title:'あなたのキスはどんな顔！？',rule:'今回の担当がキス顔に挑戦。自己申告で完了。できなければメーター＋1。'},
+ danger: {title:'GO TO HEAVEN OR HELL',rule:'今回の担当が、タイプの人を1人誘う。断られたら誘った人がメーター＋1（相手は罰なし）。承諾ならルーレット：HEAVENは2人ともお助け獲得、HELLは2人ともメーター＋2。'},
+ reaction: {title:'ドキドキしてんじゃねーよ！',rule:'色ではなく形がハートのものをタップ（青いハートも正解）。最速の人はお助けを獲得、最遅・失敗の人はメーター＋1。早押し・違う形・3秒無反応は失敗。全員失敗ならお助けなし。'},
  battery: {title:'充電マウント合戦！', rule:'今の充電残量を入力。ウソ（ブラフ）を入れてもOK！全員の回答後にHIGH／LOWを抽選。HIGHは最も多い人、LOWは最も少ない人。同率はルーレットで1人。'}
 };
 // 出し方：1人用4種は一度出たら40ターン出ない。ほかの8種は1周するまで重複なし。
@@ -48,9 +48,9 @@ function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='
 
 // Items are used by hand at the break-turn settlement (see tequilaOutcome); they no longer act when a ticket is credited.
 export const items={
- barrier:{icon:'🛡️',name:'バリア',desc:'精算時に自分に来たテキーラ1杯を無効にする。',usable:true},
- cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'精算でテキーラが自分に来たとき、可愛い顔で誰かになすりつける。',usable:true},
- angel:{icon:'👼',name:'天使の分け前',desc:'精算で負けた人の代わりに、テキーラ1杯を飲んであげる。',usable:true}
+ barrier:{icon:'🛡️',name:'バリア',desc:'ドリンクタイムで自分に来た1杯を無効にする。',usable:true},
+ cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'ドリンクタイムで1杯が自分に来たとき、可愛い顔で誰かになすりつける。',usable:true},
+ angel:{icon:'👼',name:'天使の分け前',desc:'ドリンクタイムで、飲む人の代わりに1杯を飲んであげる。',usable:true}
 };
 export const itemKinds=Object.keys(items);
 // お助けカードは、いまは「バリア」だけ配る（天使・可愛いは、すでに持っている人のぶんだけ使える）
@@ -100,24 +100,29 @@ export const tieCards=['ten','battery','tapking','vote','muttsuri','mind','major
 export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],['😵','そろそろキツい'],['🚰','水が欲しい']];
 export const BREAK_DRAWS=8;
 export const breakPeriod=()=>BREAK_DRAWS+1; // legacy helper, no longer used to schedule settlement
-export const isBreak=()=>false; // 精算はチケット3枚でホストが開始する
+export const isBreak=()=>false; // 休憩は8ターンごとにホストが開始する
 export const turnsToBreak=(round,n)=>breakPeriod(n)-round%breakPeriod(n);
 export function cardForRound(round,n,random=Math.random,exclude=[]){return drawCard(random,exclude);}
 
 // ---- Tickets and the break-turn settlement ----------------------------------------------------------------
 // Every lost round credits tickets (personal drinks/{round}). 3 tickets = 1 tequila. At a break turn R, each player's tickets of the whole game so far
 // (rounds before R) are totalled against the last completed settlement marker; remainders carry over.
-export const TICKETS_PER_TEQUILA=3;
+export const NOTCHES=5; // ショットメーターは5目盛り。5=ライム＝1杯確定
 export const MAX_TEQUILA=10;
 export function ticketWindow(round,n){const from=Math.max(1,round-breakPeriod(n)+1);return {from,to:round-1};}
 export function sumTickets(map,from,to){let t=0;for(let r=from;r<=to;r++){const v=map?.[r]??map?.[String(r)];if(typeof v==='number')t+=v;}return t;}
-// -> {tickets: this cool, carryIn, total, count: tequilas now, carry: left over after this break}
+// -> {tickets: メーター(前回の休憩から), lime, count:0}. 飲む杯数は全員を見比べて tequilaPlan で決める。メーターは休憩ごとに0に戻る(EASY)。
 export function tequilaPlanOne(map,round,lastSettlement=0){
- const from=lastSettlement+1,to=round-1,prev=sumTickets(map,1,from-1),tickets=sumTickets(map,from,to),total=prev+tickets;
- const count=Math.min(MAX_TEQUILA,Math.floor(total/TICKETS_PER_TEQUILA)-Math.floor(prev/TICKETS_PER_TEQUILA));
- return {tickets,carryIn:prev%TICKETS_PER_TEQUILA,total,count,carry:total%TICKETS_PER_TEQUILA};
+ const tickets=sumTickets(map,lastSettlement+1,round-1);
+ return {tickets,carryIn:0,total:tickets,count:0,carry:0,lime:tickets>=NOTCHES};
 }
-export function tequilaPlan(drinkMaps,uids,round,lastSettlement=0){const out={};for(const u of uids)out[u]=tequilaPlanOne(drinkMaps?.[u],round,lastSettlement);return out;}
+// ライムの人は全員1杯。ライムがいなければ一番多い人（同率は全員）が1杯。全員0なら誰も飲まない。
+export function tequilaPlan(drinkMaps,uids,round,lastSettlement=0){
+ const out={};let max=0,lime=false;
+ for(const u of uids){out[u]=tequilaPlanOne(drinkMaps?.[u],round,lastSettlement);max=Math.max(max,out[u].tickets);lime=lime||out[u].lime;}
+ for(const u of uids)out[u].count=lime?(out[u].lime?1:0):(max>0&&out[u].tickets===max?1:0);
+ return out;
+}
 // kept for the tickets-this-cool view
 export function ticketsFor(drinkMaps,uids,round,n){const {from,to}=ticketWindow(round,n),out={};for(const u of uids)out[u]=sumTickets(drinkMaps?.[u],from,to);return out;}
 // tq: {b: loser's barrier, c: cute (value = who gets it), x: barrier of that player, a: angel taker}. Returns who finally drinks the one tequila.
