@@ -186,3 +186,5 @@ header .brand{display:none}
 #resumeBox{background:none;border:0;box-shadow:none;padding:0;margin:0}
 #resumeBox button{margin-top:12px}
 .inviteHead{color:#13130b!important;font-weight:800}
+#keep{display:block;margin:14px auto 0;font-size:15px}
+#installLater{display:block;margin:8px auto 0}

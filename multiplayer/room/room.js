@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.47';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.48';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.47';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.47';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.47';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.47';
-import { track, logEnabled } from './telemetry.js?v=pop0.47';
-import { ensureAdult } from './agegate.js?v=pop0.47';
+import { attachTen } from './ten.js?v=pop0.48';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.48';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.48';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.48';
+import { track, logEnabled } from './telemetry.js?v=pop0.48';
+import { ensureAdult } from './agegate.js?v=pop0.48';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.47'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.48'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -88,7 +88,7 @@ function render() {
     }));
   }
   show(!expired && room.meta.state === 'started' ? 'started' : 'lobby');
-  { const closed=room.meta.state==='closed'; $('installAsk').hidden=!closed || isStandalone();
+  { const closed=room.meta.state==='closed'; $('installAsk').hidden=!closed || isStandalone() || installSnoozed();
     if(closed){const ios=/iPhone|iPad|iPod/.test(navigator.userAgent); $('installYes').hidden=ios&&!installPrompt; $('installIos').hidden=!(ios&&!installPrompt);} }
   if(room.meta.state==='started' && !tenStop && !expired){
     const ps=list.map(([slot,p])=>({...p,slot}));
@@ -178,9 +178,12 @@ $('close').onclick=()=>action(async()=>{if(window.confirm('ゲームを終了し
 $('leave').onclick=()=>action(leave);$('returnHome').onclick=()=>action(leave);
 $('copy').onclick=()=>action(async()=>{try{await navigator.clipboard.writeText($('shareUrl').value);message('招待リンクをコピーしました。');}catch{$('shareUrl').select();message('招待リンクを長押ししてコピーしてください。');}});
 let installPrompt;
+function installSnoozed(){try{const o=JSON.parse(localStorage.getItem('nq-install-later')||'null');return !!o&&(o.n>=3||Date.now()-o.t<7*864e5);}catch{return false;}}
+$('installLater').onclick=()=>{try{const o=JSON.parse(localStorage.getItem('nq-install-later')||'null')||{n:0};localStorage.setItem('nq-install-later',JSON.stringify({n:(o.n||0)+1,t:Date.now()}));}catch{}$('installAsk').hidden=true;};
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 $('installYes').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
+if(isStandalone())$('keep').hidden=true;
 $('keep').onclick=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
 
 try {
