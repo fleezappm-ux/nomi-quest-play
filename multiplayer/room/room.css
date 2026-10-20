@@ -165,3 +165,9 @@ button.chip[aria-pressed="true"]{background:linear-gradient(#fbe591,#c28a1c);col
 @keyframes dslam{from{transform:scale(1.5);opacity:0}to{transform:none;opacity:1}}
 @media(prefers-reduced-motion:reduce){.ddrink .plaque,.ddrink .hero-wrap,.mug.shot .liq{animation:none!important;transition:none!important}}
 .ddrink>.hero.icon{width:84px;height:84px;margin:10px auto;display:block}
+/* 開発者モード */
+#devLink{display:block;margin-top:6px;opacity:.8}
+.devpanel{border:2px dashed var(--line);border-radius:14px;padding:6px 10px;background:rgba(244,212,111,.06);margin:10px 0}
+.devpanel summary{color:var(--g1);font-weight:900}
+.devgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.devgrid button{margin:0;min-height:44px;font-size:13px;padding:6px}

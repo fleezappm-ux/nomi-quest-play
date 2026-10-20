@@ -1,7 +1,8 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get} from './fb.js?v=pop0.44';
-import {attachTen} from './ten.js?v=pop0.44';
-import {currentTurn} from './turn.js?v=pop0.44';
+import {ref,set,get} from './fb.js?v=pop0.45';
+import {attachTen} from './ten.js?v=pop0.45';
+import {currentTurn} from './turn.js?v=pop0.45';
+const devMode=typeof location!=='undefined'&&new URL(location.href).searchParams.get('dev')==='1';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
 export function npcAnswer({card,isActor,isTarget,slots,others,rand=Math.random}){
@@ -37,7 +38,7 @@ export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
   if(Date.now()<u.due)return;
   const uid=u.n.uid,turn=currentTurn(st,players),isActor=turn.uid===uid;
   if(st.phase==='draw'){
-   if(!isActor)return;
+   if(!isActor||devMode)return;
    const draw=walk(u.root).find(c=>(c.tag==='button'||c.tagName==='BUTTON')&&String(c.textContent).includes('カードを引く'));
    if(draw&&!draw.disabled){u.busy=true;try{await draw.onclick();}finally{u.busy=false;}}
    return;

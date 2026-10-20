@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.44';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.45';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.44';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.44';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.44';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.44';
-import { track, logEnabled } from './telemetry.js?v=pop0.44';
-import { ensureAdult } from './agegate.js?v=pop0.44';
+import { attachTen } from './ten.js?v=pop0.45';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.45';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.45';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.45';
+import { track, logEnabled } from './telemetry.js?v=pop0.45';
+import { ensureAdult } from './agegate.js?v=pop0.45';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.44'); if (isLocal) homePage.searchParams.set('npc','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.45'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -29,7 +29,7 @@ const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
 $('homeLink').href = homeUrl;
 $('inviteJoin').hidden = !roomId;
 // 招待リンク・QRから来た人には「参加」だけを見せる（部屋づくり・テストは出さない）
-if(roomId&&!isLocal){$('create').hidden=true;$('npcLink').hidden=true;$('inviteHead').hidden=false;$('lead').hidden=true;document.querySelector('.hero')?.classList.add('compact');}
+if(roomId&&!isLocal){$('create').hidden=true;$('npcLink').hidden=true;$('devLink').hidden=true;$('inviteHead').hidden=false;$('lead').hidden=true;document.querySelector('.hero')?.classList.add('compact');}
 function needName(){const e=$('name');e.classList.add('bad');$('nameErr').hidden=false;e.focus();e.scrollIntoView({block:'center',behavior:'smooth'});}
 $('name').addEventListener('input',()=>{$('name').classList.remove('bad');$('nameErr').hidden=true;});
 $('name').value = localStorage.getItem('nq-room-name') || '';
@@ -180,7 +180,7 @@ try {
   if (isLocal) {
     db=getDatabase();uid='me';connected=true;
     $('connection').textContent='練習モード';$('connection').dataset.ok='1';
-    $('npcBox').hidden=false;$('npcLink').hidden=true;$('inviteJoin').hidden=true;
+    $('npcBox').hidden=false;$('npcLink').hidden=true;$('devLink').hidden=true;$('inviteJoin').hidden=true;
     $('lead').innerHTML='通信なしの練習モード。<br>NPCが自動で答えて進みます。';
     controls();
   } else {

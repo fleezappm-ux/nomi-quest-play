@@ -1,8 +1,8 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.44';
-import {showItemFx} from './itemfx.js?v=pop0.44';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.44';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.44';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.45';
+import {showItemFx} from './itemfx.js?v=pop0.45';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.45';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.45';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -23,6 +23,34 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const shortName={barrier:'バリア',cute:'可愛い',angel:'天使'};
  function note(text){dock.append(el('p',text));dockNotes++;}
  function button(text,fn,disabled=false,cls=''){const b=el('button',text);if(cls)b.className=cls;dockButtons++;b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};dock.append(b);}
+
+ // ---- 開発者モード(?npc=1&dev=1)：全ゲームを順番どおりでなく好きなカードで試す。練習モード専用。----
+ const dev=isLocal&&uid==='me'&&new URL(location.href).searchParams.get('dev')==='1';
+ function devForce(key){
+  return runTransaction(ref(db,base+'/state'),s=>{
+   if(!s||s.phase!=='draw')return;
+   const order=Object.values(s.order||players.map(p=>p.uid)),n=order.length,idx=(s.round-1)%n,mi=order.indexOf(uid),rot=order.slice();
+   if(mi>=0&&idx!==mi){[rot[idx],rot[mi]]=[rot[mi],rot[idx]];}
+   return {...s,order:rot,actor:rot[idx],phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})};
+  },{applyLocally:false});
+ }
+ async function devBreak(kind){
+  const R=Math.max(2,state.round),lv=u=>kind==='lime'?(u===uid?5:Math.floor(Math.random()*5)):kind==='tie'?(players.findIndex(p=>p.uid===u)<2?3:1):kind==='zero'?0:Math.floor(Math.random()*6);
+  for(const p of players)await set(ref(db,`personal/${roomId}/${p.uid}/drinks/${R-1}`),lv(p.uid));
+  return runTransaction(ref(db,base+'/state'),s=>s?.phase==='draw'?{...s,round:R,phase:'measuring',card:'check'}:undefined,{applyLocally:false});
+ }
+ function devPanel(){
+  const wrap=document.createElement('details');wrap.className='devpanel';wrap.open=true;
+  wrap.append(el('summary','🛠 開発者モード：試したいものを選ぶ'));
+  const g=div('devgrid'),b=(label,fn,cls='')=>{const x=el('button',label);x.className='secondary '+cls;x.onclick=async()=>{if(pending||dead)return;pending=true;try{await fn();}finally{pending=false;if(!dead)render();}};g.append(x);};
+  for(const k of ALL_CARDS)b(cards[k].title.replace(/^👑\s*/,''),()=>devForce(k));
+  wrap.append(g,txt('p','fine','休憩・ドリンクタイム（メーターを自動で配ります）'));
+  const g2=div('devgrid');
+  const b2=(label,kind)=>{const x=el('button',label);x.className='secondary';x.onclick=async()=>{if(pending||dead)return;pending=true;try{await devBreak(kind);}finally{pending=false;if(!dead)render();}};g2.append(x);};
+  b2('ライムあり（自分が5）','lime');b2('同率（2人が最多）','tie');b2('全員0','zero');b2('ランダム','rand');
+  wrap.append(g2,txt('p','fine','お助けカード（バリア等）は、そのまま使えます。通信なしの練習モードだけで動きます。'));
+  return wrap;
+ }
  let shotN=0;
  function shot(level,cls=''){const lv=Math.max(0,Math.min(NOTCHES,Number(level)||0)),id='sg'+(++shotN),top=lv>=NOTCHES,d='M8 4H62L55 74Q54.5 82 48 82H22Q15.5 82 15 74Z',w=document.createElement('div');w.className='mug shot'+(top?' top':'')+(cls?' '+cls:'');w.setAttribute('role','img');w.setAttribute('aria-label','ショットメーター '+lv+'/'+NOTCHES);
   w.innerHTML=`<svg viewBox="-2 -16 86 108" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><path d="${d}"/></clipPath><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd35a"/><stop offset="1" stop-color="#e0971c"/></linearGradient></defs><path class="g-in" d="${d}"/><g clip-path="url(#${id})"><rect class="liq" x="0" y="4" width="70" height="72" fill="url(#${id}g)" style="transform:scaleY(${(lv/NOTCHES).toFixed(3)})"/><rect x="0" y="72" width="70" height="12" fill="rgba(255,255,255,.28)"/><path class="g-tick" d="M0 18.4H70M0 32.8H70M0 47.2H70M0 61.6H70"/></g><path class="g-out" d="${d}"/><path d="M14 10L19 66" class="g-hi"/>${top?'<g class="lime"><path d="M50 4A15 15 0 0 1 80 -2L74 6Z" transform="rotate(-8 60 4)"/><path d="M53 3A12 12 0 0 1 76 -1" class="rind"/></g>':''}</svg>`;return w;}
@@ -83,7 +111,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   top.append(turnBar(turn),statusPanel());
   if(state.phase==='draw'){
    box.append(div('deck',cardBack()),el('h2',isBreak(state.round,turn.order.length)?'休憩ターン！':'カードを引こう'),el('p',isBreak(state.round,turn.order.length)?'今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったメーターを精算します（お助けカードも使えます）。':'山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
-   if(turn.uid===uid)button('カードを引く',()=>{const round=state.round,key=cardForRound(round,turn.order.length,Math.random,[...specialSeen,...SOLO_CARDS.filter(c=>soloAt[c]!==undefined&&round-soloAt[c]<SOLO_COOLDOWN),...(lastCard?[lastCard]:[]),...(missionDone.has(uid)?['mission']:[])]);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
+   if(dev)box.append(devPanel());
+   if(turn.uid===uid&&!dev)button('カードを引く',()=>{const round=state.round,key=cardForRound(round,turn.order.length,Math.random,[...specialSeen,...SOLO_CARDS.filter(c=>soloAt[c]!==undefined&&round-soloAt[c]<SOLO_COOLDOWN),...(lastCard?[lastCard]:[]),...(missionDone.has(uid)?['mission']:[])]);return runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'?{...s,phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})}:undefined,{applyLocally:false});},pending);
    else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回の担当'}がカードを引くのを待っています。`));
    return;
   }

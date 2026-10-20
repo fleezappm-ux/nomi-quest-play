@@ -26,3 +26,10 @@ Shot meter (5 notches, lime = guaranteed drink), a break every 8 turns, drink ti
 
 Players should create a new room on the new URL so old and new versions are not mixed.
 Rollback: restore the files from commit 0e03bc8 (GOLD 0.43).
+
+# GOLD 0.45
+
+Released 2026-10-20 with explicit user approval.
+
+Developer mode: home link "開発者モード" opens the offline practice mode with `&dev=1`. A panel lets the tester pick any of the 12 cards, or a break / drink time (lime, tie, all-zero, random meters), in any order. NPC auto-draw is paused in dev mode. Offline only; no Firebase access and no rules change.
+Rollback: restore the files from commit 2b56641 (GOLD 0.44).
