@@ -40,3 +40,8 @@ Released 2026-10-20 with explicit user approval.
 
 Simple home: new gold skull logo (gold/logo.webp), no top-left brand, nickname asked once on first visit then "ようこそ○○さん 今日は何して遊ぶ？" with a nickname-change link; buttons みんなで遊ぶ / 1人で遊ぶ / 皆に教える (share or copy link) / 前の部屋に戻る. Client-side only; no Firebase or rules change.
 Rollback: restore the files from commit 0bc7588 (GOLD 0.45).
+
+# GOLD 0.47
+
+Nickname placeholder changed to 「例：ノミ・クエスト」; invitation notice text made dark for readability. Client-side only.
+Rollback: restore commit 702f745 (GOLD 0.46).
