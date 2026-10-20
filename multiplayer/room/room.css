@@ -190,3 +190,27 @@ header .brand{display:none}
 #installLater{display:block;margin:8px auto 0}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #nameBox .nameLabel{margin-top:0}
+
+/* ---- 待合室の見やすさ・ゲーム選択・ルール表示 (0.50) ---- */
+#lobby h1#roomTitle{display:block;text-align:center;font:900 22px/1.4 var(--body);letter-spacing:.04em;-webkit-text-stroke:0;text-shadow:none;transform:none;color:#1d1204;padding:8px 14px;border-radius:14px;background:linear-gradient(#fbe591,#c28a1c);border:2px solid #0a0805;box-shadow:0 4px 0 #7a5410}
+#roomState{text-align:center;font-weight:800}
+.modeBox{margin:14px 0;padding:12px;border:2px solid var(--line);border-radius:16px;background:rgba(244,212,111,.06)}
+.modeHead{font:900 16px/1.4 var(--body);color:var(--g1);margin:0 0 8px;text-shadow:none;-webkit-text-stroke:0}
+#modeText{margin:0;display:flex;align-items:center;gap:10px;padding:12px;border:2px solid var(--g1);border-radius:14px;background:#0a0805;font-weight:900;font-size:17px}
+.mi{font-size:30px;line-height:1}
+.modeSeg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modeSeg button{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;text-align:center;font-family:var(--body);background:#0a0805;color:var(--ink);border:2px solid var(--line);box-shadow:none;opacity:.7}
+.modeSeg button b{font-size:16px;font-weight:900}
+.modeSeg button small{font-size:11px;font-weight:700;color:var(--mute);margin:0;line-height:1.4}
+.modeSeg button[aria-pressed=true]{opacity:1;background:linear-gradient(#fbe591,#c28a1c);color:#1d1204;border:3px solid #fff1c9;box-shadow:0 0 0 2px #0a0805,0 0 16px rgba(244,212,111,.6)}
+.modeSeg button[aria-pressed=true] small{color:#3b2a08}
+.modeSeg button[aria-pressed=true]::after{content:'✓ えらんだ';font-size:11px;font-weight:900}
+.inlineLink{display:inline;width:auto;min-height:0;margin:0;padding:0 2px;border:0;background:none;box-shadow:none;color:#0a4aa8;text-decoration:underline;font:900 inherit/inherit var(--body);font-size:inherit;cursor:pointer}
+.rulesModal{position:fixed;inset:0;z-index:50;background:rgba(3,10,6,.88);display:flex;align-items:center;justify-content:center;padding:16px}
+.rulesModal[hidden]{display:none}
+.rulesCard{width:min(440px,100%);max-height:100%;overflow:auto;background:var(--s1);border:2px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 0 30px rgba(244,212,111,.3)}
+.rulesCard h2{font:900 16px/1.4 var(--body);color:var(--g1);margin:0 0 8px;text-shadow:none}
+.rulesBody h3{font:900 20px/1.4 var(--body);margin:6px 0;color:var(--ink);text-shadow:none}
+.rulesBody p{font-size:16px;line-height:1.8;font-weight:700;color:var(--ink);min-height:9em}
+.rulesNav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#rulesBtn{margin-top:10px}

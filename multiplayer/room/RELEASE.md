@@ -55,3 +55,10 @@ Rollback: restore commit c23e346 (GOLD 0.47).
 
 Nickname field: removed the label above it; placeholder is now 「ここにニックネームを入れてね」 (screen-reader label kept). Client-side only.
 Rollback: restore commit bb1dfff (GOLD 0.48).
+
+## GOLD 0.50
+- 招待画面に「ルールは ここ で確認してね」リンク（遊び方モーダル）
+- 待合室に「📖 ルールを見る」ボタン、タイトルを読みやすく
+- 遊ぶゲームを枠＋アイコン（🃏カードゲーム / 👹鬼ごっこ）で表示
+- 通信・DBルールの変更なし
+- Rollback: restore commit 64984ec (GOLD 0.49)

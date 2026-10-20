@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.49';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.50';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.49';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.49';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.49';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.49';
-import { track, logEnabled } from './telemetry.js?v=pop0.49';
-import { ensureAdult } from './agegate.js?v=pop0.49';
+import { attachTen } from './ten.js?v=pop0.50';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.50';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.50';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.50';
+import { track, logEnabled } from './telemetry.js?v=pop0.50';
+import { ensureAdult } from './agegate.js?v=pop0.50';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.49'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.50'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -72,8 +72,8 @@ function render() {
   if(sharePhase!==phase){$('share').open=room.meta.state==='lobby';sharePhase=phase;}
   $('roomState').textContent = expired ? '部屋の有効期限が切れました。新しい部屋で集まり直してください。' : room.meta.state === 'closed' ? 'この部屋は終了しました。' : `${list.length}/6人参加 · 2人以上で開始`;
   const mode = room.meta.mode === 'oni' ? 'oni' : 'cards';
-  $('modeText').textContent = mode === 'oni' ? '🏃 ミニゲーム：鬼ごっこ' : '🃏 カードゲーム';
-  $('modeSeg').hidden = !(host && active());
+  $('modeText').innerHTML = mode === 'oni' ? '<span class="mi">👹</span><b>鬼ごっこ（ミニゲーム）</b>' : '<span class="mi">🃏</span><b>カードゲーム</b>';
+  $('modeSeg').hidden = !(host && active()); $('modeText').hidden = !$('modeSeg').hidden;
   $('modeCards').setAttribute('aria-pressed', String(mode === 'cards')); $('modeOni').setAttribute('aria-pressed', String(mode === 'oni'));
   $('ready').hidden = !active();
   $('ready').textContent = room.slots?.[slot]?.ready ? '✓ 準備OK · 取り消す' : '準備OKにする';
@@ -215,3 +215,24 @@ try {
 }}
 {const n=document.getElementById('logNote');if(n&&logEnabled)n.hidden=false;}
 {const a=document.getElementById('feedback');if(a&&/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//.test(FEEDBACK_URL)){a.href=FEEDBACK_URL;a.hidden=false;}}
+
+// ---- ルール説明（招待画面の「ここ」と待合室のボタンから開く）----
+{
+ const slides=[
+  ['遊び方','部屋に集まって、順番にカードを引きます。お題に挑戦して、負けた人は「ショットメーター」が1つたまります。実際に飲むかどうかは自己申告です。'],
+  ['ショットメーターとライム','メーターは5目盛り。5つたまる（ライムが付く）と、その人は1杯が確定します。メーターが少ないうちは、まだセーフです。'],
+  ['8ターンごとに休憩','8ターンごとに休憩タイム。全員が今の状態を選んだあと、ドリンクタイムです。ライムの人は全員1杯。ライムがいなければ、一番メーターが多い人が1杯（同率は全員）。全員0なら誰も飲みません。メーターは休憩のあと0に戻ります。'],
+  ['お助けカードと約束','バリアなどのお助けカードは、ドリンクタイムで使えます。無理せず、水も飲もう。20歳以上の方だけで楽しんでください。']
+ ];
+ let step=0,opener=null;
+ const paint=()=>{$('rulesStep').textContent=String(step+1);const b=$('rulesBody');b.replaceChildren();const t=document.createElement('h3');t.textContent=slides[step][0];const p=document.createElement('p');p.textContent=slides[step][1];b.append(t,p);$('rulesPrev').disabled=step===0;$('rulesNext').textContent=step===slides.length-1?'とじる':'次へ →';};
+ const open=(from)=>{opener=from;step=0;paint();$('rulesModal').hidden=false;$('rulesNext').focus();};
+ const close=()=>{$('rulesModal').hidden=true;opener?.focus?.();};
+ $('rulesLink').onclick=()=>open($('rulesLink'));
+ $('rulesBtn').onclick=()=>open($('rulesBtn'));
+ $('rulesPrev').onclick=()=>{if(step>0){step--;paint();}};
+ $('rulesNext').onclick=()=>{if(step<slides.length-1){step++;paint();}else close();};
+ $('rulesClose').onclick=close;
+ $('rulesModal').addEventListener('click',e=>{if(e.target===$('rulesModal'))close();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('rulesModal').hidden)close();});
+}
