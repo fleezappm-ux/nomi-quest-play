@@ -66,3 +66,10 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 ## GOLD 0.50b
 - 待合室「カードゲーム」のアイコンを、NOMI QUESTのカード裏面（ドクロ）に変更
 - Rollback: restore commit d537bee
+
+## GOLD 0.51
+- カード裏面を正規デザイン（ドクロ＋NOMI QUESTロゴ）に差し替え（山札・引く演出の両方）
+- カードを引く演出を新設計（約1.85秒）：浮上 → 金の光 → 半回転 → 金の集中線と粒 → 表 → お題ページ
+- カード表を金縁デザインに統一
+- 通信・DBルールの変更なし（演出は端末内のみ）／画像 +約63KB
+- Rollback: restore commit 10c71a7 (GOLD 0.50b)

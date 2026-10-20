@@ -1,8 +1,8 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.50';
-import {showItemFx} from './itemfx.js?v=pop0.50';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.50';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.50';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.51';
+import {showItemFx} from './itemfx.js?v=pop0.51';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.51';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.51';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -91,7 +91,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',tapking:'5秒間ひたすら連打！',vote:'一番あやしいのは誰？',muttsuri:'むっつりは誰だ？',majority:'多数派はどっち？',mind:'やってんのは誰だ!?',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック'};
  function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls+(isIcon(card)?' icon':'');i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
  function cardFace(card,cls=''){return div('cface pop k-'+card+' '+cls,txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
- function cardBack(cls=''){const back=div('cback '+cls,txt('b','back-brand','NOMI QUEST'),popImg('home','back-art'),txt('span','back-symbol','?'));back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
+ function cardBack(cls=''){const back=div('cback '+cls);back.setAttribute('role','img');back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
  function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ひと休み'};const h=div('cardhead k-'+card,txt('span','pop-kicker',categories[card]||'NOMI QUEST'),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
   function finalUi(){
   const box2=div('settle');box2.append(popImg('final','hero','最終ドリンクタイム'),txt('h3','verdict','🥃 最終ドリンクタイム！'));
@@ -353,11 +353,14 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   return box2;
  }
  function flipCard(card){
-  const ms=globalThis.__nqFlipMs??1600;
+  const ms=globalThis.__nqFlipMs??1850;
   if(!flipTimer){flipStart=performance.now();const round=state.round;flipTimer=setTimeout(()=>{flipTimer=null;if(dead)return;flipRound=round;render();},ms);}
   const c=div('flipcard',div('face back',cardBack()),div('face front k-'+card,cardFace(card)));
   c.style.animationDelay=-Math.max(0,performance.now()-flipStart)+'ms';
-  box.append(txt('h3','verdict','カードが引かれた！'),div('flipwrap',c));
+  const fx=div('drawfx',div('dfx-rays'));for(let i=0;i<22;i++){const sp=el('i');sp.className='dfx-sp';const an=Math.random()*6.283,r=80+Math.random()*130;sp.style.setProperty('--dx',Math.cos(an)*r+'px');sp.style.setProperty('--dy',Math.sin(an)*r+'px');sp.style.animationDelay=(-Math.max(0,performance.now()-flipStart)+850+Math.random()*150)+'ms';fx.append(sp);}
+  fx.firstChild.style.animationDelay=c.style.animationDelay;
+  const gl=div('dfx-glow');gl.style.animationDelay=c.style.animationDelay;
+  box.append(txt('h3','verdict','カードが引かれた！'),div('flipwrap',gl,c),fx);
  }
  function pickRoulette(){
   const ms=globalThis.__nqPickMs??3400;
