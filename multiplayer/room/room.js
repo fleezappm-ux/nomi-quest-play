@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.53';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.54';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.53';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.53';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.53';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.53';
-import { track, logEnabled } from './telemetry.js?v=pop0.53';
-import { ensureAdult } from './agegate.js?v=pop0.53';
+import { attachTen } from './ten.js?v=pop0.54';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.54';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.54';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.54';
+import { track, logEnabled } from './telemetry.js?v=pop0.54';
+import { ensureAdult } from './agegate.js?v=pop0.54';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.53'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.54'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -221,8 +221,8 @@ try {
  const slides=[
   ['遊び方','部屋に集まって、順番にカードを引きます。お題に挑戦して、負けた人は「ショットメーター」が1つたまります。実際に飲むかどうかは自己申告です。'],
   ['ショットメーターとライム','メーターは5目盛り。5つたまる（ライムが付く）と、その人は1杯が確定します。メーターが少ないうちは、まだセーフです。'],
-  ['8ターンごとに休憩','8ターンごとに休憩タイム。全員が今の状態を選んだあと、ドリンクタイムです。ライムの人は全員1杯。ライムがいなければ、一番メーターが多い人が1杯（同率は全員）。全員0なら誰も飲みません。メーターは休憩のあと0に戻ります。'],
-  ['お助けカードと約束','バリアなどのお助けカードは、ドリンクタイムで使えます。無理せず、水も飲もう。20歳以上の方だけで楽しんでください。']
+  ['休憩カードとドリンクタイム','みんなのメーターの合計が3杯たまるごとに、山札に「休憩カード」が入ります。引いたら結果発表 → お助けカード受付（1分）→ イッテキーラ！ ライムの人は全員1杯、いなければ一番メーターが多い人が1杯（同率は全員）。飲んだらメーターは0に戻ります。'],
+  ['お助けカードと約束','ゲームに勝つなどで、お助けカードがもらえます。バリアなどは、お助けカード受付の1分間に使えます。無理せず、水も飲もう。20歳以上の方だけで楽しんでください。']
  ];
  let step=0,opener=null;
  const paint=()=>{$('rulesStep').textContent=String(step+1);const b=$('rulesBody');b.replaceChildren();const t=document.createElement('h3');t.textContent=slides[step][0];const p=document.createElement('p');p.textContent=slides[step][1];b.append(t,p);$('rulesPrev').disabled=step===0;$('rulesNext').textContent=step===slides.length-1?'とじる':'次へ →';};

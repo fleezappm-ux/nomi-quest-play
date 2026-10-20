@@ -268,3 +268,5 @@ header .brand{display:none}
 @keyframes iSpin{to{transform:rotate(360deg)}}
 @keyframes iSp{0%{opacity:1;transform:translate(0,0) scale(1.1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
 @media(prefers-reduced-motion:reduce){.impactFx,.iRays,.iHero,.iName,.iSub,.telopFx,.tBand{animation:none}.iSp{display:none}}
+
+.cdBig{font:400 clamp(64px,22vw,96px)/1 'Dela Gothic One','Noto Sans JP',sans-serif;text-align:center;color:#ffd96a;-webkit-text-stroke:6px #000;paint-order:stroke fill;text-shadow:0 4px 0 #000;margin:6px 0}
