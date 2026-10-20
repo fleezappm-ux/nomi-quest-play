@@ -1,8 +1,8 @@
-import {artPath} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.42';
-import {showItemFx} from './itemfx.js?v=pop0.42';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.42';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=pop0.42';
+import {artPath,isIcon} from './pop-art.js';
+import {ref,set,get,update,onValue,runTransaction} from './fb.js?v=pop0.43';
+import {showItemFx} from './itemfx.js?v=pop0.43';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.43';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,TICKETS_PER_TEQUILA,tequilaOutcome,itemChoices} from './deck.js?v=pop0.43';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -57,7 +57,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const n=turn.order.length;return div('turnwrap',div('turnmeta',txt('span','',`ターン ${state.round} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats,txt('p','turnnext',state.card==='check'?'🥃 精算タイム':'🎫 誰かが3枚たまったら精算'));
  }
  const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',tapking:'5秒間ひたすら連打！',vote:'一番あやしいのは誰？',muttsuri:'むっつりは誰だ？',majority:'多数派はどっち？',mind:'やってんのは誰だ!?',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック'};
- function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls;i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
+ function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls+(isIcon(card)?' icon':'');i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
  function cardFace(card,cls=''){return div('cface pop k-'+card+' '+cls,txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
  function cardBack(cls=''){const back=div('cback '+cls,txt('b','back-brand','NOMI QUEST'),popImg('home','back-art'),txt('span','back-symbol','?'));back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
  function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ひと休み'};const h=div('cardhead k-'+card,txt('span','pop-kicker',categories[card]||'NOMI QUEST'),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}

@@ -9,3 +9,11 @@ Native DOM titles and controls with artwork-only crops; all 23 approved referenc
 Validation: 92 production-path mobile UI checks, 106 simulated multiplayer cases, 40 NPC turns, and a 20-turn normal-timing offline browser playthrough. Android hardware and live multi-device 20-turn playthrough remain unverified. This release is not a stable-baseline promotion.
 
 Rollback: restore the files from branch backup/pre-pop040-20261019, commit d138b2abd9f8a3382b96b87c93f666b877d1b1d6. Preserve subsequent changes when rolling back.
+
+# GOLD 0.43
+
+Released 2026-10-20 with explicit user approval to publish ("のせなおす").
+
+Gold colour theme (black x gold) layered over POP 0.42, using the ChatGPT kit art in `gold/` for the 12 card screens, home and result icons. Game logic, Firebase configuration and database rules are unchanged (client-side look only).
+
+Rollback: restore the files from commit aef0fb2 (POP 0.42).
