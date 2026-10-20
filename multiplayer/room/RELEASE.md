@@ -73,3 +73,7 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 - カード表を金縁デザインに統一
 - 通信・DBルールの変更なし（演出は端末内のみ）／画像 +約63KB
 - Rollback: restore commit 9109166 (GOLD 0.50b)
+
+## GOLD 0.52
+- 修正：充電カードの入力エラー（赤枠）が、次のターン・次のカードに移っても消えない問題。ターン／カード／場面が変わったら自動で消す
+- Rollback: restore commit 8b3283f (GOLD 0.51)
