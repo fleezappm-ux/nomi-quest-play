@@ -171,3 +171,17 @@ button.chip[aria-pressed="true"]{background:linear-gradient(#fbe591,#c28a1c);col
 .devpanel summary{color:var(--g1);font-weight:900}
 .devgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .devgrid button{margin:0;min-height:44px;font-size:13px;padding:6px}
+/* ---- 簡易ホーム (0.46) ---- */
+h1.logo[hidden],#lead[hidden],.welcome[hidden],#nameBox[hidden]{display:none}
+.homeLogo{display:block;width:64%;max-width:260px;height:auto;margin:6px auto 4px;filter:drop-shadow(0 0 18px rgba(244,212,111,.35))}
+.welcome{text-align:center;font:400 22px/1.5 var(--disp);color:var(--g1);margin:6px 0 14px;text-shadow:0 2px 0 #000}
+#nameBox{margin-top:8px}
+#nameOk{margin-top:8px}
+#npcLink.textButton.small{display:block;text-align:center;font-family:var(--disp);font-size:18px;text-decoration:none;min-height:50px;padding:12px}
+#npcLink small{display:block;font:800 11px var(--body);margin-top:4px;color:var(--mute)}
+#tell{margin-top:12px}
+#renick{display:block;margin:10px auto 0}
+header .brand{display:none}
+.welcome{font:800 20px/1.6 var(--body);text-shadow:none}
+#resumeBox{background:none;border:0;box-shadow:none;padding:0;margin:0}
+#resumeBox button{margin-top:12px}

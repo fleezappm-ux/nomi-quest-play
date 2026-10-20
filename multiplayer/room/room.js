@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.45';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.46';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.45';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.45';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.45';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.45';
-import { track, logEnabled } from './telemetry.js?v=pop0.45';
-import { ensureAdult } from './agegate.js?v=pop0.45';
+import { attachTen } from './ten.js?v=pop0.46';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.46';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.46';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.46';
+import { track, logEnabled } from './telemetry.js?v=pop0.46';
+import { ensureAdult } from './agegate.js?v=pop0.46';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.45'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.46'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -33,6 +33,13 @@ if(roomId&&!isLocal){$('create').hidden=true;$('npcLink').hidden=true;$('devLink
 function needName(){const e=$('name');e.classList.add('bad');$('nameErr').hidden=false;e.focus();e.scrollIntoView({block:'center',behavior:'smooth'});}
 $('name').addEventListener('input',()=>{$('name').classList.remove('bad');$('nameErr').hidden=true;});
 $('name').value = localStorage.getItem('nq-room-name') || '';
+let editingName=false;
+function syncName(){const n=(localStorage.getItem('nq-room-name')||'').trim(),has=!!n&&!editingName;$('nameBox').hidden=has;$('welcome').hidden=!has;$('renick').hidden=!n||editingName||!!roomId;if(has)$('welcome').replaceChildren(document.createTextNode('ようこそ、'+n+'さん'),document.createElement('br'),document.createTextNode('今日は何して遊ぶ？'));}
+$('nameOk').onclick=()=>{const v=$('name').value.trim();if(!v||v.length>20){needName();return;}localStorage.setItem('nq-room-name',v);editingName=false;syncName();};
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nameOk').click();}});
+$('renick').onclick=()=>{editingName=true;syncName();$('name').focus();};
+$('tell').onclick=async()=>{const url=new URL('./',location.href);url.search='';const data={title:'NOMI QUEST',text:'飲み会ゲーム「NOMI QUEST」で遊ぼう！',url:url.href};try{if(navigator.share){await navigator.share(data);return;}}catch{return;}try{await navigator.clipboard.writeText(url.href);message('リンクをコピーしました。LINEなどに貼って教えてね。');}catch{message('リンク：'+url.href);}};
+syncName();
 
 function message(text) { $('message').textContent = text; }
 function errorText(error) {
@@ -40,7 +47,7 @@ function errorText(error) {
   return error?.message || '通信に失敗しました。接続を確認して、もう一度お試しください。';
 }
 function show(id) { if(id==='home')$('share').hidden=true; for (const section of ['home','lobby','started']) $(section).hidden = section !== id; }
-function ownName() { const name = $('name').value.trim(); if (!name || name.length > 20) throw new Error('名前を1〜20文字で入力してください。'); localStorage.setItem('nq-room-name', name); return name; }
+function ownName() { const name = $('name').value.trim() || (localStorage.getItem('nq-room-name')||'').trim(); if (!name || name.length > 20) throw new Error('名前を1〜20文字で入力してください。'); localStorage.setItem('nq-room-name', name); return name; }
 async function action(fn) { if (busy) return; busy = true; controls(); message(''); try { await fn(); } catch (e) { message(errorText(e)); } finally { busy = false; controls(); } }
 function members() { return Object.entries(room?.slots || {}).sort((a,b)=>Number(a[0])-Number(b[0])); }
 function active() { return room?.meta?.state === 'lobby' && room.meta.expiresAt > Date.now(); }
@@ -132,7 +139,7 @@ async function resume(s=savedSession()) {
 }
 $('resume').onclick=()=>action(()=>resume());
 $('homeLink').onclick=e=>{e.preventDefault();return action(leave);};
-$('create').onclick=()=>{if(!$('name').value.trim()){needName();return;}return action(async()=>{
+$('create').onclick=()=>{if(!$('name').value.trim()&&!(localStorage.getItem('nq-room-name')||'').trim()){editingName=true;syncName();needName();return;}return action(async()=>{
   if(savedSession() && !window.confirm('新しい部屋を作りますか？前の部屋への復帰ボタンは新しい部屋に切り替わります。'))return;
   const name=ownName(); const id=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
   const slots={0:{uid,name,ready:false,connected:true,joinedAt:serverTimestamp()}};
@@ -140,7 +147,7 @@ $('create').onclick=()=>{if(!$('name').value.trim()){needName();return;}return a
   await set(ref(db,`rooms/${id}`),{meta:{hostUid:uid,state:'lobby',createdAt:serverTimestamp(),expiresAt:Date.now()+12*60*60*1000},slots});
   await watch(id,0);track('create',{uid,room:id,name});
 });};
-$('join').onclick=()=>{if(!$('name').value.trim()){needName();return;}return action(async()=>{
+$('join').onclick=()=>{if(!$('name').value.trim()&&!(localStorage.getItem('nq-room-name')||'').trim()){editingName=true;syncName();needName();return;}return action(async()=>{
   const name=ownName();if(!validRoom(roomId))throw new Error('招待リンクが正しくありません。');
   const meta=(await get(ref(db,`rooms/${roomId}/meta`))).val();
   if(!meta || meta.state==='closed' || meta.expiresAt <= Date.now())throw new Error('部屋は終了済み、または期限切れです。');

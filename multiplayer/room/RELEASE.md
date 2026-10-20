@@ -33,3 +33,10 @@ Released 2026-10-20 with explicit user approval.
 
 Developer mode: home link "開発者モード" opens the offline practice mode with `&dev=1`. A panel lets the tester pick any of the 12 cards, or a break / drink time (lime, tie, all-zero, random meters), in any order. NPC auto-draw is paused in dev mode. Offline only; no Firebase access and no rules change.
 Rollback: restore the files from commit 2b56641 (GOLD 0.44).
+
+# GOLD 0.46
+
+Released 2026-10-20 with explicit user approval.
+
+Simple home: new gold skull logo (gold/logo.webp), no top-left brand, nickname asked once on first visit then "ようこそ○○さん 今日は何して遊ぶ？" with a nickname-change link; buttons みんなで遊ぶ / 1人で遊ぶ / 皆に教える (share or copy link) / 前の部屋に戻る. Client-side only; no Firebase or rules change.
+Rollback: restore the files from commit 0bc7588 (GOLD 0.45).
