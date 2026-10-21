@@ -1,19 +1,19 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.58';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.59';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.58';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.58';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.58';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.58';
-import { track, logEnabled } from './telemetry.js?v=pop0.58';
-import { ensureAdult } from './agegate.js?v=pop0.58';
+import { attachTen } from './ten.js?v=pop0.59';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.59';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.59';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.59';
+import { track, logEnabled } from './telemetry.js?v=pop0.59';
+import { ensureAdult } from './agegate.js?v=pop0.59';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.58'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.59'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -183,8 +183,9 @@ $('installLater').onclick=()=>{try{const o=JSON.parse(localStorage.getItem('nq-i
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 $('installYes').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
-if(isStandalone())$('keep').hidden=true;
-$('keep').onclick=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
+if(isStandalone()){$('keep').hidden=true;$('keepTop').hidden=true;}
+const keepGo=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
+$('keep').onclick=keepGo;$('keepTop').onclick=async()=>{if(installPrompt)return keepGo();$('keepHelpTop').hidden=!$('keepHelpTop').hidden;};
 
 try {
   if (isLocal) {
