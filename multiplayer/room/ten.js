@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.57';
-import {showItemFx} from './itemfx.js?v=pop0.57';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.57';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.57';
-import {REST_CARD} from './deck.js?v=pop0.57';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.58';
+import {showItemFx} from './itemfx.js?v=pop0.58';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.58';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.58';
+import {REST_CARD} from './deck.js?v=pop0.58';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -39,7 +39,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
  const txt=(tag,cls,text)=>{const n=el(tag,text);n.className=cls;return n;};
  const div=(cls,...kids)=>{const n=document.createElement('div');n.className=cls;n.append(...kids);return n;};
- const shortName={barrier:'バリア',cute:'可愛い',angel:'天使'};
+ const shortName={barrier:'バリア',cute:'なすりつけ',angel:'身代わり'};
  function note(text){dock.append(el('p',text));dockNotes++;}
  function button(text,fn,disabled=false,cls=''){const b=el('button',text);if(cls)b.className=cls;dockButtons++;b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};dock.append(b);}
 
@@ -394,7 +394,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    card.append(txt('p','verdict',`🥃 ${p.name}に1杯`));
    const log=[];
    if(chain.b)log.push(`🛡️ ${pname(chain.b)}がバリアを使った！`);
-   if(chain.c)log.push(`🥺 ${p.name}が可愛い顔で、${pname(chain.c)}になすりつけた！`);
+   if(chain.c)log.push(`🥺 ${p.name}が、${pname(chain.c)}になすりつけた！`);
    if(chain.x)log.push(`🛡️ ${pname(chain.x)}がバリアで防いだ！`);
    if(chain.a)log.push(`👼 ${pname(chain.a)}が代わりに飲んであげる！`);
    if(log.length)card.append(...log.map(l=>txt('p','help',l)));
@@ -403,10 +403,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
     const ch=itemChoices(uid,p.uid,chain),act=div('acts'),key=p.uid+':'+j;
     if(ch.barrier&&held.includes('barrier'))mk(act,'🛡️ バリアを使う（この1杯を無効）',()=>useItem('barrier',p.uid,j));
     if(ch.cute&&held.includes('cute')){
-     if(cuteMode!==key)mk(act,'🥺 可愛いだけじゃダメですか？（なすりつける）',async()=>{cuteMode=key;});
+     if(cuteMode!==key)mk(act,'🥺 なすりつけ（この1杯を他の人へ）',async()=>{cuteMode=key;});
      else{act.append(txt('p','help','誰になすりつけますか？'));for(const q of players)if(q.uid!==uid)mk(act,`${q.name}に`,()=>useItem('cute',p.uid,j,q.uid));mk(act,'やめる',async()=>{cuteMode=null;},'secondary');}
     }
-    if(ch.angel&&held.includes('angel'))mk(act,`👼 天使の分け前（${pname(chain.c||p.uid)}の代わりに飲む）`,()=>useItem('angel',p.uid,j));
+    if(ch.angel&&held.includes('angel'))mk(act,`👼 身代わり（${pname(chain.c||p.uid)}の代わりに飲む）`,()=>useItem('angel',p.uid,j));
     if(act.children.length)card.append(act);
    }
    list.append(card);

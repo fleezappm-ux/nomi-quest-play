@@ -50,12 +50,12 @@ function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='
 // Items are used by hand at the break-turn settlement (see tequilaOutcome); they no longer act when a ticket is credited.
 export const items={
  barrier:{icon:'🛡️',name:'バリア',desc:'ドリンクタイムで自分に来た1杯を無効にする。',usable:true},
- cute:{icon:'🥺',name:'可愛いだけじゃダメですか？',desc:'ドリンクタイムで1杯が自分に来たとき、可愛い顔で誰かになすりつける。',usable:true},
- angel:{icon:'👼',name:'天使の分け前',desc:'ドリンクタイムで、飲む人の代わりに1杯を飲んであげる。',usable:true}
+ cute:{icon:'🥺',name:'なすりつけ',desc:'ドリンクタイムで1杯が自分に来たとき、だれかになすりつける。',usable:true},
+ angel:{icon:'👼',name:'身代わり',desc:'ドリンクタイムで、飲む人の代わりに1杯を飲んであげる。',usable:true}
 };
 export const itemKinds=Object.keys(items);
-// お助けカードは、いまは「バリア」だけ配る（天使・可愛いは、すでに持っている人のぶんだけ使える）
-export function drawItem(random=Math.random){return 'barrier';}
+// お助けカードは、バリア・なすりつけ・身代わりの3種からランダムに配る
+export function drawItem(random=Math.random){return itemKinds[Math.min(itemKinds.length-1,Math.floor(random()*itemKinds.length))];}
 // base: tickets from drinkAward. used: {slot,kind} when an item was already spent this round. choice: 'barrier' | 'angel' | 'skip' | undefined.
 // Returns {amount,spend} to record now, or null while the player still has to choose.
 export function decideCredit({base,barrierSlot,angelSlot,cuteSlot,used,choice}){

@@ -1,8 +1,8 @@
 // お助けカードが使われた瞬間に出す、画面いっぱいのエフェクト。表示は約2.4秒で自動的に消える。
 export const FX={
  barrier:{icon:'🛡️',title:'バリア発動！',sub:'テキーラ1杯を無効に',cls:'fx-barrier'},
- angel:{icon:'👼',title:'天使の分け前！',sub:'代わりに飲んであげる',cls:'fx-angel'},
- cute:{icon:'🥺',title:'可愛いだけじゃダメですか？',sub:'テキーラをなすりつけた！',cls:'fx-cute'}
+ angel:{icon:'👼',title:'身代わり！',sub:'代わりに飲んであげる',cls:'fx-angel'},
+ cute:{icon:'🥺',title:'なすりつけ！',sub:'テキーラをなすりつけた！',cls:'fx-cute'}
 };
 export function showItemFx(kind,doc=globalThis.document){
  try{
