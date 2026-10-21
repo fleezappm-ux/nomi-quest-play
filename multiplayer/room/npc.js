@@ -1,7 +1,7 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get} from './fb.js?v=pop0.55';
-import {attachTen} from './ten.js?v=pop0.55';
-import {currentTurn} from './turn.js?v=pop0.55';
+import {ref,set,get} from './fb.js?v=pop0.56';
+import {attachTen} from './ten.js?v=pop0.56';
+import {currentTurn} from './turn.js?v=pop0.56';
 const devMode=typeof location!=='undefined'&&new URL(location.href).searchParams.get('dev')==='1';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
@@ -13,7 +13,7 @@ export function npcAnswer({card,isActor,isTarget,slots,others,rand=Math.random})
   case 'danger':case 'king':return isActor?pick(others):isTarget?(rand()<0.7?1:0):undefined;
   case 'vote':case 'muttsuri':case 'mind':return pick(slots);
   case 'majority':return int(2);
-  case 'check':return int(4);
+  case 'check':case 'rest':return int(4);
   case 'tapking':return 15+int(45);
   case 'battery':return int(101);
   case 'reaction':return 300+int(600);
