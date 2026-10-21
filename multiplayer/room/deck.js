@@ -86,7 +86,7 @@ export function dangerOutcome(state){
  return{actor,target,accepted:results[target]===1,fate:state.fate||null};
 }
 // 10秒ジャスト±0.5秒でお助けカード：Firebaseルール(grants)の更新を公開したあとに true にする
-export let TEN_REWARD=false;
+export let TEN_REWARD=true;
 export function rewardees(state){
  if(!state||state.phase!=='results')return[];
  if(state.card==='reaction')return winnersFor(state.results);

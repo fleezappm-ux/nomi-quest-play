@@ -93,3 +93,8 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 - 10秒±0.5秒のお助けカード獲得：コードは入れたが、Firebaseルール更新（トシさんの手動公開）までOFF（deck.js の TEN_REWARD）
 - 通信・DBルールの変更なし（既存の書き込み先だけを使用）
 - Rollback: restore commit b0dcb0d (GOLD 0.53)
+
+## GOLD 0.55
+- 10秒ジャスト±0.5秒（9.5〜10.5秒）でお助けカード獲得をON（Firebaseルール更新の公開後）
+- NPC3人×60ターンを8パターンの乱数で通し、ルール拒否0件
+- Rollback: restore commit a8e3e35 (GOLD 0.54)。TEN_REWARD を false にすれば獲得だけOFFに戻せる
