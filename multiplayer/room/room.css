@@ -328,3 +328,7 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .stage.art .cardhead p.rule{white-space:pre-line}
 .stage.art .bigNum{font-size:min(23vw,92px);white-space:nowrap}
 .stage.art>p.hint2{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+
+.stage.art>.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:auto 0 0!important}
+.stage.art>.choices button{font-size:17px;min-height:64px;padding:8px;width:100%}
+.stage.art:has(>.choices)>.cardhead+*{margin-top:0}

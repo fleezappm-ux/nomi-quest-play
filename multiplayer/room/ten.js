@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.62';
-import {showItemFx} from './itemfx.js?v=pop0.62';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.62';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.62';
-import {REST_CARD} from './deck.js?v=pop0.62';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.63';
+import {showItemFx} from './itemfx.js?v=pop0.63';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.63';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.63';
+import {REST_CARD} from './deck.js?v=pop0.63';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -132,6 +132,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function render(){
   if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();root.querySelector?.(':scope>.moreinfo')?.remove();dockButtons=0;dockNotes=0;
   paint();{const ps=box.querySelectorAll?.('.prog span')||[];if(ps.length){const k=state?.phase==='results'?ps.length-1:(state?.card==='ten'?(began!==null?1:(elapsed!==null?2:0)):(dockButtons>0?0:1));ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
+  if(state?.phase==='measuring'&&box.classList?.contains('art')&&!['ten','tapking','battery','reaction'].includes(state.card)){const bs=[...(dock.querySelectorAll?.('button:not(.secondary)')||[])];if(bs.length>=2){const g=div('choices');bs.forEach(b=>g.append(b));box.append(g);dockButtons-=bs.length}}
   dock.className='dock'+(dockNotes===0&&dockButtons>2?' grid':dockNotes===0&&dockButtons>0?' sticky':'');
  }
  function compactBar(){

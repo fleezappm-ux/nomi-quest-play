@@ -127,3 +127,6 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 
 ## GOLD 0.62
 - 10秒ジャストを見本と同じ「大きな10.00から開始→数え始めて…→STOP」に。通信・Firebaseルールの変更なし
+
+## GOLD 0.63
+- 選ぶボタン（ボタン1/2・名前・A/Bなど）をカードの枠の中に移動。通信・Firebaseルールの変更なし
