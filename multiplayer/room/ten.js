@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.60';
-import {showItemFx} from './itemfx.js?v=pop0.60';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.60';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.60';
-import {REST_CARD} from './deck.js?v=pop0.60';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.61';
+import {showItemFx} from './itemfx.js?v=pop0.61';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.61';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.61';
+import {REST_CARD} from './deck.js?v=pop0.61';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -130,9 +130,17 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    else box.append(el('p','ホストが次のターンへ進むのを待っています。'));}
  let lastMsgKey='';
  function render(){
-  if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();dockButtons=0;dockNotes=0;
-  paint();
+  if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();root.querySelector(':scope>.moreinfo')?.remove();dockButtons=0;dockNotes=0;
+  paint();{const ps=box.querySelectorAll('.prog span');if(ps.length){const k=state?.phase==='results'?2:(dockButtons>0?0:1);ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
   dock.className='dock'+(dockNotes===0&&dockButtons>2?' grid':dockNotes===0&&dockButtons>0?' sticky':'');
+ }
+ function compactBar(){
+  const n=turnsLeft(),L=state.card==='check'?'🥃 ドリンクタイム！':state.card==='rest'?'🛌 休憩カード（ターンに数えません）':n===null?'':n>0?`ドリンクタイムまで あと<b>${n}</b>ターン`:'次はドリンクタイム';
+  let total=0;for(const k of Object.keys(itemMap||{}))if(spentMap?.[k]===undefined)total++;
+  const tk=myTickets(),b=div('bar'),l=document.createElement('span');l.innerHTML=L;
+  const m=document.createElement('span');m.className='inv';m.textContent='🎒 '+total+'/3';
+  const t=document.createElement('span');t.textContent='🥃 '+(tk===null?'…':Math.min(tk.now,NOTCHES)+'/'+NOTCHES);
+  b.append(l,m,t);return b;
  }
  function turnBar(turn){
   const seats=div('seats');
@@ -143,7 +151,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls+(isIcon(card)?' icon':'');i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
  function cardFace(card,cls=''){return div('cface pop k-'+card+' '+cls,txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
  function cardBack(cls=''){const back=div('cback '+cls);back.setAttribute('role','img');back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
- function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ドリンクタイム',rest:'ひと休み'};const h=div('cardhead k-'+card,txt('span','pop-kicker',categories[card]||'NOMI QUEST'),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
+ function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ドリンクタイム',rest:'ひと休み'};
+  let who='';try{const t=currentTurn(state,players);who=card==='check'||card==='rest'?(categories[card]||''):(t.uid===uid?'あなた':(byUid.get(t.uid)?.name||'？'))+'さんが引いたカード'}catch{}
+  const img=popImg(card,'hero'),prog=div('prog',txt('span','on'),txt('span',''),txt('span',''));
+  const h=div('cardhead k-'+card,div('ph',img,div('phx',txt('small','pop-kicker',who),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')))),prog,txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
   function finalUi(){
   const box2=div('settle');box2.append(popImg('final','hero','最終ドリンクタイム'),txt('h3','verdict','🥃 最終ドリンクタイム！'));
   if(!drinksReady()||!historyLoaded){box2.append(txt('p','sub','みんなのメーターを集計しています…'));return box2;}
@@ -161,7 +172,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   box.className='stage '+state.phase+(state.phase!=='draw'?' art':'');if(state.phase!=='draw'){const _c=state.card||'ten';box.style?.setProperty?.('--art','url("'+artPath(_c)+'")');if(isIcon(_c))box.className+=' icon'}
   if(state.phase!=='draw'&&fxEl?.classList.contains('telopFx'))clearFx();
   const turn=currentTurn(state,players),card=state.card||'ten';root.setAttribute('data-card',card);root.setAttribute('data-phase',state.phase);
-  top.append(turnBar(turn),statusPanel());
+  if(state.phase!=='draw'){top.append(compactBar());const mi=document.createElement('details');mi.className='moreinfo';mi.append(el('summary','メンバー・お助けカードの説明'),turnBar(turn),statusPanel());root.append(mi)}else top.append(turnBar(turn),statusPanel());
   if(state.phase==='draw'){
    showTelop(turn);ensureAllDrinks();
    box.append(div('deck',cardBack()),el('h2',isBreak(state.round,turn.order.length)?'休憩カード！':'カードを引こう'),el('p',isBreak(state.round,turn.order.length)?'今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったメーターを精算します（お助けカードも使えます）。':'山札は12枚。10秒・充電・謎ボタン・ドキドキ・ヘブン＆ヘル・キス顔・王様・変態を探せ・多数派・お前なら・タップ王・むっつり'));
@@ -230,7 +241,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(typeof own==='number')box.append(el('p','送信済み · 全員の回答を待っています。'));
   else if(card==='reaction')reactionUi();
   else if(card==='battery'){
-   box.append(el('p','スマホの今の充電残量（0〜100％）を入れてね。一番少ない人が負け、うそをつくとバレるかも！'));const label=el('label','充電残量（％）'),input=document.createElement('input');input.type='number';input.min='0';input.max='100';input.step='1';input.inputMode='numeric';input.value=batteryDraft;input.disabled=pending;input.oninput=()=>{batteryDraft=input.value;};label.append(input);box.append(label);
+   {if(!batteryDraft)batteryDraft='50';const bigN=txt('div','bigNum',batteryDraft+'%'),rg=document.createElement('input');rg.type='range';rg.min='0';rg.max='100';rg.step='1';rg.value=batteryDraft;rg.className='batRange';rg.setAttribute('aria-label','充電残量（％）');rg.disabled=pending;rg.oninput=()=>{batteryDraft=rg.value;bigN.textContent=rg.value+'%';};
+   box.append(bigN,rg,txt('p','hint2','👆 つまみを左右にスライドして数字を決めよう\n本当の残量でも、ウソ（ブラフ）でもOK！'));}
    button('充電残量を送信',()=>{const value=Number(batteryDraft);if(!batteryDraft.trim()||!Number.isInteger(value)||value<0||value>100){message('充電残量は0〜100の整数で入力してください。');return;}return set(ref(db,`${base}/answers/${state.round}/${uid}`),value);},pending);
   }else if(card==='tapking'){
    if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がメーター＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}

@@ -296,3 +296,32 @@ header .brand{display:none}
 .clink .ring{position:absolute;left:50%;top:36%;width:40%;aspect-ratio:1;margin:-20% 0 0 -20%;border-radius:50%;border:5px solid #ffe9a0;opacity:0;animation:cRng .7s .5s ease-out both}
 @keyframes cRng{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(3)}}
 @media(prefers-reduced-motion:reduce){.clink .bst,.clink .ring{animation:none;opacity:1}.impactFx .clink,.clink .cl,.impactFx .late{animation:none}.clink .fl{display:none}}
+
+/* 0.61 demo-identical one-page layout */
+body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="results"]) #share,body:has(#tenGame[data-phase="settle"]) #share{display:none}
+.top .bar{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#e9d9a3;padding:4px 2px;font-weight:700}
+.top .bar b{color:#f2c14e}.top .bar .inv{margin-left:auto}
+.stage.art{display:flex;flex-direction:column;gap:10px;min-height:calc(100svh - 215px);border:3px solid #f2c14e;border-radius:22px;padding:14px;box-shadow:0 0 28px #f2c14e44,inset 0 0 0 2px #0006}
+.stage.art>.cardhead+*{margin-top:auto}.stage.art>*:last-child{margin-bottom:auto}
+.stage.art .cardhead{display:flex;flex-direction:column;gap:10px;padding:0;overflow:visible;border-radius:0}
+.stage.art .cardhead .ph{display:flex;align-items:center;gap:10px}
+.stage.art .cardhead .ph .hero{display:block;width:56px;height:56px;max-height:none;padding:0;margin:0;border-radius:12px;border:2px solid #f2c14e;object-fit:cover;aspect-ratio:1;flex:none}
+.stage.art .cardhead .ph .hero.icon{object-fit:contain;background:#0b1d14}
+.stage.art .cardhead .phx{min-width:0;text-align:left}
+.stage.art .cardhead .pop-kicker{display:block;font-size:11px;color:#e9d9a3;background:none;border:0;padding:0;margin:0;font-weight:700}
+.stage.art .cardhead h2.pop-title{margin:0;font:400 24px/1.25 'Dela Gothic One','Noto Sans JP',sans-serif;color:#f2c14e;text-shadow:2px 2px 0 #000;-webkit-text-stroke:0;text-align:left}
+.stage.art .cardhead .prog{display:flex;gap:6px;justify-content:center}
+.stage.art .cardhead .prog span{width:26px;height:6px;border-radius:3px;background:#ffffff22}
+.stage.art .cardhead .prog span.on{background:#f2c14e}
+.stage.art .cardhead p.rule{background:#0b1d14;border:2px solid #c8932a88;border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.7;color:#fdf3d0;text-align:left}
+.stage.art .cardhead .pop-kicker::before,.stage.art .cardhead .pop-kicker::after{content:none}
+.stage.art .cardhead::before,.stage.art .cardhead::after{content:none}
+.dock{padding-top:8px}
+.moreinfo{margin-top:10px;border:2px dashed #c8932a66;border-radius:14px;padding:6px 10px}
+.moreinfo summary{color:#e9d9a3;font-size:13px;min-height:36px}
+
+.stage.art .cardhead .phx,.stage.art .cardhead .phx *{text-align:left!important}
+.stage.art .bigNum{font:400 min(30vw,110px)/1 'Dela Gothic One','Noto Sans JP',sans-serif;color:#f2c14e;text-shadow:3px 3px 0 #000;text-align:center}
+.stage.art .batRange{width:100%;height:36px;accent-color:#f2c14e;background:none;border:0;box-shadow:none}
+.stage.art .hint2{font-size:13px;color:#e9d9a3!important;text-align:center;white-space:pre-line}
+.stage.art .cardhead .pop-kicker{-webkit-text-stroke:0!important;text-shadow:none!important;font:700 11px 'Noto Sans JP',sans-serif!important;color:#e9d9a3!important}
