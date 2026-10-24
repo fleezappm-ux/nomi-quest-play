@@ -332,3 +332,5 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .stage.art>.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:auto 0 0!important}
 .stage.art>.choices button{font-size:17px;min-height:64px;padding:8px;width:100%}
 .stage.art:has(>.choices)>.cardhead+*{margin-top:0}
+.stage.art>.choices>button:last-child:nth-child(odd){grid-column:1/-1}
+.stage.art>.choices>button.secondary{font-size:15px;min-height:52px}

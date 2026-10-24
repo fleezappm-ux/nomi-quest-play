@@ -130,3 +130,6 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 
 ## GOLD 0.63
 - 選ぶボタン（ボタン1/2・名前・A/Bなど）をカードの枠の中に移動。通信・Firebaseルールの変更なし
+
+## GOLD 0.64
+- ゲーム中の操作ボタン（START・送信・やった／できない など）を全部カードの枠の中に。通信・Firebaseルールの変更なし
