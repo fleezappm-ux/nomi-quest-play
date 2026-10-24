@@ -270,3 +270,29 @@ header .brand{display:none}
 @media(prefers-reduced-motion:reduce){.impactFx,.iRays,.iHero,.iName,.iSub,.telopFx,.tBand{animation:none}.iSp{display:none}}
 
 .cdBig{font:400 clamp(64px,22vw,96px)/1 'Dela Gothic One','Noto Sans JP',sans-serif;text-align:center;color:#ffd96a;-webkit-text-stroke:6px #000;paint-order:stroke fill;text-shadow:0 4px 0 #000;margin:6px 0}
+
+/* 0.60 style B: card art as blurred page background */
+.stage.art{position:relative;overflow:hidden;isolation:isolate}
+.stage.art::before{content:"";position:absolute;inset:-14px;z-index:-2;background:var(--art) center/cover no-repeat;filter:blur(4px);opacity:.5}
+.stage.art::after{content:"";position:absolute;inset:0;z-index:-1;background:#0e2619a8}
+.stage.art.icon::before{background-size:55%;opacity:.25}
+.stage.art .cardhead{background:none;border:0;box-shadow:none}
+.stage.art .cardhead .hero{display:none}
+.stage.art .cardhead p{background:#0a0805aa;border-radius:14px;border:0}
+/* 0.60 glass clink */
+.impactFx .clink{position:relative;width:min(78vw,290px);aspect-ratio:1;margin:0 auto;animation:cShk .45s .5s both}
+.clink .cl{position:absolute;inset:0;width:100%;height:100%;will-change:transform}
+.clink .l{clip-path:inset(0 50% 0 0);animation:clL 1s cubic-bezier(.3,.1,.3,1) both}
+.clink .r{clip-path:inset(0 0 0 50%);animation:clR 1s cubic-bezier(.3,.1,.3,1) both}
+@keyframes clL{0%{transform:translateX(-75%) rotate(-20deg);opacity:0}15%{opacity:1}50%{transform:translateX(0) rotate(2deg)}62%{transform:translateX(-3%) rotate(-3deg)}100%{transform:none}}
+@keyframes clR{0%{transform:translateX(75%) rotate(20deg);opacity:0}15%{opacity:1}50%{transform:translateX(0) rotate(-2deg)}62%{transform:translateX(3%) rotate(3deg)}100%{transform:none}}
+.clink .fl{position:absolute;left:50%;top:36%;width:75%;aspect-ratio:1;margin:-37% 0 0 -37%;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffe9a0 30%,transparent 66%);opacity:0;animation:cFl .75s .48s ease-out both}
+@keyframes cFl{0%{opacity:0;transform:scale(.3)}25%{opacity:1}100%{opacity:0;transform:scale(1.7)}}
+@keyframes cShk{0%,100%{transform:none}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,0)}}
+.impactFx .late{animation:cLate .5s 1.45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes cLate{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+.clink .bst{position:absolute;left:50%;top:18%;width:150%;margin-left:-75%;text-align:center;font:400 clamp(50px,17.5vw,78px)/.98 'Dela Gothic One','Noto Sans JP',sans-serif;background:linear-gradient(#ff5a4a 0,#e5131b 55%,#8f0008 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 0 0 #ffe9a0) drop-shadow(-3px 0 0 #ffe9a0) drop-shadow(0 3px 0 #ffe9a0) drop-shadow(0 -3px 0 #ffe9a0) drop-shadow(0 8px 0 #000) drop-shadow(0 0 22px #ff2a2add);white-space:nowrap;opacity:0;transform-origin:50% 100%;animation:cBst .75s .55s cubic-bezier(.2,1.5,.4,1) both;pointer-events:none;z-index:3}
+@keyframes cBst{0%{opacity:0;transform:translateY(40px) scale(.1) rotate(-14deg)}35%{opacity:1}100%{opacity:1;transform:translateY(-20px) scale(1) rotate(-6deg)}}
+.clink .ring{position:absolute;left:50%;top:36%;width:40%;aspect-ratio:1;margin:-20% 0 0 -20%;border-radius:50%;border:5px solid #ffe9a0;opacity:0;animation:cRng .7s .5s ease-out both}
+@keyframes cRng{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(3)}}
+@media(prefers-reduced-motion:reduce){.clink .bst,.clink .ring{animation:none;opacity:1}.impactFx .clink,.clink .cl,.impactFx .late{animation:none}.clink .fl{display:none}}

@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.59';
-import {showItemFx} from './itemfx.js?v=pop0.59';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.59';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.59';
-import {REST_CARD} from './deck.js?v=pop0.59';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.60';
+import {showItemFx} from './itemfx.js?v=pop0.60';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.60';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.60';
+import {REST_CARD} from './deck.js?v=pop0.60';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -25,7 +25,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(dev||bot||dead||impactKey===key||!drs.length)return;impactKey=key;
   const names=drs.map(u=>clipName(pname(u))),mx=Math.max(...names.map(n=>[...n].length)),size=fitPx(mx+(drs.length===1?1:0),drs.length>2?44:drs.length>1?54:68);
   const sp=Array.from({length:30},()=>{const a=Math.random()*6.283,r=90+Math.random()*190;return `<i style="--dx:${(Math.cos(a)*r).toFixed(0)}px;--dy:${(Math.sin(a)*r).toFixed(0)}px;animation-delay:${(.25+Math.random()*.25).toFixed(2)}s"></i>`}).join('');
-  fxOverlay('impactFx',`<div class="iRays"></div><div class="iBox"><div class="iHero ${drs.length>1?'toast':'solo'}"><img src="gold/toast-hero.webp" alt="イッテキーラ！" draggable="false"></div><div class="iName" style="font-size:${size}">${names.map(n=>`<span>${esc(n)}${drs.length===1?'<small>さん</small>':''}</span>`).join('')}</div><div class="iSub">に1杯！</div><div class="iSp">${sp}</div></div><div class="iTap">タップして つづける</div>`);
+  fxOverlay('impactFx',`<div class="iRays"></div><div class="iBox"><div class="clink"><img class="cl l" src="gold/drinktime.webp" alt="" draggable="false"><img class="cl r" src="gold/drinktime.webp" alt="" draggable="false"><div class="fl"></div><div class="ring"></div><div class="bst">イッテ<br>キーラ!!</div></div><div class="iName late" style="font-size:${size}">${names.map(n=>`<span>${esc(n)}${drs.length===1?'<small>さん</small>':''}</span>`).join('')}</div><div class="iSub late">に1杯！</div><div class="iSp">${sp}</div></div><div class="iTap">タップして つづける</div>`);
  }
  const VL=new Set(['vote','muttsuri','mind']);
  let lastCard=null,countedRound=0;const soloAt={};const missionDone=new Set(),specialSeen=new Set(),seenPrompts={vote:new Set(),muttsuri:new Set(),majority:new Set(),mind:new Set()},promptLists={vote:votePrompts,muttsuri:muttsuriPrompts,majority:majorityPrompts,mind:mindPrompts};
@@ -158,7 +158,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function paint(){
   if(fin){root.setAttribute('data-card','final');root.setAttribute('data-phase','final');box.className='stage results';box.append(finalUi());ensureAllDrinks();if(host)button('これでゲームを終了する',async()=>{if(window.confirm('全員のゲームを終了します。よろしいですか？'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');},pending);else box.append(el('p','ホストがゲームを終了するのを待っています。'));return;}
   if(!state){box.append(el('p',host?'ゲームを準備しています…':'ホストのゲーム準備を待っています…'));return;}
-  box.className='stage '+state.phase;
+  box.className='stage '+state.phase+(state.phase!=='draw'?' art':'');if(state.phase!=='draw'){const _c=state.card||'ten';box.style?.setProperty?.('--art','url("'+artPath(_c)+'")');if(isIcon(_c))box.className+=' icon'}
   if(state.phase!=='draw'&&fxEl?.classList.contains('telopFx'))clearFx();
   const turn=currentTurn(state,players),card=state.card||'ten';root.setAttribute('data-card',card);root.setAttribute('data-phase',state.phase);
   top.append(turnBar(turn),statusPanel());
@@ -230,7 +230,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(typeof own==='number')box.append(el('p','送信済み · 全員の回答を待っています。'));
   else if(card==='reaction')reactionUi();
   else if(card==='battery'){
-   const label=el('label','充電残量（％）'),input=document.createElement('input');input.type='number';input.min='0';input.max='100';input.step='1';input.inputMode='numeric';input.value=batteryDraft;input.disabled=pending;input.oninput=()=>{batteryDraft=input.value;};label.append(input);box.append(label);
+   box.append(el('p','スマホの今の充電残量（0〜100％）を入れてね。一番少ない人が負け、うそをつくとバレるかも！'));const label=el('label','充電残量（％）'),input=document.createElement('input');input.type='number';input.min='0';input.max='100';input.step='1';input.inputMode='numeric';input.value=batteryDraft;input.disabled=pending;input.oninput=()=>{batteryDraft=input.value;};label.append(input);box.append(label);
    button('充電残量を送信',()=>{const value=Number(batteryDraft);if(!batteryDraft.trim()||!Number.isInteger(value)||value<0||value>100){message('充電残量は0〜100の整数で入力してください。');return;}return set(ref(db,`${base}/answers/${state.round}/${uid}`),value);},pending);
   }else if(card==='tapking'){
    if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がメーター＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}
