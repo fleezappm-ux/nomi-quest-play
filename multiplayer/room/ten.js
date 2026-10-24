@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.61';
-import {showItemFx} from './itemfx.js?v=pop0.61';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.61';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.61';
-import {REST_CARD} from './deck.js?v=pop0.61';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.62';
+import {showItemFx} from './itemfx.js?v=pop0.62';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.62';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.62';
+import {REST_CARD} from './deck.js?v=pop0.62';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -131,7 +131,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  let lastMsgKey='';
  function render(){
   if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();root.querySelector?.(':scope>.moreinfo')?.remove();dockButtons=0;dockNotes=0;
-  paint();{const ps=box.querySelectorAll?.('.prog span')||[];if(ps.length){const k=state?.phase==='results'?2:(dockButtons>0?0:1);ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
+  paint();{const ps=box.querySelectorAll?.('.prog span')||[];if(ps.length){const k=state?.phase==='results'?ps.length-1:(state?.card==='ten'?(began!==null?1:(elapsed!==null?2:0)):(dockButtons>0?0:1));ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
   dock.className='dock'+(dockNotes===0&&dockButtons>2?' grid':dockNotes===0&&dockButtons>0?' sticky':'');
  }
  function compactBar(){
@@ -153,8 +153,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function cardBack(cls=''){const back=div('cback '+cls);back.setAttribute('role','img');back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
  function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ドリンクタイム',rest:'ひと休み'};
   let who='';try{const t=currentTurn(state,players);who=card==='check'||card==='rest'?(categories[card]||''):(t.uid===uid?'あなた':(byUid.get(t.uid)?.name||'？'))+'さんが引いたカード'}catch{}
-  const img=popImg(card,'hero'),prog=div('prog',txt('span','on'),txt('span',''),txt('span',''));
-  const h=div('cardhead k-'+card,div('ph',img,div('phx',txt('small','pop-kicker',who),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')))),prog,txt('p','rule',cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
+  const img=popImg(card,'hero'),prog=div('prog',...Array.from({length:card==='ten'?4:3},(_,n)=>txt('span',n?'':'on')));
+  const h=div('cardhead k-'+card,div('ph',img,div('phx',txt('small','pop-kicker',who),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')))),prog,txt('p','rule',card==='ten'?'心の中で10秒数えて、ぴったりで押そう！\nいちばん遠い人が負け。\n途中で数字は見えなくなるよ。':cards[card].rule));h.setAttribute('data-g',glyphs[card]||'');return h;}
   function finalUi(){
   const box2=div('settle');box2.append(popImg('final','hero','最終ドリンクタイム'),txt('h3','verdict','🥃 最終ドリンクタイム！'));
   if(!drinksReady()||!historyLoaded){box2.append(txt('p','sub','みんなのメーターを集計しています…'));return box2;}
@@ -248,8 +248,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    if(tapStart===null){box.append(el('p','START後の5秒間、ボタンを連打！ 少なかった人がメーター＋1。'));button('START（5秒）',async()=>{tapStart=performance.now();tapCount=0;const round=state.round,ms=globalThis.__nqTapMs??5000;tapTimer=setTimeout(async()=>{tapTimer=null;if(dead||state?.round!==round)return;try{await set(ref(db,`${base}/answers/${round}/${uid}`),Math.min(999,tapCount));}catch{message('タップ数を送れませんでした。');}render();},ms);},pending);}
    else{const pad=txt('button','tapbig','TAP！'),cnt=txt('p','tapcount','0回');pad.onpointerdown=(e)=>{e?.preventDefault?.();tapCount++;cnt.textContent=tapCount+'回';};pad.onclick=null;box.append(cnt,pad);}
   }else if(elapsed!==null){box.append(el('p','計測完了。結果を送信してください。'));button('結果を送信',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),elapsed),pending);}
-  else if(began!==null){box.append(el('p','10秒だと思ったらSTOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
-  else{box.append(el('p','時計を見ずに10秒を狙おう。自分のタイミングでSTART。'));button('START',async()=>{began=performance.now();},pending);}
+  else if(began!==null){const bn=txt('div','bigNum','0.0'),t0=began,iv=setInterval(()=>{if(!bn.isConnected||began!==t0){clearInterval(iv);return}const e=(performance.now()-t0)/1000;bn.textContent=e<3?e.toFixed(1):'？？？'},50);box.append(txt('p','hint2','数え始めて…'),bn,txt('p','hint2','10秒だと思ったら STOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
+  else{box.append(txt('div','bigNum','10.00'),txt('p','hint2','準備ができたらスタート'));button('START',async()=>{began=performance.now();},pending);}
   if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
  }
  const settledAll=()=>players.every(p=>settledMap[p.uid]===true);
