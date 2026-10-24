@@ -136,3 +136,6 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 
 ## GOLD 0.65
 - お題・A/B・王様の命令などの要の一文を、白い「質問カード」（見本B）で大きく表示。通信・Firebaseルールの変更なし
+
+## GOLD 0.66（カード裏面・公開）
+- カード裏面を、ロゴ入りの採用デザイン（card-back-nomi-quest.webp、約66KB）に差し替え。縦横比2:3のまま全体を表示。通信・Firebaseルールの変更なし
