@@ -334,3 +334,15 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .stage.art:has(>.choices)>.cardhead+*{margin-top:0}
 .stage.art>.choices>button:last-child:nth-child(odd){grid-column:1/-1}
 .stage.art>.choices>button.secondary{font-size:15px;min-height:52px}
+
+/* 0.65 question card (sample B) for the key line of every game */
+.stage.art>h3:not(.verdict){position:relative;background:#fff7dc;color:#2a1a02!important;border:4px solid #6b4a10;border-radius:20px;padding:20px 16px 14px;margin:14px 0 4px;text-align:center;box-shadow:0 6px 0 #6b4a10;font:900 clamp(24px,7.4vw,32px)/1.4 'Noto Sans JP',sans-serif!important;text-shadow:none!important;-webkit-text-stroke:0!important;text-wrap:balance;overflow-wrap:anywhere}
+.stage.art>h3:not(.verdict)::before{position:absolute;left:-6px;top:-18px;width:44px;height:44px;border-radius:50%;background:#f2c14e;border:3px solid #6b4a10;font:400 22px/38px 'Dela Gothic One',sans-serif;color:#2a1a02;text-align:center;-webkit-text-stroke:0}
+#tenGame[data-card=vote] .stage.art>h3::before,#tenGame[data-card=muttsuri] .stage.art>h3::before,#tenGame[data-card=mind] .stage.art>h3::before{content:"Q"}
+#tenGame[data-card=majority] .stage.art>h3::before{content:"A/B";font-size:13px;line-height:38px}
+#tenGame[data-card=king] .stage.art>h3::before{content:"👑";font-size:20px}
+#tenGame[data-card=danger] .stage.art>h3::before{content:"?"}
+
+#tenGame[data-card=king] .stage.art>h3::before{content:"!"}
+.stage.art>h3:not(.verdict){white-space:pre-line}
+.stage.art:has(>h3:not(.verdict)) .cardhead p.rule{font-size:12px;padding:6px 10px;line-height:1.6}

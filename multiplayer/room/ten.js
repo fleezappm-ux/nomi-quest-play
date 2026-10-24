@@ -1,9 +1,9 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.64';
-import {showItemFx} from './itemfx.js?v=pop0.64';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.64';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.64';
-import {REST_CARD} from './deck.js?v=pop0.64';
+import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.65';
+import {showItemFx} from './itemfx.js?v=pop0.65';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.65';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.65';
+import {REST_CARD} from './deck.js?v=pop0.65';
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
@@ -215,7 +215,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   }
   if(card==='danger'||card==='king'){dangerUi(turn);return;}
   if(VL.has(card)){
-   box.append(el('h3',`お題：${promptLists[card][state.prompt]??'確認中'}`));
+   box.append(el('h3',`${promptLists[card][state.prompt]??'確認中'}`));
    if(typeof own==='number')box.append(el('p','投票済み · 全員の投票を待っています。（誰に入れたかは他の人には見えません）'));
    else{box.append(el('p','当てはまりそうな人に1票。匿名です。'));for(const p of players)button(p.uid===uid?`${p.name}（自分）`:p.name,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
    if(host)box.append(el('p',`投票 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
@@ -232,7 +232,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   }
   if(card==='majority'){
    const pair=promptLists[card][state.prompt]||['確認中','確認中'],mind=false,actorName='';
-   box.append(el('h3','A：'+pair[0]+'　／　B：'+pair[1]));
+   box.append(el('h3','A：'+pair[0]+'\nB：'+pair[1]));
    if(typeof own==='number')box.append(el('p',mind?'回答済み · みんなの回答を待っています。（答えは結果まで秘密）':'回答済み · みんなの回答を待っています。（結果まで秘密）'));
    else{box.append(el('p',mind?(turn.uid===uid?'あなたの本当の答えを選んでください。みんなが予想します。':`${actorName}の答えを予想してください。`):'自分の答えを選んでください。多数派がメーター＋1。'));
     for(const [i,label] of ['A','B'].entries())button(`${label}：${pair[i]}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),i),pending);}

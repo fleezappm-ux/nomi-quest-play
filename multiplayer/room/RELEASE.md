@@ -133,3 +133,6 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 
 ## GOLD 0.64
 - ゲーム中の操作ボタン（START・送信・やった／できない など）を全部カードの枠の中に。通信・Firebaseルールの変更なし
+
+## GOLD 0.65
+- お題・A/B・王様の命令などの要の一文を、白い「質問カード」（見本B）で大きく表示。通信・Firebaseルールの変更なし
