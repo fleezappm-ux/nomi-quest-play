@@ -130,8 +130,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    else box.append(el('p','ホストが次のターンへ進むのを待っています。'));}
  let lastMsgKey='';
  function render(){
-  if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();root.querySelector(':scope>.moreinfo')?.remove();dockButtons=0;dockNotes=0;
-  paint();{const ps=box.querySelectorAll('.prog span');if(ps.length){const k=state?.phase==='results'?2:(dockButtons>0?0:1);ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
+  if(dead)return;{const mk=`${state?.round}|${state?.card}|${state?.phase}`;if(mk!==lastMsgKey){lastMsgKey=mk;message('');}}top.replaceChildren();box.replaceChildren();dock.replaceChildren();root.querySelector?.(':scope>.moreinfo')?.remove();dockButtons=0;dockNotes=0;
+  paint();{const ps=box.querySelectorAll?.('.prog span')||[];if(ps.length){const k=state?.phase==='results'?2:(dockButtons>0?0:1);ps.forEach((e,n)=>e.className=n<=k?'on':'')}}
   dock.className='dock'+(dockNotes===0&&dockButtons>2?' grid':dockNotes===0&&dockButtons>0?' sticky':'');
  }
  function compactBar(){
