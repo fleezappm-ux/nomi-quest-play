@@ -38,3 +38,4 @@ export function onValue(r,cb){
 }
 export const onDisconnect=()=>({set:async()=>{},cancel:async()=>{}});
 export const dump=()=>clone(tree);
+if(globalThis.__nqTest)globalThis.__nqLocal={set,get,ref,dump};

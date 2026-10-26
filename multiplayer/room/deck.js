@@ -6,7 +6,7 @@ export const majorityPrompts=[["海派","山派"],["朝型","夜型"],["甘い�
 export const mindPrompts=["合コンで最初に連絡先を聞きそうな人は？", "酔って告白しそうな人は？", "酔うと脱ぎ出しそうな人は？", "旅行先でナンパされたらついて行きそうな人は？", "泣き上戸になりそうな人は？", "二次会で最後まで残っていそうな人は？", "友達の恋人にこっそり惚れそうな人は？", "ドッキリに一番引っかかりそうな人は？", "ジェットコースターで叫びまくりそうな人は？", "勢いで人生を変える決断をしそうな人は？", "話を盛りがちな人は？", "深夜に元恋人へ連絡しそうな人は？", "宝くじが当たったら真っ先に仕事を辞めそうな人は？", "ホストやキャバクラにハマりそうな人は？", "結婚が一番早そうな人は？", "浮気がバレて土下座していそうな人は？", "終電を逃しても平気そうな人は？", "初対面でも誰とでも仲良くなれそうな人は？", "朝まで飲んでも元気そうな人は？", "酔って財布を落としそうな人は？","一番最初に寝落ちしそうな人は？","飲み会の会計でもめそうな人は？","道に迷っても聞かなそうな人は？","突然ものまねを始めそうな人は？","帰りのタクシーで爆睡していそうな人は？","昔のあだ名が一番ひどそうな人は？"];
 export function pickPrompt(seen,random=Math.random,size=votePrompts.length){const all=Array.from({length:size},(_,i)=>i),left=all.filter(i=>!seen.has(i));const pool=left.length?left:all;return pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];}
 export const cards = {
- check: {title:'ドリンクタイム',rule:'8ターンごとに自動で始まります。結果発表 → お助けカード受付（1分）→ イッテキーラ！ 無理せず、水も飲もう。'},
+ check: {title:'ドリンクタイム',rule:'8ターンごとに自動で始まります。結果発表 → 全員が「結果を確認した」→ お助けカード受付（30秒）→ イッテキーラ！'},
   rest: {title:'休憩カード',rule:'今の自分の状態を選ぶと、全員の状態が見える。確認するだけのカード。ターンには数えません。無理せず、水も飲もう。'},
  muttsuri: {title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
  tapking: {title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がメーター＋1（同数ならルーレットで1人）。'},
@@ -51,7 +51,7 @@ function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='
 export const items={
  barrier:{icon:'🛡️',name:'バリア',desc:'ドリンクタイムで自分に来た1杯を無効にする。',usable:true},
  cute:{icon:'🥺',name:'なすりつけ',desc:'ドリンクタイムで1杯が自分に来たとき、だれかになすりつける。',usable:true},
- angel:{icon:'👼',name:'身代わり',desc:'ドリンクタイムで、飲む人の代わりに1杯を飲んであげる。',usable:true}
+ angel:{icon:'👼',name:'身代わり',desc:'最終結果が出てからの10秒間に、飲む人の代わりに1杯を飲んであげる。',usable:true}
 };
 export const itemKinds=Object.keys(items);
 // お助けカードは、バリア・なすりつけ・身代わりの3種からランダムに配る
