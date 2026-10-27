@@ -359,7 +359,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   }else if(elapsed!==null){box.append(el('p','計測完了。結果を送信してください。'));button('結果を送信',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),elapsed),pending);}
   else if(began!==null){const bn=txt('div','bigNum','0.0'),t0=began,iv=setInterval(()=>{if(!bn.isConnected||began!==t0){clearInterval(iv);return}const e=(performance.now()-t0)/1000;bn.textContent=e<3?e.toFixed(1):'？？？'},50);box.append(txt('p','hint2','数え始めて…'),bn,txt('p','hint2','10秒だと思ったら STOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
   else{box.append(txt('div','bigNum','10.00'),txt('p','hint2','準備ができたらスタート'));button('START',async()=>{began=performance.now();},pending);}
-  if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+  if(host&&card!=='roulette')box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
  }
  const settledAll=()=>players.every(p=>settledMap[p.uid]===true);
  const itemsReady=()=>drinkMap!==undefined&&itemMap!==undefined&&spentMap!==undefined&&grantMap!==undefined&&(Object.keys(itemMap).length>0||grantFailed);
@@ -578,7 +578,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
     showImpact(dr,'r'+state.round);
     const why={};for(const c of cups){const o=c.out;if(!o.cancelled&&o.drinker)why[o.drinker]=o.angel?'👼 身代わりで飲む':o.via?`🥺 ${pname(o.via)}からなすりつけられた`:(plan[c.p.uid].lime?'🍋 ライム（メーター5）':'👑 メーターが一番多い');}
     f.append(txt('h3','verdict',dr.length===1?'今回飲む人は…':`今回飲む人は…（${dr.length}人）`),div('dhero n'+dr.length,...dr.map(u=>div('hcol',avImgEl(byUid.get(u)),txt('b','',pname(u)+(u===uid?'（あなた）':(dr.length>1?'':'さん'))),txt('span','why',why[u]||'')))));
-    if(open){
+    if(open&&!canUse&&!marks3.includes('y'))f.append(txt('p','fine','…'));
+    else if(open){
      const R=17,C=2*Math.PI*R,ring=div('aring');
      ring.innerHTML=`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17"></circle><circle class="pr" cx="20" cy="20" r="17" style="stroke-dasharray:${C.toFixed(1)}"></circle></svg><b></b>`;
      const pr=ring.querySelector('.pr'),num=ring.querySelector('b');
@@ -987,7 +988,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   }
   box.append(strip);
   if(!view.busy&&n===0&&fin===null)view.idle(byUid.get(u)?.name||'？');
-  if(!view.busy&&n===0&&fin===null)view.setText(`${nm}の番`,'ルーレットに挑戦するか決めています');
+  if(!view.busy&&n===0&&fin===null)view.setText(mine?'あなたの番':`${nm}の番`,mine?'ルーレットに挑戦しますか？':'ルーレットに挑戦するか決めています');
   if(fin!==null){/* 確定の表示中：見せるだけ */}
   else if(n===0){
    if(mine){
