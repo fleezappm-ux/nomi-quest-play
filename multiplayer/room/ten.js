@@ -86,12 +86,14 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
 
  // ---- 開発者モード(?npc=1&dev=1)：全ゲームを順番どおりでなく好きなカードで試す。練習モード専用。----
  const dev=isLocal&&uid==='me'&&new URL(location.href).searchParams.get('dev')==='1';
+ let devLast=null;const devIdx={};
+ function devNextPrompt(key){const n=promptLists[key].length,i=devIdx[key]===undefined?0:(devIdx[key]+1)%n;devIdx[key]=i;return i;}
  function devForce(key){
-  return runTransaction(ref(db,base+'/state'),s=>{
+  devLast=key;return runTransaction(ref(db,base+'/state'),s=>{
    if(!s||s.phase!=='draw')return;
    const order=Object.values(s.order||players.map(p=>p.uid)),n=order.length,idx=(s.round-1)%n,mi=order.indexOf(uid),rot=order.slice();
    if(mi>=0&&idx!==mi){[rot[idx],rot[mi]]=[rot[mi],rot[idx]];}
-   return {...s,order:rot,actor:rot[idx],phase:'measuring',card:key,...(promptLists[key]?{prompt:pickPrompt(seenPrompts[key],Math.random,promptLists[key].length)}:{})};
+   return {...s,order:rot,actor:rot[idx],phase:'measuring',card:key,...(promptLists[key]?{prompt:devNextPrompt(key)}:{})};
   },{applyLocally:false});
  }
  async function devBreak(kind){
@@ -103,7 +105,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const wrap=document.createElement('details');wrap.className='devpanel';wrap.open=true;
   wrap.append(el('summary','🛠 開発者モード：試したいものを選ぶ'));
   const g=div('devgrid'),b=(label,fn,cls='')=>{const x=el('button',label);x.className='secondary '+cls;x.onclick=async()=>{if(pending||dead)return;pending=true;try{await fn();}finally{pending=false;if(!dead)render();}};g.append(x);};
-  for(const k of ALL_CARDS)b(cards[k].title.replace(/^👑\s*/,''),()=>devForce(k));
+  if(devLast&&cards[devLast])b('▶ 次へ（同じカード：'+cards[devLast].title.replace(/^👑\s*/,'')+(promptLists[devLast]?'・お題'+((devIdx[devLast]??-1)+2>promptLists[devLast].length?1:(devIdx[devLast]??-1)+2)+'/'+promptLists[devLast].length:'')+'）',()=>devForce(devLast),'devnext');
+  for(const k of [...ALL_CARDS.filter(c=>c!=='danger'),'grid'])b(cards[k].title.replace(/^👑\s*/,''),()=>devForce(k));
   wrap.append(g,txt('p','fine','休憩・ドリンクタイム（メーターを自動で配ります）'));
   const g2=div('devgrid');
   const b2=(label,kind)=>{const x=el('button',label);x.className='secondary';x.onclick=async()=>{if(pending||dead)return;pending=true;try{await devBreak(kind);}finally{pending=false;if(!dead)render();}};g2.append(x);};

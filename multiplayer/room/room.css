@@ -171,6 +171,7 @@ button.chip[aria-pressed="true"]{background:linear-gradient(#fbe591,#c28a1c);col
 .devpanel summary{color:var(--g1);font-weight:900}
 .devgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .devgrid button{margin:0;min-height:44px;font-size:13px;padding:6px}
+.devgrid .devnext{grid-column:1/-1;font-weight:700}
 /* ---- 簡易ホーム (0.46) ---- */
 h1.logo[hidden],#lead[hidden],.welcome[hidden],#nameBox[hidden]{display:none}
 .homeLogo{display:block;width:64%;max-width:260px;height:auto;margin:6px auto 4px;filter:drop-shadow(0 0 18px rgba(244,212,111,.35))}
