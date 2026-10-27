@@ -26,7 +26,20 @@ let generation = 0;
 let tenStop, npcGame;
 let sharePhase;
 function savedSession() { if (isLocal) return null; try { const s=JSON.parse(LS.getItem('nq-room-session')); return validRoom(s?.roomId) && /^[0-5]$/.test(String(s.slot)) ? s : null; } catch { return null; } }
-function resumeOffer() { $('resumeBox').hidden = !savedSession(); }
+function resumeOffer() { $('resumeBox').hidden = !savedSession(); homeResumeSync(); }
+// ホームの「前の部屋に戻る」：記録が残っているときだけ表示（押すと待合室タブと同じ復帰処理）
+function homeResumeSync(){
+ let b=document.getElementById('homeResume');
+ const s=savedSession();
+ if(!s){if(b)b.hidden=true;return;}
+ if(!b){
+  const gp=document.getElementById('goPlay');if(!gp)return;
+  b=document.createElement('button');b.id='homeResume';b.type='button';b.className='nqh-button nqh-secondary';b.style.marginTop='10px';
+  b.onclick=()=>{if($('resume').disabled)message('通信の準備中です。少し待ってからもう一度押してね。');else $('resume').click();};
+  gp.insertAdjacentElement('afterend',b);
+ }
+ b.hidden=false;b.textContent='↩ 前の部屋に戻る';
+}
 const avatars = ['🍻','🌙','⭐','🌈','🔥','🎲'];
 $('homeLink').href = homeUrl;
 $('inviteJoin').hidden = !roomId;
