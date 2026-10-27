@@ -1,21 +1,21 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 const LS=(()=>{const m={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}catch{ok=false;}return{getItem:k=>{if(ok)try{return localStorage.getItem(k);}catch{}return k in m?m[k]:null;},setItem:(k,v)=>{m[k]=String(v);if(ok)try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{delete m[k];if(ok)try{localStorage.removeItem(k);}catch{}}};})();
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.67';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.68';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.67';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.67';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.67';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.67';
-import { track, logEnabled } from './telemetry.js?v=pop0.67';
-import { ensureAdult } from './agegate.js?v=pop0.67';
-import { AVATARS, avatarOf } from './avatars.js?v=pop0.67';
+import { attachTen } from './ten.js?v=pop0.68';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.68';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.68';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.68';
+import { track, logEnabled } from './telemetry.js?v=pop0.68';
+import { ensureAdult } from './agegate.js?v=pop0.68';
+import { AVATARS, avatarOf } from './avatars.js?v=pop0.68';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.67'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.68'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');

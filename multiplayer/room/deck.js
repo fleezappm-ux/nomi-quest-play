@@ -102,7 +102,7 @@ export function tiedTargets(state,players){return players.filter(p=>drinkBase(st
 export const tieCards=['ten','battery','tapking','vote','muttsuri','mind','majority'];
 // Settlement starts when pending tickets reach three, rather than on a fixed schedule.
 export const checkStates=[['😊','まだまだ元気'],['🥴','ほろ酔い'],['😵','そろそろキツい'],['🚰','水が欲しい']];
-export let REST_CARD=true; // 休憩カード：Firebaseルール公開ずみ(0.57)
+export let REST_CARD=false; // 休憩カードは廃止(0.68)。ゲームの流れには出さない
 export const BREAK_DRAWS=8;
 export const breakPeriod=()=>BREAK_DRAWS+1; // legacy helper, no longer used to schedule settlement
 export const isBreak=()=>false; // 休憩は8ターンごとにホストが開始する
