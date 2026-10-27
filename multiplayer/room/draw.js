@@ -13,8 +13,8 @@ export const DRAW_CONFIG={
 };
 // 区分（今回はこの対応で固定）
 export const SOLO_GROUP=['tapking','ten','battery'];
-export const SPECIAL_GROUP=['danger','mission','king'];
-export const PARTY_GROUP=['reaction','buttons'];
+export const SPECIAL_GROUP=['roulette','mission','king']; // 10番は新ルール(ルーレット三段勝負)。旧danger(誘う)は出さない
+export const PARTY_GROUP=['reaction','grid'];
 export const VOTE_KINDS=['vote','muttsuri','majority','mind'];
 
 // ---- 乱数（seed固定）----
@@ -35,7 +35,7 @@ export const mindToText=a=>a.join(',');
 export const mindFromText=t=>typeof t==='string'&&t?t.split(',').map(Number).filter(Number.isInteger):[];
 
 // ---- クールの計画 ----
-// 1クール分(8ターン)の並び。'vote' / 'solo' / 'party:reaction' / 'party:buttons' / 'special'
+// 1クール分(8ターン)の並び。'vote' / 'solo' / 'party:reaction' / 'party:grid' / 'special'
 function planOne(seed,c,prevLastSpecial){
  const C=DRAW_CONFIG,rng=rngFrom(seed+':cool'+c),slots=Array(C.COOL_TURNS).fill('vote');
  const free=()=>slots.map((s,i)=>i).filter(i=>slots[i]==='vote');
@@ -46,7 +46,7 @@ function planOne(seed,c,prevLastSpecial){
   if(ok.length)slots[ok[Math.min(ok.length-1,Math.floor(ps*ok.length))]]='special';
  }
  if(rr<C.PARTY_CHANCE){const f=free();slots[f[Math.min(f.length-1,Math.floor(rparty1*f.length))]]='party:reaction';}
- if(pb<C.PARTY_CHANCE){const f=free();if(f.length)slots[f[Math.min(f.length-1,Math.floor(rparty2*f.length))]]='party:buttons';}
+ if(pb<C.PARTY_CHANCE){const f=free();if(f.length)slots[f[Math.min(f.length-1,Math.floor(rparty2*f.length))]]='party:grid';}
  if(rsolo<C.SOLO_CHANCE){const f=free();if(f.length)slots[f[Math.min(f.length-1,Math.floor(psolo*f.length))]]='solo';}
  return slots;
 }
@@ -86,8 +86,10 @@ export function chooseCard(history,ctx){
  };
  if(slot==='solo'){return{key:pickOne(cycle(SOLO_GROUP),rng),kind:'solo'};}
  if(slot==='special'){
-  let left=cycle(SPECIAL_GROUP);
-  if(ctx.actorDidMission){const alt=left.filter(c=>c!=='mission');left=alt.length?alt:SPECIAL_GROUP.filter(c=>c!=='mission');}
+  // 全員がキス顔を終えたら、キス顔は山札から消える（missionAll）
+  const grp=ctx.missionAll?SPECIAL_GROUP.filter(c=>c!=='mission'):SPECIAL_GROUP;
+  let left=cycle(grp);
+  if(ctx.actorDidMission){const alt=left.filter(c=>c!=='mission');left=alt.length?alt:grp.filter(c=>c!=='mission');}
   return{key:pickOne(left,rng),kind:'special'};
  }
  if(slot.startsWith('party:'))return{key:slot.slice(6),kind:'party'};
@@ -97,9 +99,17 @@ export function chooseCard(history,ctx){
  const n=rounds.filter(r=>isVoteKey(history[r])).length,epoch=Math.floor(n/tokens.length);
  return{key:shuffled(tokens,rngFrom(seed+':vote'+epoch))[n%tokens.length],kind:'vote'};
 }
-// これまでの記録から「このアクターがすでにキス顔をやったか」
-export function didMission(history,order,actor,beforeRound){
+// これまでの記録から「このアクターがすでにキス顔を終えたか」。終えた回だけ md（deck/md/<ラウンド>）に1が記録される
+// （「やらない」「やり直し」で終わった回は記録されず、また選ばれうる）。md を渡さない場合は、引いた回すべてを終えたものとして数える（旧動作）。
+export function didMission(history,order,actor,beforeRound,md){
  const n=order.length;
- for(const [r,k] of Object.entries(history)){const rr=Number(r);if(rr<beforeRound&&parseKey(k).card==='mission'&&order[(rr-1)%n]===actor)return true;}
+ for(const [r,k] of Object.entries(history)){const rr=Number(r);if(rr<beforeRound&&parseKey(k).card==='mission'&&order[(rr-1)%n]===actor&&(!md||md[rr]===1))return true;}
  return false;
+}
+
+// 王様の命令：王様に見せる命令4つ（カテゴリーごとに1つ）。seed＋ラウンド＋回（0=最初の王様／1=譲られた王様）から決まるので、
+// 再読み込みしても引き直しにならず、どの端末でも同じ。順番はシャッフル（位置でカテゴリーが分からないように）。
+export function pickKingOrders(seed,round,attempt,cats){
+ const rng=rngFrom(seed+':king'+round+':'+attempt);
+ return shuffled(cats.map(([a,b])=>a+Math.min(b-a-1,Math.floor(rng()*(b-a)))),rng);
 }

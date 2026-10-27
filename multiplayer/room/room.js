@@ -1,21 +1,21 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 const LS=(()=>{const m={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}catch{ok=false;}return{getItem:k=>{if(ok)try{return localStorage.getItem(k);}catch{}return k in m?m[k]:null;},setItem:(k,v)=>{m[k]=String(v);if(ok)try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{delete m[k];if(ok)try{localStorage.removeItem(k);}catch{}}};})();
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.68';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.69';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.68';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.68';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.68';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.68';
-import { track, logEnabled } from './telemetry.js?v=pop0.68';
-import { ensureAdult } from './agegate.js?v=pop0.68';
-import { AVATARS, avatarOf } from './avatars.js?v=pop0.68';
+import { attachTen } from './ten.js?v=pop0.69';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.69';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.69';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.69';
+import { track, logEnabled } from './telemetry.js?v=pop0.69';
+import { ensureAdult } from './agegate.js?v=pop0.69';
+import { AVATARS, avatarOf } from './avatars.js?v=pop0.69';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.68'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.69'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -392,7 +392,7 @@ try {
   ['遊び方','部屋に集まって、順番にカードを引きます。お題に挑戦して、負けた人は「ショットメーター」が1つたまります。実際に飲むかどうかは自己申告です。'],
   ['ショットメーターとライム','メーターは5目盛り。5つたまる（ライムが付く）と、その人は1杯が確定します。メーターが少ないうちは、まだセーフです。'],
   ['ドリンクタイムと休憩カード','8ターンごとに自動でドリンクタイム。結果発表 → 全員が「結果を確認した」→ お助けカード受付（30秒）→ イッテキーラ！ ライムの人は全員1杯、いなければ一番メーターが多い人が1杯（同率は全員）。飲んだらメーターは0に戻ります。実際に飲んだイッテキーラが3杯、6杯…と増えると、次のクールに「休憩カード」（みんなの状態を確認するだけ）が1枚入ります。'],
-  ['お助けカードと約束','10秒ジャスト（±0.5秒）やゲームに勝つと、お助けカードがもらえます。バリアとなすりつけは、お助けカード受付の30秒間に使えます。身代わりは、最終結果が出てからの10秒間に使えます。無理せず、水も飲もう。20歳以上の方だけで楽しんでください。']
+  ['お助けカードと約束','10秒ジャスト（±0.1秒）やゲームに勝つと、お助けカードがもらえます。バリアとなすりつけは、お助けカード受付の30秒間に使えます。身代わりは、最終結果が出てからの10秒間に使えます。無理せず、水も飲もう。20歳以上の方だけで楽しんでください。']
  ];
  let step=0,opener=null;
  const paint=()=>{$('rulesStep').textContent=String(step+1);const b=$('rulesBody');b.replaceChildren();const t=document.createElement('h3');t.textContent=slides[step][0];const p=document.createElement('p');p.textContent=slides[step][1];b.append(t,p);$('rulesPrev').disabled=step===0;$('rulesNext').textContent=step===slides.length-1?'とじる':'次へ →';};

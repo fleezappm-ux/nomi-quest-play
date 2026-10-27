@@ -1,17 +1,20 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal} from './fb.js?v=pop0.68';
-import {showItemFx} from './itemfx.js?v=pop0.68';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.68';
-import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.68';
-import {REST_CARD} from './deck.js?v=pop0.68';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText} from './draw.js?v=pop0.68';
-import {avatarOf} from './avatars.js?v=pop0.68';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.69';
+import {showItemFx} from './itemfx.js?v=pop0.69';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.69';
+import {ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices} from './deck.js?v=pop0.69';
+import {REST_CARD} from './deck.js?v=pop0.69';
+import {genLayout,replay as gridReplay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.69';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.69';
+import {createRoulette} from './roulette-ui.js?v=pop0.69';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.69';
+import {avatarOf} from './avatars.js?v=pop0.69';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
  top.className='top';box.className='stage';dock.className='dock';root.replaceChildren(top,box,dock);
  let dockButtons=0,dockNotes=0;
- const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={ten:'十',battery:'電',buttons:'謎',reaction:'恋',danger:'誘',mission:'唇',king:'王',vote:'変',muttsuri:'隠',tapking:'連',check:'飲',rest:'休'};
+ const avatars=['🍻','🌙','⭐','🌈','🔥','🎲'],glyphs={roulette:'運',ten:'十',battery:'電',buttons:'謎',reaction:'恋',grid:'謎',danger:'誘',mission:'唇',king:'王',vote:'変',muttsuri:'隠',tapking:'連',check:'飲',rest:'休'};
  let telopRound=null,impactKey=null,fxEl=null;
  const clipName=n=>{const a=[...String(n||'')];return a.length>10?a.slice(0,10).join('')+'…':a.join('')};
  const fitPx=(len,max)=>`min(${max}px,calc((100vw - 72px) / ${Math.max(1,len)}))`;
@@ -117,16 +120,24 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  // ---- 0.56 基本ルール：ドリンクタイム＝8ターンごとに自動（ターンに数えない）／休憩カード＝状態を確認するだけ ----
  const COOL_TURNS=8;
  // ---- 0.68 新しい出し方：部屋で共有する記録(sessions/$room/deck)だけで、どの端末でも同じカードが決まる ----
- let deckSeed=null,deckMind=[],deckDrawn={};
+ let deckSeed=null,deckMind=[],deckDrawn={},deckMd={};
+ let gmLg=[],gmRq={},gmLay=null,gmStop=null,gmRqStop=null,gmLayStop=null,gmIniting=false,gmBusy=false,gmSeq=0,gmDone={},gmTimer=null,gmDisc=0,gmWaitLen=-1,gmWaitUntil=0;
+ let rlData={},rlStop=null,rlLoaded=false,rlView=null,rlQueue=Promise.resolve(),rlSeen=new Set(),rlAnimDone=new Set(),rlHoldUntil={},rlHoldQ=new Set(),rlTimerKey='',rlTimerT=null,rlTimerEnd=0,rlTimerMs=1,rlHostT=null,rlFinishing=false,rlSig='',rlSigAt=0,rlDisc=0,rlSnd=LS.getItem('nq-rl-snd')!=='0';
+ let bmP=[],bmStop=null,bmXStop=null,bmX=null,bmIniting=false,bmTimer=null,bmSettling=false,bmLockUntil=0,bmSeenN=-1,bmDisc=0,bmLockTimer=null,svOff=0;
+ let inviteFor=null,kgData={},kgStop=null,kingTarget=null,kingYield=false,yielding=false;
+ // ---- 0.69 充電マウント合戦のダウト：bt/<round>/{vals,d,j}（値の公開・ダウトの選択・判定）----
+ const DOUBT_MS=()=>globalThis.__nqDoubtMs??10000,JUDGE_MS=()=>globalThis.__nqJudgeMs??30000;
+ let btData={},btStop=null,btSeenAt=0,btValsAt=0,btJudgeAt=0,btHostTimer=null,btWriting=false,btCd=null,btTelopRound=null,btBotKey='',btMineD=false,btMineJ=false;
  const PROMPT_SIZES={vote:votePrompts.length,muttsuri:muttsuriPrompts.length,majority:majorityPrompts.length};
  const deckReady=()=>deckSeed!==null&&deckMind.length>0;
+ function normMd(d){const o={};if(!d)return o;for(const [k,v] of Object.entries(d))if(v===1&&Number(k)>0)o[k]=1;return o;}
  function normDrawn(d){const o={};if(!d)return o;for(const [k,v] of Object.entries(d))if(typeof v==='string'&&Number(k)>0)o[k]=v;return o;}
  async function drawNow(turn){
   if(!coolReady()||!deckReady())return;
   const round=state.round,ci=coolInfo(),cool=ci.ds.filter(r=>r<round).length,pos=round-ci.start+1,order=Object.values(state.order||turn.order);
   let key=deckDrawn[round];
   if(!key){
-   key=chooseCard(deckDrawn,{seed:deckSeed,mind:deckMind,sizes:PROMPT_SIZES,round,cool,pos,actorDidMission:didMission(deckDrawn,order,turn.uid,round)}).key;
+   key=chooseCard(deckDrawn,{seed:deckSeed,mind:deckMind,sizes:PROMPT_SIZES,round,cool,pos,actorDidMission:didMission(deckDrawn,order,turn.uid,round,deckMd),missionAll:order.every(u=>didMission(deckDrawn,order,u,round,deckMd))}).key;
    await runTransaction(ref(db,`${base}/deck/drawn/${round}`),cur=>cur?undefined:key,{applyLocally:false});
   }
   const {card,prompt}=parseKey(key);
@@ -205,7 +216,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   turn.order.forEach((id,i)=>{const p=byUid.get(id),now=i===turn.index;seats.append(div('seat'+(now?' now':''),txt('span','tag',now?'担当':''),avImgEl(p),txt('span','nm',p?.name||'確認中')));});
   const n=turn.order.length;return div('turnwrap',div('turnmeta',txt('span','',`ターン ${turnNo()} · ${turn.cycle}巡目`),txt('b','',`今回の担当：${byUid.get(turn.uid)?.name||'確認中'}`)),seats,txt('p','turnnext',state.card==='check'?'🥃 ドリンクタイム！':state.card==='rest'?'🛌 休憩カード！ 状態を確認するだけ':(turnsLeft()===null?'':turnsLeft()>0?`🥃 あと${turnsLeft()}ターンでドリンクタイム`:'🥃 このあとドリンクタイム！')));
  }
- const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',tapking:'5秒間ひたすら連打！',vote:'一番あやしいのは誰？',muttsuri:'むっつりは誰だ？',majority:'多数派はどっち？',mind:'やってんのは誰だ!?',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック',rest:'みんなの状態を確認しよう'};
+ const blurb={ten:'時計を見ずに10秒を狙え！',battery:'その残量、ホント？',buttons:'どっちを押す？',reaction:'形がハートをタップ！',grid:'どれを押す？',roulette:'ルーレットで運試し！',tapking:'5秒間ひたすら連打！',vote:'変態をあぶり出せ',muttsuri:'むっつりを見破れ',majority:'多数派はどっち？',mind:'この人だ！と思う人に投票',king:'王様の言うことは絶対！',mission:'キス顔に挑戦！',danger:'行く？ 行かない？',check:'ひと息ついて、状態チェック',rest:'みんなの状態を確認しよう'};
  function popImg(card,cls,alt){const i=document.createElement('img');i.className=cls+(isIcon(card)?' icon':'');i.setAttribute('src',artPath(card));i.setAttribute('alt','');i.setAttribute('draggable','false');i.setAttribute('width','360');i.setAttribute('height','308');return i;}
  function cardFace(card,cls=''){return div('cface pop k-'+card+' '+cls,txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')),popImg(card,'hero'),txt('span','dsc',blurb[card]||''));}
  function cardBack(cls=''){const back=div('cback '+cls);back.setAttribute('role','img');back.setAttribute('aria-label','NOMI QUESTの山札');return back;}
@@ -230,7 +241,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(n===3)setTimeout(go,globalThis.__nqImpactMs??4300);else go();
  }
  const onPop=()=>{if(dtHelpEl){dtHelpPushed=false;closeDtHelp(true);}};window.addEventListener('popstate',onPop);
- function cardHead(card){const categories={ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ドリンクタイム',rest:'ひと休み'};
+ function cardHead(card){const categories={roulette:'運命',ten:'タイミング',battery:'バトル',buttons:'心理戦',reaction:'アクション',grid:'心理戦',tapking:'アクション',vote:'トーク',muttsuri:'予想',majority:'予想',mind:'トーク',king:'王様',mission:'ミッション',danger:'運命',check:'ドリンクタイム',rest:'ひと休み'};
   let who='';try{const t=currentTurn(state,players);who=card==='check'||card==='rest'?(categories[card]||''):(t.uid===uid?'あなた':(byUid.get(t.uid)?.name||'？'))+'さんが引いたカード'}catch{}
   const img=popImg(card,'hero'),chk=card==='check',prog=div('prog',...Array.from({length:card==='ten'?4:3},(_,n)=>txt('span',n?'':'on')));
   const h=div('cardhead k-'+card,div('ph',img,div('phx',...(chk?[]:[txt('small','pop-kicker',who)]),txt('h2','pop-title',cards[card].title.replace(/^👑\s*/,'')))),...(chk?[]:[prog,txt('p','rule',card==='ten'?'心の中で10秒数えて、ぴったりで押そう！\nいちばん遠い人が負け。\n途中で数字は見えなくなるよ。':cards[card].rule)]));
@@ -273,6 +284,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    if(card!=='buttons'&&card!=='danger'&&card!=='king'&&card!=='mission'&&players.some(p=>typeof state.results?.[p.uid]!=='number')){box.append(el('p','結果を確認しています…'));return;}
    if(card==='check')ensureAllDrinks();
    if(state.pick&&pickRound!==state.round&&card!=='check'){pickRoulette();return;}
+   if(card==='majority'&&!state.mall&&pickRound!==state.round){abRoulette();return;}
    if(card==='check'){
     root.setAttribute('data-phase','settle');box.append(settlementUi());if(!dtInEntry&&!dtLocked)breakNext();
     return;
@@ -288,12 +300,18 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    return;
   }
   if(card==='mission'){
-   if(turn.uid!==uid)box.append(el('p',`${byUid.get(turn.uid)?.name}がキス顔に挑戦します。みんなで見届けよう！`));
-   else if(typeof own==='number')box.append(el('p','報告済み · 結果を待っています。'));
-   else{box.append(el('p','キス顔をやってみせよう（自己申告）。できないときはメーター＋1。'));button('やった！（完了）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('できない（メーター＋1）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+   const an=byUid.get(turn.uid)?.name;
+   if(turn.uid===uid){
+    if(typeof own!=='number'){box.append(el('p','キス顔に挑戦する？ やらないとメーター＋2。やるなら、みんなが採点します。'));button('💋 やる',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('やらない（メーター＋2）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+    else box.append(el('p',own===1?'みんなの採点を待っています…':'結果を待っています…'));
+   }else if(invite===1){
+    if(typeof own==='number')box.append(el('p','採点済み · みんなを待っています。（誰がどれを選んだかは見えません）'));
+    else{box.append(el('h3',`${an}のキス顔を採点！`));box.append(el('p','全員「最高」なら、担当にお助け＋1。'));
+     for(const [v,lab] of [[1,'🔥 最高'],[2,'👍 いいね'],[3,'🔁 やり直し']])button(lab,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),v),pending,v===1?'':'secondary');}
+   }else box.append(el('p',invite===0?`${an}はやらないことにしました…`:`${an}がキス顔に挑戦するか決めています。`));
    return;
   }
-  if(card==='danger'||card==='king'){dangerUi(turn);return;}
+  if(card==='danger'||card==='king'){dangerUi(card==='king'&&state.ky&&state.actor?{...turn,uid:state.actor}:turn);return;}
   if(VL.has(card)){
    box.append(el('h3',`${promptLists[card][state.prompt]??'確認中'}`));
    if(typeof own==='number')box.append(el('p','投票済み · 全員の投票を待っています。（誰に入れたかは他の人には見えません）'));
@@ -317,16 +335,20 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    return;
   }
   if(card==='majority'){
-   const pair=promptLists[card][state.prompt]||['確認中','確認中'],mind=false,actorName='';
+   const pair=promptLists[card][state.prompt]||['確認中','確認中'],mk=state.mk||0,done=typeof own==='number'&&Math.floor(own/2)===mk;
    box.append(el('h3','A：'+pair[0]+'\nB：'+pair[1]));
-   if(typeof own==='number')box.append(el('p',mind?'回答済み · みんなの回答を待っています。（答えは結果まで秘密）':'回答済み · みんなの回答を待っています。（結果まで秘密）'));
-   else{box.append(el('p',mind?(turn.uid===uid?'あなたの本当の答えを選んでください。みんなが予想します。':`${actorName}の答えを予想してください。`):'自分の答えを選んでください。多数派がメーター＋1。'));
-    for(const [i,label] of ['A','B'].entries())button(`${label}：${pair[i]}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),i),pending);}
-   if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+   if(mk>0)box.append(el('p',`答えが割れなかったので、次のお題です。（やり直し ${mk}回目）`));
+   if(done)box.append(el('p','回答済み · みんなの回答を待っています。（結果まで秘密）'));
+   else{box.append(el('p','自分の答えを選んでください。人数を発表したあと、ルーレットで「A」か「B」が選ばれ、選んだ人がメーター＋1。'));
+    for(const [i,label] of ['A','B'].entries())button(`${label}：${pair[i]}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),2*mk+i),pending);}
+   if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number'&&Math.floor(answers[p.uid]/2)===mk).length}/${players.length}人`));
    return;
   }
+  if(card==='battery'&&btData.vals&&typeof own==='number'){doubtUi();return;}
   if(typeof own==='number')box.append(el('p','送信済み · 全員の回答を待っています。'));
-  else if(card==='reaction')reactionUi();
+  else if(card==='reaction')bombUi();
+  else if(card==='grid')gridUi();
+  else if(card==='roulette')rouletteUi();
   else if(card==='battery'){
    {if(!batteryDraft)batteryDraft='50';const bigN=txt('div','bigNum',batteryDraft+'%'),rg=document.createElement('input');rg.type='range';rg.min='0';rg.max='100';rg.step='1';rg.value=batteryDraft;rg.className='batRange';rg.setAttribute('aria-label','充電残量（％）');rg.disabled=pending;rg.oninput=()=>{batteryDraft=rg.value;bigN.textContent=rg.value+'%';};
    box.append(bigN,rg,txt('p','hint2','👆 つまみを左右にスライドして数字を決めよう\n本当の残量でも、ウソ（ブラフ）でもOK！'));}
@@ -345,7 +367,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const usedInfo=()=>{const e=Object.entries(spentMap||{}).find(([,r])=>r===state?.round);return e?{slot:e[0],kind:itemMap?.[e[0]]}:undefined;};
  function drinkPanel(){
   if(!itemsReady()){box.append(el('p','あなたのお助けを確認しています…'));return;}
-  if(winnerNow())box.append(el('p',grantPending()?'お助けを受け取っています…':itemMap['1']!==undefined&&itemMap['2']!==undefined&&grantMap[String(state.round)]===undefined?(state.card==='reaction'?'あなたが最速！':'HEAVEN！')+'ただしお助けは3つまで持てます。':(state.card==='reaction'?'あなたが最速！':'HEAVEN！')+'お助けを1つ獲得しました。'));
+  if(winnerNow())box.append(el('p',grantPending()?'お助けを受け取っています…':itemMap['1']!==undefined&&itemMap['2']!==undefined&&grantMap[String(state.round)]===undefined?(state.card==='reaction'?'あなたが最速！':state.card==='roulette'?'ルーレット！':'HEAVEN！')+'ただしお助けは3つまで持てます。':(state.card==='reaction'?'あなたが最速！':state.card==='roulette'?'ルーレット！':'HEAVEN！')+(state.card==='roulette'?'お助けカードを獲得しました。（3つまで）':'お助けを1つ獲得しました。')));
     if(!settledMap[uid]){
    const mineNow=drinkAward(state,uid,players);
    if(ownError)button('カウント保存を再試行',()=>settleOwn(),ownBusy);
@@ -407,9 +429,11 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    if(card==='ten')return typeof v==='number'?(v/1000).toFixed(3)+'秒':'';
    if(card==='battery')return typeof v==='number'?v+'％':'';
    if(card==='tapking')return typeof v==='number'?v+'回':'';
-   if(card==='reaction')return typeof v==='number'?(v<REACTION_FAIL?v+'ms':'失敗'):'';
+   if(card==='grid')return typeof v==='number'?`押した回数 ${v%100}${v>=100?` · 🎁お助け ${Math.floor(v/100)}個`:''}${p.uid===state.bx?' · 💥爆弾':''}`:'';
+   if(card==='roulette')return typeof v==='number'?(v===0?'やらない':RLK[KEY_OF_CODE[v]]?.txt||''):'';
+   if(card==='reaction')return typeof v==='number'?`持っていた時間 ${(v/1000).toFixed(1)}秒${p.uid===state.bx?' · 💥爆発':''}${p.uid===state.bl?' · 🏆最長':''}`:'';
    if(card==='buttons')return p.uid===turn.uid&&typeof v==='number'?`ボタン ${v+1}`:'';
-   if(card==='mission')return p.uid===turn.uid&&typeof v==='number'?(v===1?'キス顔 完了！':'パス（できない）'):'';
+   if(card==='mission')return p.uid===turn.uid&&typeof v==='number'?(v===1?'キス顔に挑戦':'やらない'):'';
    if(VL.has(card))return `${Number(state.votes?.[p.slot])||0}票`;
    if(card==='majority'){const pr=promptLists.majority[state.prompt]||[];return typeof v==='number'?`${v===0?'A':'B'}：${pr[v]??''}`:'';}
    if(card==='king'){const o=dangerOutcome(state);return p.uid===o?.actor?'👑王様':p.uid===o?.target?(o.accepted?'従った':'拒否'):'';}
@@ -417,21 +441,24 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    return '';};
   if(card==='check'||card==='rest'){const f=(v)=>checkStates[v]||['❔','不明'];return div('board',txt('h3','verdict','みんなの状態'),txt('p','sub','無理せず、水も飲もう 🚰'),div('rows',...players.map(p=>{const [ic,lab]=f(state.results?.[p.uid]);return div('row safe',txt('span','av',ic),txt('span','who',p.name),txt('span','detail',''),txt('span','cups',lab));})),txt('p','fine','状態は自己申告です。'));}
   const gets=new Set(rewardees(state));
-  const rows=players.map(p=>({p,amt:drinkAward(state,p.uid,players),detail:detailFor(p)})).sort((x,y)=>y.amt-x.amt);
+  const rows=players.map(p=>({p,amt:drinkAward(state,p.uid,players),detail:detailFor(p)})).sort((x,y)=>card==='reaction'?(state.results?.[y.p.uid]||0)-(state.results?.[x.p.uid]||0):y.amt-x.amt);
   const losers=rows.filter(r=>r.amt>0);
   let verdict=losers.length?`${losers.map(r=>r.p.name).join('・')} の負け！`:'今回は誰も飲みません 🎉';
   let sub='';
-  if(card==='battery')sub=`今回は ${state.direction}！`;
+  if(card==='battery')sub=hasDoubt(state)?'📣 ダウトあり！（HIGH／LOWはなし）':`今回は ${state.direction}！`;
   if(card==='tapking')sub='タップが最も少ない人がメーター'+(state.pick?'（同数→ルーレット）':'');
   if(state.pick&&(card==='ten'||card==='battery'))sub=(sub?sub+' ／ ':'')+'同率→ルーレットで決定';
-  if(card==='mission')sub=state.results?.[turn.uid]===1?'💋 ミッション成功！ メーターなし':'ミッション失敗… 担当がメーター＋1';
+  if(card==='mission'){const m=missionStats(state);sub=!m.did?'🙅 やらない… 担当がメーター＋2':`🔥 最高 ${m.best}人 ／ 👍 いいね ${m.good}人 ／ 🔁 やり直し ${m.redo}人`+(m.ok?' ／ 全員最高！ 担当にお助け':m.counted?'':' ／ やり直し！ もう一度選ばれることも');}
   if(card==='buttons')sub=state.buttonOutcome===1?'今回の担当が対象':'担当以外の全員が対象';
   if(VL.has(card))sub=`お題：${promptLists[card][state.prompt]??''} ／ 得票1位がメーター${state.pick?'（同率→ルーレット）':''}`;
-  if(card==='majority'){const nb=players.filter(p=>state.results?.[p.uid]===1).length;sub=`A ${players.length-nb}人 / B ${nb}人 ／ ${state.side===2?'同数！ルーレットで1人':'多数派がメーター'}`;}
-  if(card==='king'){const o=dangerOutcome(state);sub=o.accepted?'👑 命令に従いました！ メーターなし':'🙅 命令を拒否！ 拒否した人がメーター＋2';}
+  if(card==='majority'){const nb=players.filter(p=>state.results?.[p.uid]===1).length,na=players.length-nb;sub=state.mall?`全員同じ答え！ お題を使い切ったので、全員にお助け＋1`:`A ${na}人 / B ${nb}人${na===nb?'（半々）':na>nb?'（Aが多数派）':'（Bが多数派）'} ／ ルーレットの結果：${state.side===0?'A':'B'}を選んだ人がメーター＋1`;}
+  if(card==='king'){const o=dangerOutcome(state),ot=typeof kgData.o==='number'?`「${kingOrders[kgData.o]}」 ／ `:'';sub=ot+(o.accepted?'👑 命令に従いました！ 従った人にお助け＋1':'🙅 命令を拒否！ 拒否した人がメーター＋2');}
   if(card==='danger'){const o=dangerOutcome(state);sub=!o.accepted?'断られた！ 誘った人がメーター':o.fate==='HEAVEN'?'👼 HEAVEN！ 2人ともお助けGET':'🔥 HELL！ 2人ともメーター＋2';}
-  if(card==='reaction'&&!gets.size)sub='全員失敗！ お助けなし';
-  return div('board',txt('h3','verdict',verdict),...(sub?[txt('p','sub',sub)]:[]),
+  if(card==='roulette')sub='🎰 全員のルーレットが終わりました'+(gets.size?' ／ お助けGETの人は🎁':'');
+  if(card==='grid'){const nm=id=>byUid.get(id)?.name||'？';sub=`💥 ${nm(state.bx)}が爆弾を押した！ ${nm(state.bx)}がメーター＋2`+(gets.size?' ／ お助けを押した人は🎁お助けGET':'');}
+  if(card==='reaction'){const nm=id=>byUid.get(id)?.name||'？',lt=state.results?.[state.bl];sub=`💥 ${nm(state.bx)}の手元で爆発！ ${state.bx===state.bl?`${nm(state.bx)}は最長でもあったのでメーター＋2`:`${nm(state.bx)}がメーター＋1`} ／ 🏆 一番長く持っていたのは ${nm(state.bl)}（${typeof lt==='number'?(lt/1000).toFixed(1):'？'}秒）${state.bx===state.bl?'':'→ お助けGET'}`;}
+  const doubtRows=card==='battery'&&hasDoubt(state)?Object.entries(state.dbt).filter(([,t])=>t!=='skip').map(([d,t])=>{const j=state.dbj?.[d],dn=byUid.get(d),tn=byUid.get(t);return div('row safe',avImgEl(dn),txt('span','who',`${d===uid?'あなた':dn?.name||'？'} → ${t===uid?'あなた':tn?.name||'？'}`),txt('span','detail',`${state.results?.[t]}％`),txt('span','cups',j===1?'✅ ダウト成功':j===0?'❌ ダウト失敗':'判定なし'));}):[];
+  return div('board',txt('h3','verdict',verdict),...(sub?[txt('p','sub',sub)]:[]),...(doubtRows.length?[div('rows',...doubtRows)]:[]),
    div('rows',...rows.map(r=>div('row '+(r.amt>0?'lose':'safe'),avImgEl(r.p),txt('span','who',r.p.name),txt('span','detail',[r.detail,gets.has(r.p.uid)?'🎁お助けGET':''].filter(Boolean).join(' · ')),txt('span','cups',r.amt>0?`🥃 メーター＋${r.amt}`:'セーフ')))),
    txt('p','fine','8ターンごとにドリンクタイム。ライム（メーター5）の人は1杯。お助けカードは受付の30秒間に使えます。'));
  }
@@ -630,6 +657,14 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   box.classList.add('flipping');
   box.append(txt('h3','verdict','カードが引かれた！'),fw,fx);
  }
+ function abRoulette(){
+  const ms=globalThis.__nqPickMs??3400;
+  if(!pickTimer){const round=state.round;pickTimer=setTimeout(()=>{pickTimer=null;if(dead)return;pickRound=round;render();},ms);}
+  const nb=players.filter(p=>state.results?.[p.uid]===1).length,na=players.length-nb,total=22+(state.side===1?1:0),items=[];
+  for(let i=0;i<total;i++)items.push(txt('span','pickitem',i%2===0?'A':'B'));
+  const reel=div('pickreel',...items);reel.style.setProperty('--stop',(-(total-1)*60)+'px');
+  box.append(txt('h3','verdict',`A ${na}人 / B ${nb}人${na===nb?'（半々）':''}`),txt('p','sub','ルーレットで選ばれた方を選んだ人がメーター＋1'),div('pickwin',reel));
+ }
  function pickRoulette(){
   const ms=globalThis.__nqPickMs??3400;
   if(!pickTimer){const round=state.round;pickTimer=setTimeout(()=>{pickTimer=null;if(dead)return;pickRound=round;render();},ms);}
@@ -650,13 +685,29 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const actor=turn.uid,name=id=>byUid.get(id)?.name||'確認中',target=typeof invite==='number'?players.find(p=>Number(p.slot)===invite)?.uid:undefined;
   const king=state.card==='king';
   if(king){
+   const oi=typeof kgData.o==='number'?kgData.o:null,ordTxt=oi!==null?kingOrders[oi]:null,prev=state.ky?name(currentTurn(state,players).uid):'';
+   if(ordTxt&&target)box.append(el('h3',`👑 王様の命令：「${ordTxt}」`));
    if(actor===uid){
-    if(typeof own!=='number'){box.append(el('p','👑 あなたが王様！ 命令する相手を1人選んで、声に出して命令しよう。拒否されると相手がメーター＋2。'));for(const p of players)if(p.uid!==uid)button(`${p.name}に命令する`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
-    else box.append(el('p',target?`${name(target)}に命令しました。返事を待っています。`:'命令を送っています…'));
+    if(typeof own!=='number'){
+     if(kingYield){ // 譲る相手を選ぶ
+      box.append(el('p','王様を譲る相手を選んでください。（1回だけ。譲られた人があらためて相手と命令を選びます）'));
+      for(const p of players)if(p.uid!==uid)button(`${p.name}に譲る`,()=>set(ref(db,`${base}/kg/${state.round}/y`),Number(p.slot)),pending);
+      button('やめる',async()=>{kingYield=false;},false,'secondary');
+     }else if(kingTarget===null){
+      box.append(el('p',state.ky?`👑 ${prev}から王様を譲られました！ 命令する相手を1人選ぼう。`:'👑 あなたが王様！ まず、命令する相手を1人選ぼう。命令に従えばお助け＋1、拒否するとメーター＋2。'));
+      for(const p of players)if(p.uid!==uid)button(`${p.name}に命令する`,async()=>{kingTarget=Number(p.slot);},pending);
+     }else{
+      const tp=players.find(p=>Number(p.slot)===kingTarget);
+      box.append(el('h3',`${tp?.name||'？'}への命令を選ぼう`),el('p','選んだ命令は、全員の画面に表示されます。'));
+      for(const k of pickKingOrders(deckSeed??1,state.round,state.ky?1:0,kingCats))button(kingOrders[k],async()=>{if(typeof kgData.o!=='number')await set(ref(db,`${base}/kg/${state.round}/o`),k);await set(ref(db,`${base}/answers/${state.round}/${uid}`),kingTarget);},pending||!deckReady());
+      if(!state.ky)button('👑 王様を譲る',async()=>{kingYield=true;},false,'secondary');
+      button('相手を選び直す',async()=>{kingTarget=null;},typeof kgData.o==='number','secondary');
+     }
+    }else box.append(el('p',target?`${name(target)}に命令しました。返事を待っています。`:'命令を送っています…'));
    }else if(target===uid){
-    if(typeof own!=='number'){box.append(el('h3',`👑 ${name(actor)}王様の命令です`),el('p','命令を聞いて、従うか拒否するか選ぼう。拒否するとあなたがメーター＋2。'));button('従う',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('拒否する（メーター＋2）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
+    if(typeof own!=='number'){box.append(el('h3',`👑 ${name(actor)}王様の命令です`),el('p','命令を聞いて、従うか拒否するか選ぼう。従えばお助け＋1、拒否するとあなたがメーター＋2。'));button('従う（お助け＋1）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),1),pending);button('拒否する（メーター＋2）',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending,'secondary');}
     else box.append(el('p','返事を送りました。結果を待っています。'));
-   }else box.append(el('p',target?`${name(actor)}王様が${name(target)}に命令中。返事待ち…`:`${name(actor)}王様が命令する相手を選んでいます…`));
+   }else box.append(el('p',target?`${name(actor)}王様が${name(target)}に命令中。返事待ち…`:state.ky?`${name(actor)}が${prev}から王様を譲られました。命令する相手を選んでいます…`:typeof kgData.y==='number'?`${name(actor)}王様が王様を譲っています…`:`${name(actor)}王様が命令する相手を選んでいます…`));
    if(host&&target&&target!==uid&&typeof answers[target]!=='number')button(`${name(target)}を「拒否」扱いにして進める`,()=>set(ref(db,`${base}/answers/${state.round}/${target}`),0),pending,'secondary');
    return;
   }
@@ -693,49 +744,399 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   box.append(grid);
  }
  const winnerNow=()=>rewardees(state).includes(uid);
- const grantPending=()=>{if(!winnerNow()||grantMap===undefined||itemMap===undefined)return false;const g=grantMap[String(state.round)];if(g===undefined)return itemMap['1']===undefined||itemMap['2']===undefined;return itemMap[String(g)]===undefined;};
+ const grantPending=()=>{if(!winnerNow()||grantMap===undefined||itemMap===undefined)return false;const g=grantMap[String(state.round)];if(g===undefined)return itemMap['1']===undefined||itemMap['2']===undefined;if(itemMap[String(g)]===undefined)return true;return state.card==='roulette'&&Number(g)===1&&itemsOfCode(state.results?.[uid])>=2&&itemMap['2']===undefined;};
  async function grantOwn(){
   if(dead||grantBusy||state?.phase!=='results'||!itemsReady()||settledMap[uid]||!grantPending())return;
   const round=state.round,g=grantMap[String(round)];let slot=g;
   if(g===undefined)slot=itemMap['1']===undefined?1:2;
+  else if(itemMap[String(g)]!==undefined)slot=2; // ルーレットの＋2／＋3：2つ目の枠
   grantBusy=true;
   try{if(g===undefined)await set(ref(db,`personal/${roomId}/${uid}/grants/${round}`),slot);await set(ref(db,`personal/${roomId}/${uid}/items/${slot}`),drawItem());}
   catch{message('お助けを受け取れませんでした。再接続してください。');}
   finally{grantBusy=false;if(!dead)render();}
  }
+ // ---- ダウト（充電マウント合戦）----
+ const doubtRefs=()=>({d:`${base}/bt/${state.round}/d`,j:`${base}/bt/${state.round}/j`,vals:`${base}/bt/${state.round}/vals`});
+ const dMap=()=>btData.d||{},jMap=()=>btData.j||{};
+ const dAllIn=()=>!!btData.vals&&players.every(p=>dMap()[p.uid]!==undefined);
+ const doubters=()=>players.filter(p=>{const t=dMap()[p.uid];return t!==undefined&&t!=='skip';});
+ function showDoubtTelop(){
+  if(dev||bot||dead||btTelopRound===state.round)return;btTelopRound=state.round;
+  fxOverlay('telopFx',`<div class="tBand"><div class="tAv">📣</div><div class="tNm" style="font-size:${fitPx(6,46)}">ダウト、いますか？</div><div class="tSb">ブラフを疑う人は、10秒以内に選ぼう</div></div>`,{autoMs:1800});
+ }
+ function doubtUi(){
+  const vals=btData.vals,d=dMap(),j=jMap(),all=dAllIn();
+  if(!btSeenAt)btSeenAt=performance.now();
+  const table=div('rows',...players.map(p=>div('row safe',avImgEl(p),txt('span','who',p.uid===uid?`${p.name}（あなた）`:p.name),txt('span','detail',''),txt('span','cups',`${vals[p.uid]}％`))));
+  if(!all){
+   showDoubtTelop();
+   box.append(txt('h3','verdict','📣 ダウトいます？'),table);
+   const cd=txt('p','fine','');box.append(cd);
+   const upd=()=>{if(!cd.isConnected){clearInterval(btCd);btCd=null;return;}const left=Math.max(0,Math.ceil((DOUBT_MS()-(performance.now()-btSeenAt))/1000));cd.textContent=d[uid]===undefined?`のこり ${left} 秒`:'選択ずみ · みんなを待っています';if(d[uid]===undefined&&!btMineD&&performance.now()-btSeenAt>=DOUBT_MS()){clearInterval(btCd);btCd=null;writeDoubt('skip',true);}};
+   upd();clearInterval(btCd);btCd=setInterval(upd,250);
+   if(d[uid]===undefined){
+    box.append(txt('p','hint2','ブラフ（ウソ）だと思う人を1人選んでダウト！ 外すとあなたがメーター＋2'));
+    for(const p of players)if(p.uid!==uid)button(`🔍 ${p.name}をダウト`,()=>writeDoubt(p.uid),pending);
+    button('ダウトしない（次へ）',()=>writeDoubt('skip'),pending,'secondary');
+   }
+   return;
+  }
+  // 判定：ダウトされた人は実際の充電画面を見せる。ダウトした人がスマホの画面を見て、成功／失敗を押す
+  const ds=doubters();
+  box.append(txt('h3','verdict','📱 ダウト判定'),table);
+  for(const p of ds){
+   const t=byUid.get(d[p.uid]),jj=j[p.uid];
+   box.append(div('row safe',avImgEl(p),txt('span','who',`${p.uid===uid?'あなた':p.name} → ${t?.uid===uid?'あなた':t?.name||'？'}`),txt('span','detail',`${vals[t?.uid]}％`),txt('span','cups',jj===1?'✅ ダウト成功':jj===0?'❌ ダウト失敗':jj===2?'判定なし':'判定中…')));
+  }
+  const mine=d[uid],isTarget=ds.some(p=>d[p.uid]===uid);
+  if(mine!==undefined&&mine!=='skip'){
+   if(j[uid]===undefined){
+    const t=byUid.get(mine);
+    box.append(txt('p','hint2',`${t?.name||'相手'}に、スマホの充電画面を見せてもらおう。表示は ${vals[mine]}％ でしたか？`));
+    button('ダウト成功（ウソだった）',()=>writeJudge(1),pending);button('ダウト失敗（ホントだった）',()=>writeJudge(0),pending,'secondary');
+   }else box.append(txt('p','fine','判定ずみ · みんなを待っています'));
+  }else if(isTarget)box.append(txt('p','hint2','📱 あなたはダウトされました。スマホの充電画面を見せてください。'));
+  else box.append(txt('p','fine','ダウトの判定を待っています…'));
+ }
+ function writeDoubt(target,quiet=false){if(btMineD)return;btMineD=true;const r=doubtRefs();return set(ref(db,`${r.d}/${uid}`),target).catch(()=>{btMineD=false;if(!quiet)message('ダウトを送れませんでした。再接続してもう一度試してください。');});}
+ function writeJudge(v){if(btMineJ)return;btMineJ=true;const r=doubtRefs();return set(ref(db,`${r.j}/${uid}`),v).catch(()=>{btMineJ=false;message('判定を送れませんでした。再接続してもう一度試してください。');});}
+ // 練習モードのNPC：ダウトは基本しない（たまにする）。ダウトしたときの判定は適当に押す
+ function btBot(){
+  if(!bot||dead||state?.card!=='battery'||state.phase!=='measuring'||!btData.vals)return;
+  const d=dMap(),j=jMap(),key=state.round+':'+(d[uid]===undefined?'d':dAllIn()&&d[uid]!=='skip'&&j[uid]===undefined?'j':'x');
+  if(btBotKey===key||key.endsWith(':x'))return;btBotKey=key;const round=state.round;
+  if(key.endsWith(':d'))setTimeout(()=>{if(dead||state?.round!==round)return;const others=players.filter(p=>p.uid!==uid);set(ref(db,`${base}/bt/${round}/d/${uid}`),Math.random()<0.15?others[Math.floor(Math.random()*others.length)].uid:'skip').catch(()=>{});},(800+Math.random()*2500)*(globalThis.__nqNpcMs??1));
+  else setTimeout(()=>{if(dead||state?.round!==round)return;set(ref(db,`${base}/bt/${round}/j/${uid}`),Math.random()<0.5?1:0).catch(()=>{});},(1500+Math.random()*2500)*(globalThis.__nqNpcMs??1));
+ }
+ // ホスト：10秒たっても選ばない人は「ダウトしない」、30秒たっても判定しないダウトは「判定なし」で進める
+ function btTick(){
+  if(!host||dead||state?.card!=='battery'||state.phase!=='measuring'||!btValsAt){clearInterval(btHostTimer);btHostTimer=null;return;}
+  const now=performance.now(),d=dMap(),j=jMap(),round=state.round;
+  if(now-btValsAt>=DOUBT_MS()+2000)for(const p of players)if(d[p.uid]===undefined)set(ref(db,`${base}/bt/${round}/d/${p.uid}`),'skip').catch(()=>{});
+  if(dAllIn()&&doubters().length&&!btJudgeAt)btJudgeAt=now;
+  if(btJudgeAt&&now-btJudgeAt>=JUDGE_MS())for(const p of doubters())if(j[p.uid]===undefined)set(ref(db,`${base}/bt/${round}/j/${p.uid}`),2).catch(()=>{});
+ }
+ // 充電の値をみんなに見せる（ダウトの材料）。全員が入力したらホストが1回だけ書く。ダウトの選択・判定がそろったら true を返す
+ async function batteryGate(){
+  if(!players.every(p=>typeof answers[p.uid]==='number'))return false;
+  if(!btData.vals){
+   if(btWriting)return false;btWriting=true;
+   try{await set(ref(db,`${base}/bt/${state.round}/vals`),Object.fromEntries(players.map(p=>[p.uid,answers[p.uid]])));btValsAt=performance.now();clearInterval(btHostTimer);btHostTimer=setInterval(btTick,500);}
+   catch{message('充電の公開に失敗しました。ホストは再読み込みして再接続してください。');btWriting=false;}
+   return false;
+  }
+  if(!btValsAt){btValsAt=performance.now();clearInterval(btHostTimer);btHostTimer=setInterval(btTick,500);} // ホストが再読み込みした場合
+  if(!dAllIn())return false;
+  const ds=doubters();return ds.every(p=>jMap()[p.uid]!==undefined);
+ }
+// 王様を譲る：譲る相手が書かれたら、ホストが「今回の王様」を切り替える（1回だけ）
+ // ---- そのボタン、押して大丈夫？（マス目）----
+ const normLg=o=>Object.entries(o||{}).filter(([k,x])=>x&&typeof x.u==='string'&&typeof x.c==='number').map(([k,x])=>({k:Number(k),u:x.u,c:x.c,r:x.r,n:x.n})).sort((a,b)=>a.k-b.k);
+ const gridOrder=()=>Object.values(state.order||players.map(p=>p.uid));
+ const gridState=()=>gridReplay(gmLg,gridOrder(),state.actor||currentTurn(state,players).uid);
+ async function gridAppend(u,c,n){ // host：1手を記録（爆弾ならそのままゲーム終了）
+  const st=gridState();if(!gmLay||!gridCan(st,u,c))return false;
+  const r=c===GPASS?'p':gmLay[c],k=gmLg.length-1;
+  await set(ref(db,`${base}/gm/${state.round}/lg/${gmLg.length}`),{u,c,r,k,...(typeof n==='number'?{n}:{})});
+  if(r==='b'){
+   const round=state.round,after=gridReplay([...gmLg,{u,c,r}],gridOrder(),state.actor||currentTurn(state,players).uid);
+   await set(ref(db,`${base}/gm/${round}/done`),true);
+   await runTransaction(ref(db,base+'/state'),t=>t?.round===round&&t.phase==='measuring'&&t.card==='grid'?{...t,phase:'results',results:gridResults(after,gridOrder()),bx:u}:undefined,{applyLocally:false});
+  }
+  return true;
+ }
+ async function gridAuto(){ // 切断・放置の人の代わりに、ホストが1手進める（まだ押していなければランダムに押す／押していれば回す）
+  const st=gridState();if(st.over||!gmLay)return;
+  const free=[...Array(GCELLS).keys()].filter(c=>!st.pressed[c]);
+  const c=st.cnt>=1?GPASS:free[Math.floor(Math.random()*free.length)];
+  try{await gridAppend(st.cur,c);}catch{message('マス目を進められませんでした。再読み込みして再接続してください。');}
+ }
+ async function gridHost(){
+  if(dead||!host||state?.card!=='grid'||state.phase!=='measuring'||gmBusy)return;
+  if(!gmLay){ // 最初：爆弾・お助けの配置をホストだけが読める場所に書く
+   if(gmIniting)return;gmIniting=true;
+   try{const cur=(await get(ref(db,`${base}/gm/${state.round}/lay`))).val();if(typeof cur==='string')gmLay=cur;else{const lay=genLayout();await set(ref(db,`${base}/gm/${state.round}/lay`),lay);gmLay=lay;}}
+   catch{message('マス目を準備できませんでした。ホストは再読み込みして再接続してください。');}
+   finally{gmIniting=false;}
+  }
+  if(!gmLay)return;
+  gmBusy=true;
+  try{
+   for(let guard=0;guard<4;guard++){
+    const st=gridState();if(st.over)break;
+    const req=gmRq[st.cur];if(!req||!(req.n>(gmDone[st.cur]||0)))break;
+    gmDone[st.cur]=req.n;
+    if(!(await gridAppend(st.cur,req.c,req.n)))continue;
+    break;
+   }
+  }catch{message('マス目の記録を送れませんでした。ホストは再読み込みして再接続してください。');}
+  finally{gmBusy=false;}
+  if(!gmTimer)gmTimer=setInterval(()=>{
+   if(dead||state?.card!=='grid'||state.phase!=='measuring'){clearInterval(gmTimer);gmTimer=null;return;}
+   const st=gridState();if(st.over)return;
+   if(!connOf(st.cur)){gmDisc+=500;if(gmDisc>=3000){gmDisc=0;gridAuto();}}else gmDisc=0;
+  },500);
+ }
+ function gridUi(){
+  const st=gridState(),cur=byUid.get(st.cur),mine=st.cur===uid;
+  box.append(txt('h3','verdict',mine?(st.cnt?`あなたの番です（${st.cnt}個押しました）`:'あなたの番です'):`${cur?.name||'？'}の番`),
+   el('p','爆弾＝メーター＋2でゲーム終了／お助け＝お助け＋1。中身は押すまで分かりません。'));
+  const waiting=gmWaitLen===gmLg.length&&performance.now()<gmWaitUntil;
+  const grid=div('grid12');
+  for(let c=0;c<GCELLS;c++){
+   const hit=st.pressed[c];
+   const b=el('button',hit?(hit.r==='b'?'💥':hit.r==='h'?'🎁':'・'):'？');
+   if(hit){b.className='hit-'+hit.r;b.disabled=true;const sm=el('small',byUid.get(hit.u)?.name||'');b.append(sm);}
+   else{b.disabled=!mine||pending||waiting;b.onclick=async()=>{if(pending||dead)return;pending=true;gmWaitLen=gmLg.length;gmWaitUntil=performance.now()+4000;render();try{await set(ref(db,`${base}/gm/${state.round}/rq/${uid}`),{n:++gmSeq,c});}catch{message('ゲーム通信に失敗しました。もう一度押してください。');}finally{pending=false;render();}};}
+   grid.append(b);
+  }
+  box.append(grid);
+  if(mine&&st.cnt>=1)button('次の人へ回す',async()=>{gmWaitLen=gmLg.length;gmWaitUntil=performance.now()+4000;await set(ref(db,`${base}/gm/${state.round}/rq/${uid}`),{n:++gmSeq,c:GPASS});},pending||waiting,'secondary');
+  else if(mine)box.append(el('p','最低1つは押してから、次の人に回せます。'));
+  if(host&&!mine)button(`${cur?.name||'？'}を飛ばして進める`,()=>gridAuto(),pending,'secondary');
+ }
+ // ---- GO TO HEAVEN OR HELL（ルーレット三段勝負）----
+ // 記録 rl/<round>/<uid>/{0,1,2,d}：回すたびに {k:段階,o:結果,a:演出の種} を本人が書き、確定は d。全員の端末が同じ記録から同じ動きを作る。
+ const rlSeq=()=>rlOrder(state.order||players.map(p=>p.uid),state.actor||currentTurn(state,players).uid);
+ const rlName=u=>u===uid?'あなた':(byUid.get(u)?.name||'？');
+ const rlKeyOf=(u,k)=>`${state.round}:${u}:${k}`;
+ const rlShort=o=>o==='skip'||!RLK[o]?'パス':RLK[o].t+RLK[o].v;
+ function rlEnsureView(){if(!rlView)rlView=createRoulette({sound:rlSnd});return rlView;}
+ function rlOnData(v){
+  const first=!rlLoaded;rlLoaded=true;rlData=v;
+  if(bot){render();return;}
+  const view=rlEnsureView();
+  for(const u of Object.keys(v)){
+   const ch=rlChain(v[u]),fin=rlFinal(v[u]);
+   for(const r of ch){
+    const key=rlKeyOf(u,r.k);if(rlSeen.has(key))continue;rlSeen.add(key);
+    if(first&&(ch.length>r.k||fin!==null)){rlAnimDone.add(key);continue;} // 途中から入った人には、すでに終わった段階を回さない
+    rlQueue=rlQueue.then(async()=>{if(dead)return;try{await view.spin(r.k,rlPlan(r.k,r.o,r.a),rlName(u));}catch{}rlAnimDone.add(key);if(!dead)render();});
+   }
+   if(fin!==null&&!rlHoldQ.has(u)){
+    rlHoldQ.add(u);
+    if(first){rlHoldUntil[u]=0;}
+    else rlQueue=rlQueue.then(()=>{if(dead)return;view.showFinal(rlName(u),fin,ch.length>=3);rlHoldUntil[u]=Date.now()+RL_CONFIG.HOLD_MS;setTimeout(()=>{if(!dead)render();},RL_CONFIG.HOLD_MS+60);render();});
+   }
+  }
+  render();rlHost();
+ }
+ // いま画面に出す人：まだ確定していない最初の人／確定してからしばらくの間はその人
+ function rlShown(seq){
+  for(const u of seq){
+   const rec=rlData[u],fin=rlFinal(rec),n=rlChain(rec).length;
+   if(fin===null)return{u,n,done:n===0||rlAnimDone.has(rlKeyOf(u,n)),fin:null};
+   const hu=rlHoldUntil[u];
+   if(hu===undefined||Date.now()<hu)return{u,n,done:true,fin};
+  }
+  return null;
+ }
+ function rlArm(key,ms,fn){ // 時間切れの処理を1つだけ仕掛ける（画面を描き直しても仕掛け直さない）
+  if(rlTimerKey===key)return;
+  clearTimeout(rlTimerT);rlTimerKey=key;rlTimerMs=ms;rlTimerEnd=Date.now()+ms;
+  rlTimerT=setTimeout(()=>{if(!dead&&rlTimerKey===key)fn();},ms);
+ }
+ function rlBar(){
+  const left=Math.max(0,rlTimerEnd-Date.now()),i=document.createElement('i');
+  i.style.width=(left/rlTimerMs*100).toFixed(1)+'%';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{i.style.transition=`width ${left}ms linear`;i.style.width='0%';}));
+  return div('rl-timer',i);
+ }
+ async function rlSpin(stage){
+  const rec=rlData[uid];if(rlChain(rec).length!==stage-1||rlFinal(rec)!==null)return;
+  rlEnsureView().unlock();
+  await set(ref(db,`${base}/rl/${state.round}/${uid}/${stage-1}`),{k:stage,o:rlPick(stage),a:rlArt()});
+ }
+ async function rlFinishOwn(){
+  if(dead||state?.card!=='roulette'||state.phase!=='measuring'||rlFinal(rlData[uid])!==null)return;
+  try{await set(ref(db,`${base}/rl/${state.round}/${uid}/d`),rlChoice(rlData[uid]));}catch{message('ルーレットの結果を送れませんでした。再接続してください。');}
+ }
+ async function rlSettleFor(u){ // ホスト：止まってしまった人を、いまの結果（なければパス）で確定する
+  if(rlFinal(rlData[u])!==null)return;
+  try{await set(ref(db,`${base}/rl/${state.round}/${u}/d`),rlChoice(rlData[u]));}catch{message('ルーレットを進められませんでした。再読み込みして再接続してください。');}
+ }
+ function rlHost(){
+  if(dead||!host||state?.card!=='roulette'||state.phase!=='measuring'||!rlLoaded)return;
+  const seq=rlSeq(),cur=rlCur(seq,rlData);
+  if(cur===null){
+   if(rlFinishing)return;rlFinishing=true;
+   const round=state.round,results=resultsOfRl(seq,rlData);
+   (async()=>{try{
+    await set(ref(db,`${base}/rld/${round}`),true).catch(()=>{});
+    await runTransaction(ref(db,base+'/state'),t=>t?.round===round&&t.phase==='measuring'&&t.card==='roulette'?{...t,phase:'results',results}:undefined,{applyLocally:false});
+   }catch{message('ルーレットの結果を送れませんでした。ホストは再読み込みして再接続してください。');}finally{rlFinishing=false;}})();
+   return;
+  }
+  const sig=cur+':'+rlChain(rlData[cur]).length;
+  if(sig!==rlSig){rlSig=sig;rlSigAt=Date.now();rlDisc=0;}
+  if(!connOf(cur)){rlDisc+=1;if(rlDisc>=4){rlDisc=0;rlSettleFor(cur);}}else rlDisc=0;
+  if(Date.now()-rlSigAt>RL_CONFIG.HOST_IDLE_MS){rlSigAt=Date.now();rlSettleFor(cur);}
+ }
+ function rouletteUi(){
+  const view=rlEnsureView(),seq=rlSeq();
+  const sb=el('button',rlSnd?'🔊 音 ON':'🔇 音 OFF');sb.className='rl-snd';sb.onclick=()=>{rlSnd=!rlSnd;LS.setItem('nq-rl-snd',rlSnd?'1':'0');view.setSound(rlSnd);render();};
+  box.append(sb,view.el);
+  if(!rlLoaded){box.append(el('p','ルーレットを準備しています…'));return;}
+  const sh=rlShown(seq);
+  if(!sh){box.append(el('p','全員のルーレットが終わりました。結果をまとめています…'));return;}
+  const {u,n,done,fin}=sh,mine=u===uid,nm=rlName(u);
+  const strip=div('rows rlstrip');
+  for(const id of seq){
+   const f=rlFinal(rlData[id]),shown=id===u;
+   strip.append(div('row '+(shown?'lose':'safe'),avImgEl(byUid.get(id)),txt('span','who',rlName(id)),txt('span','detail',f!==null&&(id!==u||fin!==null)?rlShort(f):shown?'🎰 挑戦中':'順番待ち')));
+  }
+  box.append(strip);
+  if(!view.busy&&n===0&&fin===null)view.idle(byUid.get(u)?.name||'？');
+  if(!view.busy&&n===0&&fin===null)view.setText(`${nm}の番`,'ルーレットに挑戦するか決めています');
+  if(fin!==null){/* 確定の表示中：見せるだけ */}
+  else if(n===0){
+   if(mine){
+    rlArm(rlKeyOf(u,'ask'),RL_CONFIG.START_SEC*1000,()=>{if(rlFinal(rlData[uid])===null&&!rlChain(rlData[uid]).length)set(ref(db,`${base}/rl/${state.round}/${uid}/d`),'skip').catch(()=>{});});
+    box.append(el('p','ルーレットを回しますか？ やらなくてもOK（何も起きません）。結果が気に入らなければ、もう一度回して上書きもできます。'),rlBar());
+    button('🎰 やる（ルーレットを回す）',()=>rlSpin(1),pending);
+    button('やらない',()=>set(ref(db,`${base}/rl/${state.round}/${uid}/d`),'skip'),pending,'secondary');
+   }else box.append(el('p',`${nm}がルーレットに挑戦するか決めています。`));
+  }else if(!done){/* 回っている最中 */}
+  else if(n<3){
+   if(mine){
+    rlArm(rlKeyOf(u,'ask'+n),RL_CONFIG.ASK_SEC*1000,rlFinishOwn);
+    box.append(el('p',`${RLS[n].ask}（${RL_CONFIG.ASK_SEC}秒で時間切れ＝確定）。もう一度回すと、いまの結果は消えて置き換わります。`),rlBar());
+    button('✅ この結果で確定',()=>rlFinishOwn(),pending);
+    button(RLS[n].again,()=>rlSpin(n+1),pending,'secondary');
+   }else box.append(el('p',`${nm}が「もう一度回すか」迷っています…`));
+  }else if(mine){rlArm(rlKeyOf(u,'fin'),1500,rlFinishOwn);}
+  if(host&&!mine&&fin===null)button(`${byUid.get(u)?.name||'？'}を飛ばして進める`,()=>rlSettleFor(u),pending,'secondary');
+ }
+ // ---- ドキドキ（爆弾まわし）----
+ const normP=o=>Object.entries(o||{}).filter(([k,x])=>x&&typeof x==='object'&&typeof x.u==='string'&&typeof x.t==='number').map(([k,x])=>({n:Number(k),u:x.u,t:x.t})).sort((a,b)=>a.n-b.n);
+ const srvNow=()=>Date.now()+svOff,connOf=u=>globalThis.__nqConn?.[u]!==false;
+ async function bombPass(byHost){
+  const last=bmP.at(-1);if(!last||dead||state?.card!=='reaction'||state.phase!=='measuring')return;
+  if(last.u!==uid&&!byHost)return;
+  const c=players.filter(p=>p.uid!==last.u&&connOf(p.uid));const pool=c.length?c:players.filter(p=>p.uid!==last.u);
+  if(!pool.length)return;
+  const to=pool[Math.floor(Math.random()*pool.length)];
+  try{await set(ref(db,`${base}/bm/${state.round}/p/${last.n+1}`),{u:to.uid,t:serverTimestamp(),k:last.n});}catch{/* 爆発に間に合わなかった／先に誰かが渡した */}
+ }
+ async function bombSettle(){
+  if(bmSettling||dead||!host||state?.card!=='reaction'||state.phase!=='measuring'||bmX===null)return;
+  bmSettling=true;const round=state.round;
+  try{
+   const recs=normP((await get(ref(db,`${base}/bm/${round}/p`))).val());if(!recs.length)return;
+   const E=recs[0].t+bmX,hold={};players.forEach(p=>{hold[p.uid]=0;});
+   recs.forEach((r,i)=>{const end=i+1<recs.length?recs[i+1].t:E;hold[r.u]=(hold[r.u]||0)+Math.max(0,end-r.t);});
+   const bx=recs.at(-1).u,max=Math.max(...Object.values(hold)),tied=Object.keys(hold).filter(u=>hold[u]===max),bl=tied[Math.floor(Math.random()*tied.length)];
+   const results=Object.fromEntries(Object.entries(hold).map(([u,v])=>[u,Math.round(v)]));
+   await runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'&&s.card==='reaction'?{...s,phase:'results',results,bx,bl}:undefined,{applyLocally:false});
+  }catch{/* まだ爆発時刻前（サーバー判定）→ 次の周期で再試行 */}
+  finally{bmSettling=false;}
+ }
+ async function bombHost(){
+  if(dead||!host||state?.card!=='reaction'||state.phase!=='measuring')return;
+  if(!bmP.length&&!bmIniting){ // 最初：爆発までの秒数（10〜60秒）と、最初の持ち主を書く
+   bmIniting=true;const round=state.round,actor=currentTurn(state,players).uid;
+   try{
+    const cur=(await get(ref(db,`${base}/bm/${round}/x`))).val();
+    if(cur===null||cur===undefined)await set(ref(db,`${base}/bm/${round}/x`),10000+Math.floor(Math.random()*50001));
+    await set(ref(db,`${base}/bm/${round}/p/0`),{u:actor,t:serverTimestamp(),k:-1});
+   }catch{message('爆弾を準備できませんでした。ホストは再読み込みして再接続してください。');}
+   finally{bmIniting=false;}
+   return;
+  }
+  if(bmP.length&&!bmTimer){
+   bmTimer=setInterval(()=>{
+    if(dead||state?.card!=='reaction'||state.phase!=='measuring'){clearInterval(bmTimer);bmTimer=null;return;}
+    if(bmX!==null&&bmP.length&&srvNow()>=bmP[0].t+bmX-30)bombSettle();
+    const last=bmP.at(-1); // 持ち主が切断したら、自動でほかの人へ渡す
+    if(last&&!connOf(last.u)){bmDisc+=250;if(bmDisc>=3000){bmDisc=0;bombPass(true);}}else bmDisc=0;
+   },250);
+  }
+ }
+ function bombUi(){
+  if(!bmP.length){box.append(el('p','💣 爆弾を準備しています…'));return;}
+  const last=bmP.at(-1),holder=byUid.get(last.u),mine=last.u===uid,back=mine&&bmP.slice(0,-1).some(r=>r.u===uid);
+  if(mine){
+   box.append(txt('h3','verdict',back?'🔁 自分に戻ってきた！':'💣 爆弾を持っています！'),el('p','いつ爆発するかは誰にも分かりません…'));
+   const locked=performance.now()<bmLockUntil;
+   button('次の人へ渡す',()=>bombPass(false),pending||locked);
+  }else box.append(txt('h3','verdict',`💣 いま爆弾を持っているのは ${holder?.name||'？'}`),el('p','自分に回ってくるかも…ドキドキ'));
+  box.append(el('p',`これまでに${bmP.length-1}回、渡されました。`));
+ }
+ async function hostYield(){
+  if(dead||!host||yielding||state?.card!=='king'||state.phase!=='measuring'||state.ky||typeof kgData.y!=='number')return;
+  const to=players.find(p=>Number(p.slot)===kgData.y);if(!to)return;
+  yielding=true;const round=state.round;
+  try{await runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'&&s.card==='king'&&!s.ky?{...s,actor:to.uid,ky:true}:undefined,{applyLocally:false});}
+  catch{message('王様を譲る処理を送れませんでした。ホストは再読み込みして再接続してください。');}
+  finally{yielding=false;}
+ }
  async function settle(){
-  if(dead||!host||settling||state?.phase!=='measuring')return;
-  const actor=currentTurn(state,players).uid,buttons=state.card==='buttons',mission=state.card==='mission',king=state.card==='king',danger=state.card==='danger'||king;
+  if(dead||!host||settling||state?.phase!=='measuring'||state?.card==='reaction'||state?.card==='grid'||state?.card==='roulette')return;
+  if(state.card==='battery'&&!(await batteryGate()))return;
+  const actor=state.card==='king'&&state.ky&&state.actor?state.actor:currentTurn(state,players).uid,buttons=state.card==='buttons',mission=state.card==='mission',king=state.card==='king',danger=state.card==='danger'||king;
   let results,fate=null;
   if(danger){
    const a=answers[actor],t=typeof a==='number'?players.find(p=>Number(p.slot)===a):null;
    if(!t||typeof answers[t.uid]!=='number')return;
    results={[actor]:a,[t.uid]:answers[t.uid]};if(!king&&answers[t.uid]===1)fate=Math.random()<0.5?'HEAVEN':'HELL';
-  }else if(mission){if(typeof answers[actor]!=='number')return;}else if(buttons?(!buttonDeck||typeof answers[actor]!=='number'):!players.every(p=>typeof answers[p.uid]==='number'))return;
+  }else if(mission){if(typeof answers[actor]!=='number')return;if(answers[actor]===1&&!players.every(p=>typeof answers[p.uid]==='number'))return;}else if(buttons?(!buttonDeck||typeof answers[actor]!=='number'):!players.every(p=>typeof answers[p.uid]==='number'))return;
   let votes=null,topVotes=null;
   if(VL.has(state.card)){const c={};for(const p of players)c[p.slot]=0;for(const p of players)c[answers[p.uid]]=(c[answers[p.uid]]||0)+1;votes=c;topVotes=Math.max(...Object.values(c));}
   let side=null;
-  if(state.card==='majority'){const S=players.reduce((a,p)=>a+answers[p.uid],0),N=players.length;side=2*S===N?2:2*S>N?1:0;}
-  let pick=null;
+  let mall=false;
+  if(state.card==='majority'){
+   const mk=state.mk||0,round0=state.round;
+   if(!players.every(p=>typeof answers[p.uid]==='number'&&Math.floor(answers[p.uid]/2)===mk))return;
+   const nb=players.filter(p=>answers[p.uid]%2===1).length;
+   if(nb===0||nb===players.length){
+    if(state.prompt+1<majorityPrompts.length){ // 答えが割れなかった → 次のお題で答え直し（ターンは進めない）
+     settling=true;
+     try{await runTransaction(ref(db,base+'/state'),t=>t?.round===round0&&t.phase==='measuring'&&(t.mk||0)===mk?{...t,prompt:t.prompt+1,mk:mk+1}:undefined,{applyLocally:false});}
+     catch{message('お題の切り替えを送れませんでした。ホストは再読み込みして再接続してください。');}
+     finally{settling=false;}
+     return;
+    }
+    mall=true;side=2; // お題を使い切っても割れなかった → 全員にお助け
+   }else side=Math.random()<0.5?0:1;
+  }
+  let pick=null,dbt=null,dbj=null;
+  if(state.card==='battery'&&doubters().length){dbt={};dbj={};for(const p of doubters()){dbt[p.uid]=dMap()[p.uid];dbj[p.uid]=jMap()[p.uid];}}
   settling=true;const round=state.round,direction=state.card==='battery'?drawDirection():null,buttonOutcome=buttons?buttonDeck[answers[actor]]:null;
-  if(!danger)results=buttons||mission?{[actor]:answers[actor]}:Object.fromEntries(players.map(p=>[p.uid,answers[p.uid]]));
-  if(tieCards.includes(state.card)&&(state.card!=='majority'||side===2)){const probe={...state,phase:'results',results,...(direction?{direction}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{})};const tied=tiedTargets(probe,players);if(tied.length>1)pick=tied[Math.floor(Math.random()*tied.length)];}
-  try{await runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'?{...s,phase:'results',results,...(pick?{pick}:{}),...(direction?{direction}:{}),...(buttons?{buttonOutcome}:{}),...(fate?{fate}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{})}:undefined,{applyLocally:false});}
+  if(!danger)results=buttons||(mission&&answers[actor]!==1)?{[actor]:answers[actor]}:Object.fromEntries(players.map(p=>[p.uid,state.card==='majority'?answers[p.uid]%2:answers[p.uid]]));
+  const kiss=mission?missionStats({order:state.order,round,results}):null;
+  if(!dbt&&tieCards.includes(state.card)&&(state.card!=='majority'||side===2)){const probe={...state,phase:'results',results,...(direction?{direction}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{})};const tied=tiedTargets(probe,players);if(tied.length>1)pick=tied[Math.floor(Math.random()*tied.length)];}
+  try{await runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'?{...s,phase:'results',results,...(pick?{pick}:{}),...(direction?{direction}:{}),...(buttons?{buttonOutcome}:{}),...(fate?{fate}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{}),...(dbt?{dbt,dbj}:{}),...(kiss?.ok?{kok:true}:{}),...(mall?{mall:true}:{})}:undefined,{applyLocally:false}).then(async r=>{if(kiss?.counted&&r?.committed)await set(ref(db,`${base}/deck/md/${round}`),1).catch(()=>{});});}
   catch{message('集計を送れませんでした。ホストは再読み込みして再接続してください。');}
   finally{settling=false;}
  }
- stops.push(onValue(ref(db,base+'/deck'),v=>{const d=v.val()||{};deckSeed=typeof d.seed==='number'?d.seed:null;deckMind=mindFromText(d.mind);deckDrawn=normDrawn(d.drawn);render();},()=>{deckSeed=null;message('カードの記録を取得できませんでした。ルールの反映と再接続を確認してください。');}));
+ stops.push(onValue(ref(db,'.info/serverTimeOffset'),v=>{svOff=Number(v.val())||0;},()=>{}));
+ stops.push(onValue(ref(db,base+'/deck'),v=>{const d=v.val()||{};deckSeed=typeof d.seed==='number'?d.seed:null;deckMind=mindFromText(d.mind);deckDrawn=normDrawn(d.drawn);deckMd=normMd(d.md);render();},()=>{deckSeed=null;message('カードの記録を取得できませんでした。ルールの反映と再接続を確認してください。');}));
  stops.push(onValue(ref(db,base+'/tq'),v=>{tqHist=v.val()||{};tqHistLoaded=true;render();},()=>{tqHist={};tqHistLoaded=false;}));
  stops.push(onValue(ref(db,base+'/nv'),v=>{settlementHistory=v.val()||{};historyLoaded=true;render();maybeSettlement();},()=>{historyLoaded=false;message('精算履歴を取得できませんでした。再接続してください。');}));
  stops.push(onValue(ref(db,base+'/fin'),v=>{fin=v.val()===true;if(fin)ensureAllDrinks();render();},()=>{}));
  stops.push(onValue(ref(db,base+'/state'),snap=>{
   state=snap.val();if(state?.card==='mission'&&Array.isArray(state.order)){const a=state.order[(state.round-1)%state.order.length];if(a&&!missionDone.has(a)){missionDone.add(a);saveSeen();}}if(state?.card){lastCard=state.card;if(state.round>countedRound&&ALL_CARDS.includes(state.card)){countedRound=state.round;if(SOLO_CARDS.includes(state.card))soloAt[state.card]=state.round;else specialSeen.add(state.card);const left=LAP_CARDS.filter(c=>!specialSeen.has(c)),n=state.order?.length||1,nr=isBreak(state.round+1,n)?state.round+2:state.round+1,nextA=state.order?.[(nr-1)%n];if(!left.length||(left.length===1&&left[0]==='mission'&&missionDone.has(nextA)))specialSeen.clear();saveSeen();}}buttonDeck=buttonDecks[state?.round];if(seenPrompts[state?.card]&&typeof state.prompt==='number'&&!seenPrompts[state.card].has(state.prompt)){seenPrompts[state.card].add(state.prompt);saveSeen();}
-  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';tapStart=null;tapCount=0;clearTimeout(tapTimer);tapTimer=null;own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;pickRound=null;clearTimeout(pickTimer);pickTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;answerStop?.();ownStop?.();settledStop?.();tqStop?.();tqMap={};dtStop?.();dtMap={};dgStop?.();dgMap={};angelStart=0;angelReady=false;angelSched=false;dgSKey='';angelSeen=new Set();angelChoose=false;clearTimeout(angelBotTimer);angelBotTimer=null;extUntil=0;botTries=0;clearTimeout(botTimer);botTimer=null;cuteMode=null;nvStop?.();nvStop=null;nvMap={};settlePage=state?.card==='check';
+  if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';tapStart=null;tapCount=0;clearTimeout(tapTimer);tapTimer=null;own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;clearTimeout(spinTimer);spinTimer=null;pickRound=null;clearTimeout(pickTimer);pickTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;btStop?.();btStop=null;btData={};btSeenAt=0;btValsAt=0;btJudgeAt=0;clearInterval(btHostTimer);btHostTimer=null;btWriting=false;clearInterval(btCd);btCd=null;btBotKey='';btMineD=false;btMineJ=false;gmStop?.();gmStop=null;gmRqStop?.();gmRqStop=null;gmLayStop?.();gmLayStop=null;gmLg=[];gmRq={};gmLay=null;gmIniting=false;gmBusy=false;gmSeq=0;gmDone={};clearInterval(gmTimer);gmTimer=null;gmDisc=0;gmWaitLen=-1;gmWaitUntil=0;rlStop?.();rlStop=null;rlData={};rlLoaded=false;rlView?.stop();rlView=null;rlQueue=Promise.resolve();rlSeen=new Set();rlAnimDone=new Set();rlHoldUntil={};rlHoldQ=new Set();rlTimerKey='';clearTimeout(rlTimerT);rlTimerT=null;clearInterval(rlHostT);rlHostT=null;rlFinishing=false;rlSig='';rlSigAt=0;rlDisc=0;bmStop?.();bmStop=null;bmP=[];bmXStop?.();bmXStop=null;bmX=null;bmIniting=false;clearInterval(bmTimer);bmTimer=null;bmLockUntil=0;bmSeenN=-1;bmDisc=0;clearTimeout(bmLockTimer);bmLockTimer=null;kgStop?.();kgStop=null;kgData={};kingTarget=null;kingYield=false;yielding=false;answerStop?.();ownStop?.();settledStop?.();tqStop?.();tqMap={};dtStop?.();dtMap={};dgStop?.();dgMap={};angelStart=0;angelReady=false;angelSched=false;dgSKey='';angelSeen=new Set();angelChoose=false;clearTimeout(angelBotTimer);angelBotTimer=null;extUntil=0;botTries=0;clearTimeout(botTimer);botTimer=null;cuteMode=null;nvStop?.();nvStop=null;nvMap={};settlePage=state?.card==='check';
    if(state){const round=state.round;dgStop=onValue(ref(db,`${base}/dg/${round}`),v=>{if(round!==roundSeen||dead)return;dgMap=v.val()||{};render();},()=>{dgMap={};});dtStop=onValue(ref(db,`${base}/dt/${round}`),v=>{if(round!==roundSeen||dead)return;dtMap=v.val()||{};render();},()=>{dtMap={};});tqStop=onValue(ref(db,`${base}/tq/${round}`),v=>{if(round!==roundSeen||dead)return;tqMap=v.val()||{};render();},()=>{tqMap={};});nvStop=onValue(ref(db,`${base}/nv/${round}`),v=>{if(round!==roundSeen||dead)return;nvMap=v.val()||{};render();maybeAdvance();},()=>{nvMap={};});settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();maybeAdvance();maybeSettlement();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
     if(host)answerStop=onValue(ref(db,`${base}/answers/${round}`),v=>{if(round!==roundSeen||dead)return;answers=v.val()||{};render();settle();},()=>message('集計の取得に失敗しました。'));
    }
   }
-  if((state?.card==='danger'||state?.card==='king')&&state.phase==='measuring'&&!inviteStop){const round=state.round,actor=currentTurn(state,players).uid;inviteStop=onValue(ref(db,`${base}/answers/${round}/${actor}`),v=>{if(round!==roundSeen||dead)return;invite=v.val();render();settle();},()=>message('誘いの取得に失敗しました。再接続してください。'));}
+  if(state?.card==='battery'&&state.phase==='measuring'&&!btStop){const round=state.round;btStop=onValue(ref(db,`${base}/bt/${round}`),v=>{if(round!==roundSeen||dead)return;btData=v.val()||{};if(btData.vals&&!btSeenAt)btSeenAt=performance.now();render();btBot();if(host)settle();},()=>{btData={};message('ダウトの情報を取得できませんでした。ルールの反映と再接続を確認してください。');});}
+  if(state?.card==='grid'&&state.phase==='measuring'&&!gmStop){const round=state.round;
+   gmStop=onValue(ref(db,`${base}/gm/${round}/lg`),v=>{if(round!==roundSeen||dead)return;gmLg=normLg(v.val());for(const e of gmLg)if(typeof e.n==='number')gmDone[e.u]=Math.max(gmDone[e.u]||0,e.n);render();gridHost();},()=>{gmLg=[];message('マス目の情報を取得できませんでした。ルールの反映と再接続を確認してください。');});
+   gmRqStop=onValue(ref(db,`${base}/gm/${round}/rq`),v=>{if(round!==roundSeen||dead)return;gmRq=v.val()||{};gmSeq=Math.max(gmSeq,Number(gmRq[uid]?.n)||0);gridHost();},()=>{});
+   if(host)gmLayStop=onValue(ref(db,`${base}/gm/${round}/lay`),v=>{if(round!==roundSeen||dead)return;gmLay=typeof v.val()==='string'?v.val():null;gridHost();},()=>{});}
+  if(state?.card==='roulette'&&state.phase==='measuring'&&!rlStop){const round=state.round;
+   rlStop=onValue(ref(db,`${base}/rl/${round}`),v=>{if(round!==roundSeen||dead)return;rlOnData(v.val()||{});},()=>{rlData={};message('ルーレットの情報を取得できませんでした。ルールの反映と再接続を確認してください。');});
+   if(host&&!rlHostT)rlHostT=setInterval(()=>{if(dead||state?.card!=='roulette'||state.phase!=='measuring'){clearInterval(rlHostT);rlHostT=null;return;}rlHost();},1000);}
+  if(state?.card==='reaction'&&state.phase==='measuring'&&!bmStop){const round=state.round;
+   bmStop=onValue(ref(db,`${base}/bm/${round}/p`),v=>{if(round!==roundSeen||dead)return;bmP=normP(v.val());const last=bmP.at(-1);
+    if(last&&last.n!==bmSeenN){bmSeenN=last.n;if(last.u===uid){bmLockUntil=performance.now()+(globalThis.__nqBombLockMs??500);try{navigator.vibrate?.([60,40,60]);}catch{}clearTimeout(bmLockTimer);bmLockTimer=setTimeout(()=>{if(!dead)render();},(globalThis.__nqBombLockMs??500)+30);}}
+    render();bombHost();},()=>{bmP=[];message('爆弾の情報を取得できませんでした。ルールの反映と再接続を確認してください。');});
+   if(host)bmXStop=onValue(ref(db,`${base}/bm/${round}/x`),v=>{if(round!==roundSeen||dead)return;bmX=typeof v.val()==='number'?v.val():null;bombHost();},()=>{});}
+  if(state?.card==='king'&&!kgStop){const round=state.round;kgStop=onValue(ref(db,`${base}/kg/${round}`),v=>{if(round!==roundSeen||dead)return;kgData=v.val()||{};render();if(host)hostYield();},()=>{kgData={};message('王様の命令を取得できませんでした。ルールの反映と再接続を確認してください。');});}
+  if(inviteStop&&state?.card==='king'&&state.ky&&state.actor&&inviteFor!==state.actor){inviteStop();inviteStop=null;invite=undefined;} // 王様が譲られたら、新しい王様の回答を見に行き直す
+  if((state?.card==='danger'||state?.card==='king'||state?.card==='mission')&&state.phase==='measuring'&&!inviteStop){const round=state.round,actor=state.card==='king'&&state.ky&&state.actor?state.actor:currentTurn(state,players).uid;inviteFor=actor;inviteStop=onValue(ref(db,`${base}/answers/${round}/${actor}`),v=>{if(round!==roundSeen||dead)return;invite=v.val();render();settle();},()=>message('誘いの取得に失敗しました。再接続してください。'));}
   if(host&&state?.card==='buttons'&&state.phase==='measuring')runTransaction(ref(db,`${base}/buttonDeck/${state.round}`),d=>d?undefined:shuffleButtons(),{applyLocally:false}).catch(()=>message('ボタンの準備に失敗しました。再接続してください。'));
   ensureAllDrinks();render();settle();settleOwn();maybeSettlement();
  },()=>message('ゲーム接続ルールが未反映、または部屋が終了しています。')));
