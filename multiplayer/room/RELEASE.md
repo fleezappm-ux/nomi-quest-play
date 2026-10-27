@@ -241,3 +241,6 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 - Firebase ルール：rl・rld を追加、card に roulette、results の値の範囲、grants/items（2枠目）。公開が必要。
 - 未確定（仮）：キャッチ・結果の最終文言／順番は当番順／ホストの放置時間／NPC の回し方（ランダム）。
 - テスト：tests/roulette.test.mjs（14件・確率と計画）、tools/roulette-rules.test.mjs（19件）、tools/roulette-live.test.mjs（約20件）。実ブラウザ（Chromium）で初級・最終の動きと見た目を確認。
+
+## GOLD 0.69a
+- 利用ログに記録する版番号を、古い「0.39」から「0.69」に修正（ログで新旧の版を見分けるため）。送る項目・回数・通信量は変わらない。Firebaseルールの変更なし。
