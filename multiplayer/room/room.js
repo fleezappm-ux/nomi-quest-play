@@ -1,21 +1,21 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 const LS=(()=>{const m={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}catch{ok=false;}return{getItem:k=>{if(ok)try{return localStorage.getItem(k);}catch{}return k in m?m[k]:null;},setItem:(k,v)=>{m[k]=String(v);if(ok)try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{delete m[k];if(ok)try{localStorage.removeItem(k);}catch{}}};})();
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.69';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.69.1';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.69';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.69';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.69';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.69';
-import { track, logEnabled } from './telemetry.js?v=pop0.69';
-import { ensureAdult } from './agegate.js?v=pop0.69';
-import { AVATARS, avatarOf } from './avatars.js?v=pop0.69';
+import { attachTen } from './ten.js?v=pop0.69.1';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.69.1';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.69.1';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.69.1';
+import { track, logEnabled } from './telemetry.js?v=pop0.69.1';
+import { ensureAdult } from './agegate.js?v=pop0.69.1';
+import { AVATARS, avatarOf } from './avatars.js?v=pop0.69.1';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.69'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.69.1'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -105,8 +105,8 @@ if(isLocal){
  gp.innerHTML='練習をはじめる <span aria-hidden="true">→</span><small>1人用・通信なし'+(dv?'・🛠開発者モード':'')+'</small>';
  const bx=document.createElement('div');bx.className='nqh-two';bx.style.marginTop='10px';
  const mk=(t,h)=>{const x=document.createElement('a');x.className='nqh-button nqh-secondary';x.textContent=t;x.href=h;return x;};
- if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.69&npc=1&dev=1'));
- bx.append(mk('通常のホームへ','?v=pop0.69'));
+ if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.69.1&npc=1&dev=1'));
+ bx.append(mk('通常のホームへ','?v=pop0.69.1'));
  gp.insertAdjacentElement('afterend',bx);
 }
 $('playBack').onclick=()=>hgo('hm-home');
