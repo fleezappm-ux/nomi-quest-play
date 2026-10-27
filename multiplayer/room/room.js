@@ -86,6 +86,16 @@ function saveAvatar(){try{LS.setItem(AV_KEY,chosenAvatar);}catch{}}
 function avatarTakenNow(slots){return Object.values(slots||{}).some(p=>p&&p.uid!==uid&&p.avatar===chosenAvatar);}
 
 $('goPlay').onclick=()=>openName('create');
+// 練習モード(?npc=1)のホーム：ボタンの意味を分かりやすくし、開発者モードと通常版への入口を出す
+if(isLocal){
+ const dv=new URL(location.href).searchParams.get('dev')==='1',gp=$('goPlay');
+ gp.innerHTML='練習をはじめる <span aria-hidden="true">→</span><small>1人用・通信なし'+(dv?'・🛠開発者モード':'')+'</small>';
+ const bx=document.createElement('div');bx.className='nqh-two';bx.style.marginTop='10px';
+ const mk=(t,h)=>{const x=document.createElement('a');x.className='nqh-button nqh-secondary';x.textContent=t;x.href=h;return x;};
+ if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.69&npc=1&dev=1'));
+ bx.append(mk('通常のホームへ','?v=pop0.69'));
+ gp.insertAdjacentElement('afterend',bx);
+}
 $('playBack').onclick=()=>hgo('hm-home');
 $('goCreate').onclick=()=>openName('create');
 $('goJoin').onclick=()=>{if(roomId)return openName('join');$('joinHelp').hidden=false;};
