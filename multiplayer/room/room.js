@@ -1,21 +1,21 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 const LS=(()=>{const m={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}catch{ok=false;}return{getItem:k=>{if(ok)try{return localStorage.getItem(k);}catch{}return k in m?m[k]:null;},setItem:(k,v)=>{m[k]=String(v);if(ok)try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{delete m[k];if(ok)try{localStorage.removeItem(k);}catch{}}};})();
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.70.0';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.70.1';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.70.0';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.70.0';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.70.0';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.70.0';
-import { track, logEnabled } from './telemetry.js?v=pop0.70.0';
-import { ensureAdult } from './agegate.js?v=pop0.70.0';
-import { AVATARS, avatarOf } from './avatars.js?v=pop0.70.0';
+import { attachTen } from './ten.js?v=pop0.70.1';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.70.1';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.70.1';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.70.1';
+import { track, logEnabled } from './telemetry.js?v=pop0.70.1';
+import { ensureAdult } from './agegate.js?v=pop0.70.1';
+import { AVATARS, avatarOf } from './avatars.js?v=pop0.70.1';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.70.0'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.70.1'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -105,14 +105,14 @@ if(isLocal){
  gp.innerHTML='練習をはじめる <span aria-hidden="true">→</span><small>1人用・通信なし'+(dv?'・🛠開発者モード':'')+'</small>';
  const bx=document.createElement('div');bx.className='nqh-two';bx.style.marginTop='10px';
  const mk=(t,h)=>{const x=document.createElement('a');x.className='nqh-button nqh-secondary';x.textContent=t;x.href=h;return x;};
- if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.70.0&npc=1&dev=1'));
- bx.append(mk('通常のホームへ','?v=pop0.70.0'));
+ if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.70.1&npc=1&dev=1'));
+ bx.append(mk('通常のホームへ','?v=pop0.70.1'));
  gp.insertAdjacentElement('afterend',bx);
 }
 // 開発者モード：ホームのスイッチをオンにすると、「1人で遊ぶ」は必ず開発者モードで始まる
 if(!isLocal){
  const DK='nq-dev',lk=$('npcLink'),tg=document.createElement('button');tg.type='button';tg.id='devToggle';tg.className='nqh-button nqh-secondary';tg.style.marginTop='10px';
- const paint=()=>{const on=LS.getItem(DK)==='1';tg.textContent=on?'🛠 開発者モード：オン':'🛠 開発者モード：オフ';tg.innerHTML=on?'🛠 開発者モード：オン<small style="display:block;font-weight:400;margin-top:3px">「1人で遊ぶ」から入ると、好きなゲーム・お題を選べます（部屋を作る場合は使えません）</small>':'🛠 開発者モード：オフ';tg.setAttribute('aria-pressed',on?'true':'false');if(lk){lk.href=on?'?v=pop0.70.0&npc=1&dev=1':'?npc=1';let sm=lk.querySelector('small');if(on){if(!sm){sm=document.createElement('small');lk.append(sm);}sm.textContent='🛠 開発者モードで始まります';}else sm?.remove();}};
+ const paint=()=>{const on=LS.getItem(DK)==='1';tg.textContent=on?'🛠 開発者モード：オン':'🛠 開発者モード：オフ';tg.innerHTML=on?'🛠 開発者モード：オン<small style="display:block;font-weight:400;margin-top:3px">「1人で遊ぶ」から入ると、好きなゲーム・お題を選べます（部屋を作る場合は使えません）</small>':'🛠 開発者モード：オフ';tg.setAttribute('aria-pressed',on?'true':'false');if(lk){lk.href=on?'?v=pop0.70.1&npc=1&dev=1':'?npc=1';let sm=lk.querySelector('small');if(on){if(!sm){sm=document.createElement('small');lk.append(sm);}sm.textContent='🛠 開発者モードで始まります';}else sm?.remove();}};
  tg.onclick=()=>{try{LS.setItem(DK,LS.getItem(DK)==='1'?'0':'1');}catch{}paint();};
  paint();$('tell').parentElement.insertAdjacentElement('afterend',tg);
 }
@@ -136,7 +136,7 @@ const qrClose=()=>{$('qrBig').hidden=true;$('lobbyMain').hidden=false;};
 $('qrBack').onclick=qrClose;
 $('qrBig').onclick=e=>{if(e.target.closest('button,input'))return;qrClose();};
 $('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nameGo').click();}});
-$('tell').onclick=()=>{const url=new URL('./',location.href);url.search='';$('friendUrl').value=url.href;$('friendMsg').textContent='';hgo('hm-friend');};
+$('tell').onclick=()=>{const url=new URL('./',location.href);url.search='';$('friendUrl').value=url.href;$('friendMsg').textContent='';hgo('hm-friend');try{const q=new URL(url.href);q.searchParams.set('from','qr');QRCode.toCanvas($('friendQr'),q.href,{width:240,margin:2},()=>{});}catch{}};
 $('friendBack').onclick=()=>hgo('hm-home');
 $('friendSend').onclick=async()=>{const url=$('friendUrl').value,msg=$('friendMsg');try{if(navigator.share){await navigator.share({title:'NOMI QUEST',text:'飲み会ゲーム「NOMI QUEST」で遊ぼう！',url});msg.textContent='';}else{await navigator.clipboard.writeText(url);msg.textContent='リンクをコピーしました。LINEなどに貼って教えてね。';}}catch(e){if(e?.name!=='AbortError'){$('friendUrl').select();msg.textContent='リンクを長押ししてコピーしてね';}}};
 $('keepBack').onclick=()=>hgo('hm-home');
@@ -384,6 +384,21 @@ function isStandalone(){return matchMedia('(display-mode: standalone)').matches|
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 $('installYes').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
 if(isStandalone()){$('keep').hidden=true;$('keepTop').hidden=true;}
+// QRから来た人に、1回だけ「ホーム画面に追加しますか？」をたずねる（通信なし・「あとで」は7日間出さない）
+(()=>{try{
+ const u=new URL(location.href);if(u.searchParams.get('from')!=='qr')return;
+ u.searchParams.delete('from');try{history.replaceState(null,'',u.pathname+(u.search||'')+u.hash);}catch{}
+ if(isStandalone())return;
+ const o=JSON.parse(LS.getItem('nq-install-later')||'null');if(o&&o.t&&Date.now()-o.t<7*86400000)return;
+ const box=$('qrInstall');if(!box)return;
+ const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+ const later=()=>{try{const p=JSON.parse(LS.getItem('nq-install-later')||'null')||{n:0};LS.setItem('nq-install-later',JSON.stringify({n:(p.n||0)+1,t:Date.now()}));}catch{}box.hidden=true;};
+ $('qrInstallLater').onclick=later;
+ $('qrInstallYes').onclick=async()=>{
+  if(installPrompt){try{await installPrompt.prompt();}catch{}installPrompt=null;box.hidden=true;return;}
+  const hp=$('qrInstallHelp');hp.textContent=ios?'iPhone：Safariの下の共有ボタン □↑ →「ホーム画面に追加」を押してください。':'Android：Chromeの右上の︙ →「ホーム画面に追加」を押してください。';hp.hidden=false;$('qrInstallYes').hidden=true;};
+ setTimeout(()=>{if(roomId||isStandalone())return;box.hidden=false;},1800);
+}catch{}})();
 const keepGo=async()=>{if(roomId){message('まず「NOMI QUESTのホーム」を開いてから追加してください。');$('keepHelp').hidden=false;return;}if(installPrompt){await installPrompt.prompt();installPrompt=null;}else $('keepHelp').hidden=!$('keepHelp').hidden;};
 $('keep').onclick=keepGo;$('keepTop').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;return;}hgo('hm-keep');};
 
@@ -397,7 +412,7 @@ try {
       const dvOn=new URL(location.href).searchParams.get('dev')==='1',nb=document.createElement('div');
       nb.className='devNote';nb.style.cssText='margin:10px 24px 0;padding:10px 12px;border:1.5px dashed #f2c14e;border-radius:14px;color:#ffe9a3;font-size:13px;text-align:center';
       if(dvOn)nb.textContent='🛠 開発者モード中：スタートすると、画面の右下に🛠が出ます。押すと好きなゲームを選べます。';
-      else{const l=document.createElement('a');l.href='?v=pop0.70.0&npc=1&dev=1';l.textContent='🛠 開発者モードで始め直す（好きなゲームを選べる）';l.style.cssText='color:#ffe9a3;font-weight:800';nb.append(l);}
+      else{const l=document.createElement('a');l.href='?v=pop0.70.1&npc=1&dev=1';l.textContent='🛠 開発者モードで始め直す（好きなゲームを選べる）';l.style.cssText='color:#ffe9a3;font-weight:800';nb.append(l);}
       $('lenBox').insertAdjacentElement('afterend',nb);
     }
     $('lead').innerHTML='通信なしの練習モード。<br>NPCが自動で答えて進みます。';

@@ -254,3 +254,9 @@ Released 2026-10-30 with explicit user approval ("全部本番にプッシュ").
 - お助けカード：同時に持てる数方式（バリア＋なすりつけ3枚・身代わり3枚）、確率 バリア30／なすりつけ20／身代わり50、取り損ね、獲得表示とお助けタブの光、ゲーム開始時の1枚のみ。
 - Firebaseルール：0.70h（広げるだけ。古いコードも動く）。アバター21〜25は従来どおり除外。
 Rollback: code → branch backup/pre-gold070-20261030 of fleezappm-ux/nomi-quest-play. Rules: widening-only, so old code keeps working; if needed, republish the previous 0.70g copy page.
+
+## GOLD 0.70a
+Released 2026-10-30 with explicit user approval ("本番にプッシュ").
+- ホーム「友達に教える」にQRコード。QRから来た人（?from=qr）に、1回だけ「ホーム画面に追加しますか？」（Androidは本物の追加画面、iPhoneは手順の案内。「あとで」で7日間出さない）。
+- 通信・Firebaseルールの変更なし。
+Rollback: code → branch backup/pre-gold070a-20261030 of fleezappm-ux/nomi-quest-play (= GOLD 0.70).

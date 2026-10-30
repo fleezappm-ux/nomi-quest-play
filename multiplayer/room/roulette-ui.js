@@ -1,6 +1,6 @@
 // 10番 GO TO HEAVEN OR HELL のルーレット画面（カジノ風）。CSSとJSだけの軽い演出（動画・画像・大量パーティクルは使わない）。
 // 全員の端末が、記録された (段階・結果・種) から planSpin() で同じ動きを作る。このファイルは「見せる」だけで、通信はしない。
-import {KIND,STAGES} from './roulette.js?v=pop0.70.0';
+import {KIND,STAGES} from './roulette.js?v=pop0.70.1';
 
 const easeOutCubic=t=>1-Math.pow(1-t,3);
 const easeInOut=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
