@@ -816,7 +816,6 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .stage.art>h3:not(.verdict){position:relative;background:#fff7dc;color:#2a1a02!important;border:4px solid #6b4a10;border-radius:20px;padding:20px 16px 14px;margin:14px 0 4px;text-align:center;box-shadow:0 6px 0 #6b4a10;font:900 clamp(24px,7.4vw,32px)/1.4 'Noto Sans JP',sans-serif!important;text-shadow:none!important;-webkit-text-stroke:0!important;text-wrap:balance;overflow-wrap:anywhere}
 .stage.art>h3:not(.verdict)::before{position:absolute;left:-6px;top:-18px;width:44px;height:44px;border-radius:50%;background:#f2c14e;border:3px solid #6b4a10;font:400 22px/38px 'Dela Gothic One',sans-serif;color:#2a1a02;text-align:center;-webkit-text-stroke:0}
 #tenGame[data-card=vote] .stage.art>h3::before,#tenGame[data-card=muttsuri] .stage.art>h3::before,#tenGame[data-card=mind] .stage.art>h3::before{content:"Q"}
-#tenGame[data-card=majority] .stage.art>h3::before{content:"A/B";font-size:13px;line-height:38px}
 #tenGame[data-card=king] .stage.art>h3::before{content:"👑";font-size:20px}
 #tenGame[data-card=danger] .stage.art>h3::before{content:"?"}
 
@@ -825,13 +824,13 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .stage.art:has(>h3:not(.verdict)) .cardhead p.rule{font-size:12px;padding:6px 10px;line-height:1.6}
 
 /* 0.69 そのボタン、押して大丈夫？（マス目） */
-.grid12{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.grid12 button{min-height:64px;font-size:26px;border:3px solid var(--k);border-radius:14px;background:var(--cream);box-shadow:0 4px 0 var(--k);padding:4px}
+.grid12{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.grid12 button{min-height:58px;font-size:24px;border:3px solid var(--k);border-radius:14px;background:var(--cream);box-shadow:0 4px 0 var(--k);padding:4px}
 .grid12 button:disabled{opacity:1;box-shadow:none;transform:translateY(3px)}
 .grid12 button.hit-b{background:var(--red);color:#fff}
 .grid12 button.hit-h{background:var(--yellow)}
 .grid12 button.hit-e{background:#e9e2c2;color:var(--mute)}
-.grid12 button small{display:block;font-size:11px;line-height:1.1;margin-top:2px}
+.grid12 button small{display:block;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1;margin-top:2px}
 
 /* 0.69 GO TO HEAVEN OR HELL（ルーレット三段勝負・カジノ風）。すべて .rl の中だけに効く */
 .rl{--bg:#0a2a20;--bg2:#134a37;--line:#2f6b55;--fg:#f6efd8;--muted:#a9c9b8;--accent:#e9c46a;--bad:#ff6b78;--good:#f6dc82;--ring:rgba(0,0,0,.35);--sep:rgba(0,0,0,.5);--sepw:1deg;
@@ -890,3 +889,421 @@ body:has(#tenGame[data-phase="measuring"]) #share,body:has(#tenGame[data-phase="
 .rl-timer i{display:block;height:100%;width:100%;background:#e91855}
 .rl-snd{font:inherit;font-size:12px;font-weight:900;border:2px solid #13130b;background:var(--cream);color:#13130b;border-radius:999px;padding:4px 12px;min-height:32px;margin:0 0 6px auto;display:block}
 @media (prefers-reduced-motion:reduce){.rl-bulb,.rl-dial.good .rl-bulb,.rl-dial.bad .rl-bulb,.rl-slot.hit,.rl-dial.shuffle .rl-wheel,.rl-result.pop .rl-big,.rl-result.shake,.rl-burst i,.rl.doomfx{animation:none!important}}
+/* 0.70 充電マウント合戦：「ホントで送信」「ウソで送信」の2つ */
+.dock button.batTrue,.dock button.batLie{min-height:64px;font-size:19px;line-height:1.3}
+.dock button.batTrue{background:linear-gradient(#7ef0c4,#2fb98a);color:#06241a;box-shadow:0 5px 0 #14614a}
+.dock button.batLie{background:linear-gradient(#ffb09a,#e5573b);color:#2a0a04;box-shadow:0 5px 0 #7a2a1c}
+.dock button.batTrue small,.dock button.batLie small{display:block;font:800 11px var(--body);margin-top:3px;opacity:.85}
+/* 開発者モード：右下の🛠ボタンと、ゲーム・お題の選択シート（練習モード?dev=1だけ） */
+.devFab{position:fixed;right:10px;bottom:84px;z-index:9000;width:52px;height:52px;border-radius:50%;border:2px solid #c7a656;background:#0d3220;color:#ffe39a;font-size:24px;line-height:1;padding:0;box-shadow:0 4px 14px #000a}
+.devSheet{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.62);display:flex;align-items:flex-end}
+.devBody{width:100%;max-height:88vh;overflow:auto;background:#0b2418;border-top:2px solid #c7a656;border-radius:16px 16px 0 0;padding:12px 12px 28px;color:#fff3d2;box-sizing:border-box}
+.devBody .devHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:16px}
+.devBody .devX{width:auto;min-height:36px;margin:0;padding:4px 12px;font-size:13px}
+.devBody h3{margin:10px 0 6px;font-size:16px}
+.devBody>button{width:100%;margin:0 0 8px;min-height:44px;font-size:13px}
+.devBody .devnext{font-weight:700}
+.devBody .devList{display:flex;flex-direction:column;gap:6px;max-height:62vh;overflow:auto;padding-right:2px;-webkit-overflow-scrolling:touch}
+.devBody .devList button{flex:0 0 auto;width:100%;margin:0;min-height:42px;height:auto;text-align:left;white-space:normal;font-size:14px;line-height:1.4;padding:9px 10px}
+.devBody .devCat{margin:8px 0 2px;color:#ffe39a;font-weight:900;font-size:13px}
+.devBody .devgrid{margin-bottom:6px}
+/* 見出しの右上の📖（全ゲームの説明） */
+.stage .cardhead .ph.hasInfo{position:relative}
+.stage .cardhead .ph.hasInfo .phx{padding-right:54px}
+.cardInfo{z-index:6;position:absolute;right:0;top:6px;width:44px;height:44px;min-height:0;border-radius:50%;border:2px solid #f2c14e;background:linear-gradient(#17402b,#0b2a1b);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 0 10px #f2c14e66;padding:0;margin:0}
+.dtHelp.cardHelp .dtHelpBox p{font-size:16px}
+.cardInfo:active,.cardInfo:hover,.cardInfo:focus{transform:none;top:6px}
+/* 📖 ゲーム説明：番号つきの手順（①②③…） */
+.dtHelp.cardHelp .hstep{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(242,193,78,.35)}
+.dtHelp.cardHelp .hnum{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:#f2c14e;color:#2a1a00;font-size:18px;line-height:30px;text-align:center;font-weight:900;margin-top:1px}
+.dtHelp.cardHelp .hbody{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dtHelp.cardHelp .hh{font-size:17px;font-weight:900;color:#ffe9a3;line-height:1.35}
+.dtHelp.cardHelp .hd{font-size:15px;font-weight:600;line-height:1.55;color:#fff}
+.dock button.batTrue,.dock button.batLie{font-size:15.5px;font-weight:900;white-space:nowrap;padding-left:6px;padding-right:6px}
+
+/* 充電：送信ボタン2つ（カード内に移動しても効くように .stage 配下で指定） */
+.stage button.batTrue,.stage button.batLie,.dock button.batTrue,.dock button.batLie{min-height:62px;font-size:15.5px;font-weight:900;line-height:1.3;white-space:nowrap;padding:8px 6px}
+.stage button.batTrue,.dock button.batTrue{background:linear-gradient(#7ef0c4,#2fb98a);color:#06241a;box-shadow:0 5px 0 #14614a}
+.stage button.batLie,.dock button.batLie{background:linear-gradient(#ffb09a,#e5573b);color:#2a0a04;box-shadow:0 5px 0 #7a2a1c}
+.stage button.batTrue,.stage button.batLie{min-width:0;font-family:'Noto Sans JP',system-ui,sans-serif;font-size:15px;-webkit-text-stroke:0;text-shadow:none;letter-spacing:0;overflow:hidden}
+/* 充電：ダウトタイム画面（アイコン・名前・充電量を大きく、ダウトボタンは各行の右） */
+[data-bt="1"] .cardhead .rule{display:none}
+.dbCount{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 10px;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.35);border:2px solid #f2c14e}
+.dbCount .dbCl{font-size:18px;font-weight:900;color:#ffe9a3}
+.dbCount .dbCn{font:400 44px/1 'Dela Gothic One','Noto Sans JP',sans-serif;color:#f2c14e;text-shadow:2px 2px 0 #000;min-width:1.2em;text-align:center}
+.dbCount.low .dbCn{color:#ff6a4d}
+.dbRows{display:flex;flex-direction:column;gap:10px;margin:0 0 10px}
+.dbRow{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:rgba(10,40,26,.85);border:2px solid #2fb98a}
+.dbRow.me{border-color:#c7a656}
+.dbRow.picked{border-color:#ff6a4d;background:rgba(80,20,12,.8)}
+.dbRow .avimg,.dbRow img{width:54px;height:54px;border-radius:50%;flex:0 0 auto}
+.dbRow .dbMain{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dbRow .dbName{font-size:15px;font-weight:800;color:#fff3d2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dbRow .dbPct{font:400 36px/1.05 'Dela Gothic One','Noto Sans JP',sans-serif;color:#f2c14e;text-shadow:2px 2px 0 #000}
+.dbRow .dbBtn{flex:0 0 auto;width:auto;min-height:48px;margin:0;padding:6px 12px;font-size:15px;font-weight:900;white-space:nowrap;background:linear-gradient(#ffb09a,#e5573b);color:#2a0a04;box-shadow:0 4px 0 #7a2a1c;font-family:'Noto Sans JP',system-ui,sans-serif;-webkit-text-stroke:0;text-shadow:none}
+.dbRow .dbTag{flex:0 0 auto;font-weight:900;color:#ff9b86;font-size:14px}
+.pickitem.hlitem.hi{color:#1c9a6d}.pickitem.hlitem.lo{color:#d6452c}
+.dbRow .av{width:58px!important;height:58px!important;min-width:58px;flex:0 0 58px!important;border-radius:50%;overflow:hidden;margin:0}
+.dbRow .av img{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%}
+.dbRow .dbName{white-space:normal;overflow:visible}
+.abcount{font:400 96px/1 var(--disp);text-align:center;color:var(--red);-webkit-text-stroke:4px var(--cream);paint-order:stroke fill;filter:drop-shadow(3px 4px 0 var(--k));margin:8px 0;animation:abpop .9s ease-out}@keyframes abpop{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}}
+
+/* 0.70 ヘブンオアヘル：誰の番かをアイコンの大きさで見せる */
+.rlicons{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin:6px 0 10px}
+.rlicons .rli{display:grid;justify-items:center;gap:2px;width:52px;opacity:.7;transition:transform .25s}
+.rlicons .rli .av{display:block;width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid #f2c14e66}
+.rlicons .rli .av img{width:100%;height:100%;object-fit:cover;display:block}
+.rlicons .rli .nm{font-size:10px;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rlicons .rli .st{font-size:10px;color:#f2c14e}
+.rlicons .rli.now{width:96px;opacity:1}
+.rlicons .rli.now .av{width:84px;height:84px;border:3px solid #f2c14e;box-shadow:0 0 18px #f2c14e88}
+.rlicons .rli.now .nm{font-size:13px;font-weight:900;max-width:96px}
+.rlicons .rli.now .st{font-size:12px}
+
+.introBig .dtHelpBox{padding:26px 20px}
+.introBig h3{font-size:30px;margin-bottom:18px}
+.introLine{display:flex;gap:14px;align-items:flex-start;margin:0 0 18px}
+.introLine .hnum{flex:none;width:38px;height:38px;border-radius:50%;background:#f2c14e;color:#13130b;font:900 22px/38px var(--body);text-align:center}
+.introLine .introTx{font-size:24px;line-height:1.45;font-weight:800}
+.introBig .dthNo{font-size:18px}
+.introBig button{font-size:26px;min-height:60px}
+
+/* 0.70 キャッチフレーズの帯（説明の箱のかわり） */
+.stage .cardhead>p.band{margin:2px -12px;background:linear-gradient(#f7cf62,#d9962b)!important;color:#1a1405!important;text-shadow:none!important;text-align:center;font:400 19px/1.35 var(--disp);padding:9px 14px;border-block:2.5px solid #000;border-radius:0;box-shadow:none;overflow-wrap:anywhere}
+.stage.results .cardhead>p.band{display:none}
+
+/* 0.70 結果の画面：負けた人は大きく、セーフの人はアイコンだけ */
+.stage.results .cardhead .prog{display:none}
+.lcards{display:grid;gap:10px;margin:12px 0 6px}
+.lcard{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px;border:2.5px solid #ff6a5a;border-radius:18px;background:linear-gradient(135deg,#4a1218,#2a0a10);box-shadow:0 0 16px #ff4a3a55}
+.lcard .av{flex:none;width:76px;height:76px;border-radius:50%;overflow:hidden;border:3.5px solid #ffcf6a;box-shadow:0 0 14px #ffcf6a99}
+.lcard .av img{width:100%;height:100%;object-fit:cover;display:block}
+.lcard .lbody{flex:1 1 120px;min-width:0;display:grid;gap:2px}
+.lcard .who{font:900 18px/1.3 var(--body);color:#fff;overflow-wrap:anywhere}
+.lcard .detail{font-size:12px;color:#ffd9d2;overflow-wrap:anywhere}
+.lcard .lamt{flex:1 1 100%;font:400 38px/1.1 var(--disp);color:#ff6a5a;text-shadow:3px 3px 0 #000;text-align:center;border-top:2px dashed #ff6a5a66;padding-top:8px}
+.safes{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 18px;margin:10px 0}
+.safe1{display:grid;justify-items:center;gap:4px;width:68px}
+.safeav{position:relative;width:60px;height:60px}
+.safeav .av{display:block;width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid #3fd69a}
+.safeav .av img{width:100%;height:100%;object-fit:cover;display:block}
+.safeav .shield{position:absolute;right:-6px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:#2fbf86;border:2px solid #0b2a1b;color:#fff;font:900 14px/20px var(--body);text-align:center;font-style:normal}
+.safeav .gift{position:absolute;left:-8px;top:-8px;font-size:18px;font-style:normal}
+.safe1 .who{font-size:11px;color:#d8efe2;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.safe1.me .who{color:#ffe08a;font-weight:900}
+
+@font-face{font-family:'Mochiy Pop One';src:url(gold/mochiy-pop-one-sub.woff) format('woff');font-display:swap}
+.board .verdict,.lcard .lamt,.lcard .who,.safe1 .sec{font-family:'Mochiy Pop One',var(--disp)}
+.lcard .lamt{font-weight:400;letter-spacing:.02em}
+.lcard .mug.shot{flex:none;width:60px}
+.safe1 .sec{font-size:12px;color:#ffe08a}
+.safe1{width:74px}
+.stage.results .board{background:none!important;border:0!important;box-shadow:none!important;padding:4px 0!important}
+
+/* ===== H1 ダウト成功の結果画面 ===== */
+@font-face{font-family:'NQ Dela';src:url(gold/dela-gothic-sub.woff) format('woff');font-display:swap}
+/* H1: native central-medallion result composition, 864 × 1536. */
+body:has(.match-doubt){background:#03150f;color:#ffedbb}
+body.inGame:has(.match-doubt)>main{width:100%;max-width:480px;padding:0!important;container-type:inline-size;background:linear-gradient(#001d1466,#04180a22 45%,#00150eee),url(gold/match-tavern-v1.webp) center top/100% 100%;aspect-ratio:864/1536;overflow:hidden;position:relative;isolation:isolate}
+body:has(.match-doubt)>main:before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 34%,transparent 5%,#00140b4d 56%,#00140b99 95%);z-index:-1}
+body:has(.match-doubt)>main>header,body:has(.match-doubt) #started>.about,body:has(.match-doubt) #started>.hostZone,body:has(.match-doubt) #message:empty{display:none}
+#tenGame:has(.match-doubt){margin:0;padding:0}
+#tenGame:has(.match-doubt)>.top,#tenGame .stage.results:has(>.match-doubt)>.cardhead{display:none}
+#tenGame .stage.results:has(>.match-doubt){display:block;min-height:0;gap:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+#tenGame .match-doubt{position:relative;container-type:inline-size;aspect-ratio:864/1218;width:100%;height:auto;padding:0;margin:0;border:0;background:none;isolation:isolate;animation:none;overflow:visible}
+#tenGame .md-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#tenGame .md-brand{position:absolute;left:25%;width:50%;top:1%;height:4.4%;display:flex;gap:1.2cqw;align-items:center;justify-content:center;color:#fae9b2;white-space:nowrap;text-shadow:0 2px 3px #000}
+#tenGame .md-wordmark{font:400 4.1cqw/1 Georgia,serif;letter-spacing:.25cqw}
+#tenGame .md-crown{font-size:4.2cqw;line-height:1;color:#eac464}
+#tenGame .md-brand:before,#tenGame .md-brand:after{content:'✧';color:#dfb85e;font-size:2.8cqw}
+#tenGame .md-card-title{position:absolute;left:12%;top:6.3%;width:76%;height:7.3%;display:flex;align-items:center;justify-content:center;padding:0 3% 0 15%;border:1px solid #cfb36d;border-radius:2cqw;background:linear-gradient(120deg,#164a34dd,#01160ff5);box-shadow:inset 0 0 0 3px #06291d,0 0 20px #0006;z-index:5}
+#tenGame .md-card-title:before,#tenGame .md-card-title:after{content:'◆';position:absolute;font-size:1.3cqw;color:#ebd28d;top:38%}#tenGame .md-card-title:before{left:-.8cqw}#tenGame .md-card-title:after{right:-.8cqw}
+#tenGame .md-card-title h2{font:400 4.1cqw/1.1 'NQ Dela',var(--disp);color:#ffe6a4;white-space:nowrap;letter-spacing:-.1cqw;text-shadow:0 2px 1px #352000}
+#tenGame .md-card-icon{position:absolute;left:1%;top:-20%;height:140%;width:18%;object-fit:contain;filter:drop-shadow(0 1px 2px #000)}
+#tenGame .md-card-title>.md-trim{display:none}
+#tenGame .md-headline{position:absolute;left:-1%;top:13.3%;width:102%;height:20.8%;margin:0;padding:0;z-index:7;isolation:isolate;overflow:visible}
+#tenGame .md-title-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:rotate(-4deg);filter:drop-shadow(0 5px 1px #221301) drop-shadow(0 0 18px #eccd3655)}
+#tenGame .md-headline:before{content:'';position:absolute;left:9%;top:-12%;width:82%;height:126%;background:radial-gradient(ellipse,#e4df5d66,transparent 64%);z-index:-1}
+#tenGame .md-headline:after{content:'✦';position:absolute;left:57%;top:7%;font-size:5cqw;line-height:1;color:#fffce1;text-shadow:0 0 12px #fff7a3;transform:rotate(12deg)}
+#tenGame .md-laurel{display:none}
+#tenGame .md-result-hero{position:absolute;left:0;top:32%;width:100%;height:39%;background:none;border:0;border-radius:0;box-shadow:none;isolation:isolate;overflow:visible;z-index:4}
+#tenGame .md-result-hero>.md-trim{display:none}
+#tenGame .md-aura{position:absolute;left:3%;top:-21%;width:94%;aspect-ratio:1;border-radius:50%;z-index:-2;background:radial-gradient(circle,#fff5ab 0,#fae95688 16%,#e9bd3044 35%,#c0ed2d08 60%,transparent 67%);filter:blur(2px)}
+#tenGame .md-rays{position:absolute;left:-7%;top:-40%;width:114%;aspect-ratio:1;border-radius:50%;z-index:-1;opacity:.8;background:repeating-conic-gradient(from 14deg,transparent 0deg 10deg,#ffe27c2b 10.5deg 11.5deg,transparent 12deg 19deg,#fcf69a11 20deg 24deg,transparent 25deg 31deg);mask-image:radial-gradient(circle,transparent 17%,#000 35%,transparent 70%)}
+#tenGame .md-ring{position:absolute;left:23.5%;top:-1%;width:53%;aspect-ratio:1;border-radius:50%;border:1px solid #fff0ba;box-shadow:0 0 0 .7cqw #b88021,0 0 0 1cqw #fff2a8,0 0 0 1.6cqw #674610,0 0 0 1.8cqw #bca655,0 0 28px #ffe45b99,inset 0 0 20px #fce48b88;z-index:3;pointer-events:none}
+#tenGame .md-ring:before{content:'';position:absolute;inset:-3.4cqw;border-radius:50%;border:1px solid #d7b86666;border-top-color:#fff2c7;border-bottom-color:#eed26a;transform:rotate(-27deg)}
+#tenGame .md-portrait.result-avatar.av{position:absolute;left:24%;top:0;width:52%;height:auto;aspect-ratio:1;margin:0;padding:0;border:0;border-radius:50%;background:#0c2515;box-shadow:0 0 0 .4cqw #fff8c6,0 0 20px #f3c63d66;overflow:hidden;z-index:2;transform:none}
+#tenGame .md-portrait.result-avatar.av img{width:100%;height:100%;border:0;border-radius:50%;object-fit:cover}
+#tenGame .md-person{position:absolute;top:58%;left:32%;width:36%;height:12%;text-align:center;background:linear-gradient(110deg,#073820,#001b11);border:1px solid #e6c67c;clip-path:polygon(5% 0,95% 0,100% 50%,95% 100%,5% 100%,0 50%);z-index:6;display:flex;align-items:center;justify-content:center}
+#tenGame .md-name{display:flex;align-items:baseline;justify-content:center;gap:1cqw;min-width:0;max-width:95%;white-space:nowrap}
+#tenGame .md-name b{font:900 4.5cqw/1.1 var(--body);color:#fff1c9;overflow:hidden;text-overflow:ellipsis}
+#tenGame .md-name small{font:700 1.8cqw/1 var(--body);color:#b6bb9d}
+#tenGame .md-charge{position:absolute;left:-10000px}
+#tenGame .md-lie{position:absolute;left:9%;top:38%;font:900 4.4cqw/1 var(--body);letter-spacing:.1cqw;color:#ffc6ae;border:.5cqw solid #ff7052;border-radius:1.2cqw;padding:1.3cqw 1.6cqw;transform:rotate(-16deg);box-shadow:0 0 10px #fb361999;background:#4d160dee;z-index:6;text-shadow:0 2px #5c1414}
+#tenGame .md-penalty{position:absolute;left:15%;top:72%;width:70%;height:24%;z-index:8;display:flex;align-items:center;justify-content:center;gap:2cqw;isolation:isolate;transform:rotate(-3deg)}
+#tenGame .md-penalty:before{content:'';position:absolute;inset:-4% -5%;background:linear-gradient(168deg,#ff6a48,#a51522 16%,#35050b 48%,#55040b 72%,#a91a1c);clip-path:polygon(1% 8%,10% 12%,13% 0,25% 8%,40% 0,57% 7%,70% 0,81% 8%,95% 0,93% 18%,100% 31%,95% 50%,100% 68%,92% 81%,96% 100%,78% 94%,65% 100%,48% 94%,30% 100%,17% 93%,2% 100%,6% 80%,0 64%,4% 43%,0 21%);z-index:-1;filter:drop-shadow(0 1px 1px #ff8351)}
+#tenGame .md-penalty:after{content:'';position:absolute;inset:6% -1%;border-top:1px solid #ffb684;border-bottom:1px solid #ef4f40;z-index:-1;opacity:.7}
+#tenGame .md-penalty-label{font:400 5.6cqw/1 'NQ Dela',var(--disp);white-space:nowrap;color:#ffb1a0;text-shadow:0 2px 0 #630606,0 0 15px #ff382f66;margin-left:1cqw}
+#tenGame .md-penalty>.md-svg-text{width:37%;height:132%;margin-top:-2%;overflow:visible;filter:drop-shadow(0 4px 1px #3d0303) drop-shadow(0 0 10px #f7332866)}
+#tenGame .md-svg-text text{font-family:'NQ Dela','Noto Sans JP',sans-serif;font-weight:400;letter-spacing:-5px}
+#tenGame .md-lightning{position:absolute;left:0;top:1%;width:100%;height:83%;z-index:1;overflow:visible;pointer-events:none;filter:drop-shadow(0 0 5px #f9ce45)}
+#tenGame .md-mask{position:absolute;right:5%;top:-8%;width:22%;height:43%;z-index:5;overflow:visible;filter:drop-shadow(0 5px 3px #0009)}
+#tenGame .md-sparks{position:absolute;inset:-28% 0 -5%;z-index:7;pointer-events:none;overflow:visible}
+#tenGame .md-sparks i{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);background:linear-gradient(45deg,#c08011,#fff9b4);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 5px #ffd647);transform:rotate(var(--r));opacity:.85}
+#tenGame .md-safe-players{position:absolute;left:8%;top:73.3%;width:84%;height:14%;display:flex;align-items:flex-start;justify-content:center;gap:clamp(3cqw,calc(24cqw / var(--safe-count)),12cqw);z-index:4}
+#tenGame .md-safe-player{width:calc(72% / var(--safe-count));max-width:19cqw;min-width:0;display:flex;align-items:center;flex-direction:column;gap:1.3cqw;text-align:center}
+#tenGame .md-safe-medal{position:relative;width:100%;aspect-ratio:1}
+#tenGame .md-safe-medal .result-avatar.av{width:100%;height:100%;border:2px solid #ffe8a0;padding:2px;background:#ac7c24;box-shadow:0 0 0 1px #8e650f,0 0 0 1cqw #082b1a,0 0 0 1.1cqw #d4b966,0 0 18px #31e08c44;border-radius:50%}
+#tenGame .md-safe-player b{font:900 3.5cqw/1.2 var(--body);color:#fff0c1;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 3px #00150c}
+#tenGame .md-safe-word{display:block;font:900 2.4cqw/1 var(--body);letter-spacing:.1cqw;color:#7fffc8;padding:.65cqw 2.7cqw;border:1px solid #43c48c;border-radius:4cqw;background:#0d5339d9;box-shadow:0 0 12px #32d58822}
+#tenGame .md-shield{position:absolute;right:-18%;bottom:-3%;width:44%;height:55%;filter:drop-shadow(0 0 7px #00f49f99)}
+#tenGame .md-self-status{position:absolute;left:8%;top:91%;width:84%;height:8%;display:flex;align-items:center;justify-content:center;gap:1.7cqw;border:1px solid #cfb867;border-radius:2.5cqw;background:linear-gradient(115deg,#003f2eee,#05281af5 55%,#075436ee);box-shadow:inset 0 0 0 .7cqw #011f16,inset 0 0 12px #85e0a322,0 0 20px #050c0666;white-space:nowrap;z-index:6}
+#tenGame .md-self-status:before,#tenGame .md-self-status:after{content:'❧';position:absolute;top:17%;font-size:6cqw;line-height:1;color:#d3bd74}#tenGame .md-self-status:before{left:1%;transform:rotate(-70deg)}#tenGame .md-self-status:after{right:1%;transform:scaleX(-1) rotate(-70deg)}
+#tenGame .md-self-status>.md-trim{display:none}
+#tenGame .md-self-status span{font:900 4.2cqw/1 var(--body);color:#fff0c9}
+#tenGame .md-self-status strong{font:900 6.4cqw/1 var(--body);color:#8affcd;text-shadow:0 2px #005a35,0 0 16px #29d18566}
+#tenGame .md-person-icon{width:5.8cqw;height:7cqw;fill:#eac465;filter:drop-shadow(0 0 6px #f3d56d33)}
+#tenGame .md-self-penalty{background:#44140b}#tenGame .md-self-penalty strong{color:#ff9e82}
+#tenGame:has(.match-doubt)>.dock{padding:3.7cqw 5% 0;margin:0;background:none;display:block}
+#tenGame:has(.match-doubt)>.dock>button:not(.secondary){position:relative;height:15cqw;min-height:48px;width:100%;margin:0;padding:0 8%;font:400 6.7cqw/1 'NQ Dela',var(--disp);letter-spacing:-.15cqw;color:#22170a;background:linear-gradient(115deg,#ad7519 -4%,#ffed9b 5%,#fff4c3 23%,#e9bf54 52%,#bd831d 79%,#f6dc82 97%);border:1px solid #fff0ae;border-radius:8cqw;box-shadow:inset 0 0 0 .6cqw #7e5b21,inset 0 0 0 .85cqw #efd58b,inset 0 0 14px #fffcc050,0 4px 0 #513b16,0 0 20px #c599331a;text-shadow:0 1px #fff0ab;overflow:hidden}
+#tenGame:has(.match-doubt)>.dock>button:not(.secondary):before{content:'';position:absolute;top:-50%;left:-40%;width:17%;height:200%;transform:rotate(25deg);background:linear-gradient(90deg,transparent,#fff9d0aa,transparent);animation:h1ButtonSheen 5s calc(4s + var(--mds,0s)) infinite}
+#tenGame:has(.match-doubt)>.dock>button:not(.secondary):after{content:'❧';position:absolute;left:3%;top:27%;font-size:6cqw;line-height:1;font-family:Georgia,serif;color:#805a13;transform:rotate(-45deg)}
+body.inGame:has(.match-doubt) #tabbar{position:relative;inset:auto;width:100%;max-width:100%;height:13cqw;min-height:48px;display:flex;justify-content:space-around;align-items:center;margin:5cqw 0 0;padding:1cqw 5% 1.5cqw;border-top:1px solid #aa8c48;background:linear-gradient(#001e15e6,#00150df5);box-shadow:0 -1px 12px #caae2520;container-type:inline-size}
+body:has(.match-doubt) #tabbar:before{content:'◇';position:absolute;left:47%;top:-2.6cqw;font-size:4cqw;line-height:1;color:#e3c377;background:#052419;padding:0 1cqw}
+body:has(.match-doubt) #tabbar button{height:auto;min-height:44px;font:700 2.7cqw/1.2 var(--body);color:#dcc68a;gap:1cqw;padding:1cqw;box-shadow:none;border:0;background:none;border-radius:0;margin:0}
+body:has(.match-doubt) #tabbar button svg{width:4.7cqw;height:4.7cqw;stroke-width:1.6;color:#ebd08b}
+body:has(.match-doubt) #tabbar .tab[hidden]{display:none}
+@keyframes h1Gold{0%{opacity:0;transform:rotate(-4deg) scale(1.8);filter:brightness(2.5)}60%{opacity:1;transform:rotate(-4deg) scale(.97)}80%{transform:rotate(-4deg) scale(1.03)}100%{opacity:1;transform:rotate(-4deg) scale(1)}}
+@keyframes h1Rise{from{opacity:0;transform:translateY(15px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes h1Flash{0%,100%{opacity:0}20%{opacity:.8}45%{opacity:.05}65%{opacity:.3}}
+@keyframes h1Ring{from{opacity:0;transform:scale(.5);filter:brightness(3)}70%{opacity:1;transform:scale(1.04)}to{opacity:1;transform:scale(1);filter:brightness(1)}}
+@keyframes h1Stamp{from{opacity:0;transform:rotate(-30deg) scale(2.5)}65%{opacity:1;transform:rotate(-13deg) scale(.94)}to{opacity:1;transform:rotate(-16deg) scale(1)}}
+@keyframes h1Penalty{0%{opacity:0;transform:rotate(-3deg) scale(1.7)}50%{opacity:1;transform:rotate(-3deg) scale(.92)}75%{transform:rotate(-3deg) scale(1.05)}100%{opacity:1;transform:rotate(-3deg) scale(1)}}
+@keyframes h1Burst{from{opacity:0;transform:scale(.2) rotate(-25deg)}65%{opacity:1;transform:scale(1.05) rotate(0)}to{opacity:.85;transform:scale(1) rotate(0)}}
+@keyframes h1MaskL{from{transform:translate(0,0) rotate(0)}to{transform:translate(-9px,5px) rotate(-13deg)}}
+@keyframes h1MaskR{from{transform:translate(0,0) rotate(0)}to{transform:translate(14px,9px) rotate(13deg)}}
+@keyframes h1MaskEnter{from{opacity:0;transform:translate(-15px,15px) rotate(-12deg) scale(.7)}to{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes h1Safe{0%{opacity:0;transform:translateY(10px) scale(.8)}65%{opacity:1;transform:translateY(0) scale(1.06);filter:drop-shadow(0 0 10px #57ffac)}to{opacity:1;transform:translateY(0) scale(1);filter:drop-shadow(0 0 1px #57ffac)}}
+@keyframes h1ButtonSheen{0%,65%{left:-40%}95%,100%{left:130%}}
+#tenGame .match-doubt .md-title-art{animation:h1Gold .8s calc(.15s + var(--mds,0s)) both cubic-bezier(.15,.7,.25,1)}
+#tenGame .match-doubt .md-portrait,#tenGame .match-doubt .md-ring{animation:h1Ring .85s calc(.8s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-aura,#tenGame .match-doubt .md-rays{animation:h1Burst 1s calc(.75s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-lightning,#tenGame .match-doubt .md-sparks{animation:h1Burst .7s calc(1.4s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-person{animation:h1Rise .4s calc(1.4s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-mask{animation:h1MaskEnter .45s calc(1.2s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-mask .mask-left{transform-origin:70px 80px;animation:h1MaskL .35s calc(1.7s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-mask .mask-right{transform-origin:70px 80px;animation:h1MaskR .35s calc(1.7s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-lie{animation:h1Stamp .4s calc(1.7s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-penalty{animation:h1Penalty .65s calc(2.15s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-safe-player{animation:h1Safe .6s calc(2.85s + var(--mds,0s)) both}
+#tenGame .match-doubt .md-safe-player:nth-child(2){animation-delay:calc(3.05s + var(--mds,0s))}#tenGame .match-doubt .md-safe-player:nth-child(3){animation-delay:calc(3.2s + var(--mds,0s))}
+#tenGame .match-doubt .md-self-status{animation:h1Safe .6s calc(3.45s + var(--mds,0s)) both}
+#tenGame:has(.match-doubt)>.dock{animation:h1Rise .4s calc(3.85s + var(--mds,0s)) both}
+@media(prefers-reduced-motion:reduce){body:not(.lab-explicit-motion) #tenGame .match-doubt *,body:not(.lab-explicit-motion) #tenGame .match-doubt *:before,body:not(.lab-explicit-motion) #tenGame .match-doubt *:after,body:not(.lab-explicit-motion) #tenGame:has(.match-doubt)>.dock{animation:none!important}}
+/* Final spacing: keep the name below the face and the reward row clear. */
+#tenGame .md-portrait.result-avatar.av{left:27%;width:46%}
+#tenGame .md-ring{left:26.5%;width:47%}
+#tenGame .md-person{top:70%;height:11%;left:33%;width:34%}
+#tenGame .md-penalty{top:86%;height:23%}
+#tenGame .md-safe-players{top:75.5%;gap:clamp(3cqw,calc(26cqw / var(--safe-count)),13cqw)}
+#tenGame .md-safe-player{max-width:16.5cqw;gap:1.5cqw}
+#tenGame .md-safe-word{display:none}
+#tenGame .md-mask{right:5%;top:-9%;width:18%;height:36%;transform:rotate(10deg)}
+#tenGame .md-lie{left:12%;top:36%}
+#tenGame .md-self-status{height:8.2%}
+#tenGame .md-person-icon{width:4.7cqw;height:5.5cqw}
+#tenGame .match-doubt{overflow:hidden}
+#tenGame .md-safe-players{gap:clamp(2cqw,calc(22cqw / var(--safe-count)),11cqw)}
+#tenGame .md-safe-player{max-width:15cqw}
+
+#tenGame .match-doubt.md-seen *,#tenGame .match-doubt.md-seen *:before,#tenGame .match-doubt.md-seen *:after{animation:none!important}
+#tenGame:has(.match-doubt.md-seen)>.dock{animation:none!important}
+#tenGame:has(.match-doubt)>.dock>p{display:none}
+#tenGame .stage:has(.match-doubt) p.mine{display:none}
+
+.introBig .dtHelpBox{position:relative;padding:20px 16px 16px;max-height:92dvh}
+.introBig h3{font-size:24px;margin-bottom:12px;padding:0 34px}
+.introLine{margin:0 0 12px}
+.introLine .hnum{width:32px;height:32px;font-size:19px;line-height:32px}
+.introLine .introTx{font-size:19px;line-height:1.45}
+.introBig .introX{position:absolute;right:8px;top:8px;width:40px;height:40px;min-height:0;margin:0;padding:0;border-radius:50%;border:2px solid #f2c14e;background:#0b2a1b;color:#ffe9a3;font:900 20px/1 var(--body);box-shadow:none}
+.introBig .introNo{display:flex;align-items:center;gap:10px;font-size:17px;margin:12px 0 4px}
+.introBig .introNo input{width:26px;height:26px;min-height:0;margin:0;accent-color:#f2c14e;flex:none}
+.introBig button.introX+h3,.introBig>.dtHelpBox>button:not(.introX){font-size:22px;min-height:52px}
+.cardInfo.glow{animation:bookGlow 1.8s ease-in-out infinite}
+@keyframes bookGlow{0%,100%{box-shadow:0 0 8px #f2c14e66}50%{box-shadow:0 0 0 4px #f2c14e55,0 0 20px #ffe27c}}
+@media(prefers-reduced-motion:reduce){.cardInfo.glow{animation:none;box-shadow:0 0 0 3px #ffe27c}}
+.bmCount{display:grid;justify-items:center;gap:6px;margin:10px 0}
+.bmCount b{font:400 150px/1 'Mochiy Pop One',var(--disp);color:#ffcf6a;text-shadow:5px 5px 0 #000,0 0 30px #ffcf6a88;animation:bmPop 1s ease-out}
+.bmCount span{font-size:15px;color:#ffe9a3}
+.bmGo{font:400 54px/1.2 'Mochiy Pop One',var(--disp);color:#7fffc8;text-align:center;text-shadow:4px 4px 0 #000;animation:bmPop .6s ease-out}
+@keyframes bmPop{0%{transform:scale(1.9);opacity:0}30%{opacity:1}100%{transform:scale(1)}}
+.bmCount b{font-size:118px;margin-bottom:22px}
+.bmCount span{margin-top:6px}
+
+.bmYoi b{font-size:64px;margin-bottom:14px}
+
+/* ドキドキ（爆弾まわし）の画面 */
+.bmHead{font-family:'Mochiy Pop One',var(--disp);font-size:22px;text-align:center;color:#ffe9a3;margin:4px 0}
+.bmStage{position:relative;height:min(46vh,350px);min-height:290px}
+.bmPl{position:absolute;transform:translate(-50%,-50%);text-align:center;width:92px}
+.bmAv{position:relative;width:64px;height:64px;margin:0 auto}
+.bmAv .av{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid #6f8f7c;filter:brightness(.72)}
+.bmAv .av img{width:100%;height:100%;object-fit:cover;display:block}
+.bmPl b{display:block;font:700 13px/1.2 var(--body);color:#d6eadd;margin:4px auto 0;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bmPl small{display:block;font:400 16px/1.2 'Mochiy Pop One',var(--disp);color:#9fe8c0}
+.bmPl.me b{color:#ffe08a}
+.bmPl.hold{width:120px;z-index:3}
+.bmPl.hold .bmAv{width:96px;height:96px}
+.bmPl.hold .bmAv .av{border:4px solid #ffcf6a;filter:none;box-shadow:0 0 0 3px #7a2a12,0 0 28px #ff9a2a,0 0 56px #ff5a1a88;animation:bmThrob 1s ease-in-out infinite}
+.bmPl.hold b{font-size:16px;color:#fff}
+.bmPl.hold small{font-size:24px;color:#ffcf6a;text-shadow:0 0 10px #ff9a2a}
+.bmBomb{display:block;width:44px;height:50px;filter:drop-shadow(0 3px 4px #000)}
+.bmBomb svg{width:100%;height:100%;display:block;overflow:visible}
+.bmHeld{position:absolute;right:-18px;bottom:-6px;width:56px;height:64px}
+.bmFly{position:absolute;z-index:6;width:56px;height:64px}
+.bmSp{transform-origin:58px 8px;animation:bmSpark .3s infinite alternate}
+@keyframes bmSpark{to{transform:scale(1.28)}}
+@keyframes bmThrob{50%{transform:scale(1.05)}}
+@media(prefers-reduced-motion:reduce){.bmSp,.bmPl.hold .bmAv .av{animation:none}}
+
+.bmBomb{--heat:0}
+.bmBomb svg{filter:sepia(var(--heat)) saturate(calc(1 + var(--heat) * 6)) hue-rotate(calc(var(--heat) * -35deg)) brightness(calc(1 + var(--heat) * .5))}
+.bmBomb.hot{animation:bmShake .14s linear infinite}
+.bmBomb.hot .bmSp{animation-duration:.1s}
+@keyframes bmShake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-3deg)}50%{transform:translate(2px,-1px) rotate(3deg)}75%{transform:translate(-1px,-1px) rotate(-2deg)}100%{transform:translate(0,0) rotate(0)}}
+@media(prefers-reduced-motion:reduce){.bmBomb.hot{animation:none}}
+
+/* 爆弾の結果（ダウト成功の構図ベース）と爆発の演出 */
+.bx-title{font:900 64px/1 "NQ Dela","Noto Sans JP",sans-serif;text-align:center;letter-spacing:-2px;color:transparent;background:linear-gradient(#fffce4,#fff6bf 16%,#ffe19a 36%,#f4b746 54%,#d78b1a 73%,#ffe9a2 90%,#af6a10);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:2px #fff0ad;filter:drop-shadow(0 7px 0 #7a4a08) drop-shadow(0 0 14px #ff9a2a);transform:rotate(-4deg);margin:6px 0 0}
+.bx-title small{display:block;font-size:26px;letter-spacing:2px;-webkit-text-stroke:1px #fff0ad}
+.match-bomb .md-portrait img{filter:grayscale(.45) brightness(.8) contrast(1.1)}
+.bx-soot{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 120%,#000a 0,#0000 60%),radial-gradient(circle at 20% 15%,#0008 0,#0000 35%),radial-gradient(circle at 85% 30%,#0007 0,#0000 30%);pointer-events:none}
+.bx-star{position:absolute;color:#ffd24a;text-shadow:0 0 8px #ff8a1a;font-size:20px;animation:h1Burst .7s calc(1.4s + var(--mds,0s)) both}
+.bx-giftwrap{position:relative;width:100%}
+.bx-gift{display:flex;align-items:center;gap:10px;margin:0 auto;padding:5px 12px;border-radius:18px;border:2px solid #f2c14e;background:linear-gradient(#2b5a3d,#133b28);box-shadow:0 0 18px #f2c14e88,inset 0 0 12px #f2c14e44;width:94%;color:#ffe9a3;font-family:"Mochiy Pop One",sans-serif;animation:h1Safe .6s calc(2.85s + var(--mds,0s)) both}
+.bxg-av{width:62px;height:62px;border-radius:50%;border:3px solid #ffd24a;flex:none;box-shadow:0 0 14px #ffcf6a;position:relative}
+.bxg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.bxg-crown{position:absolute;left:-8px;top:-18px;font-size:26px;transform:rotate(-18deg)}
+.bxg-tx{flex:1;line-height:1.25;min-width:0}.bxg-tx small{display:block;font-size:12px;color:#cfe6d8}.bxg-tx b{font-size:18px;font-weight:400}
+.bxg-gf{text-align:center;font-size:36px;filter:drop-shadow(0 0 10px #ffcf6a)}.bxg-gf i{display:block;font:normal 13px "Mochiy Pop One";color:#ffcf6a;margin-top:-4px}
+.bx-others{margin:4px 0 0;text-align:center;font-size:12px;color:#9fe8c0}
+.bx-blast{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#fff 14%,#ffe27a 28%,#ff8a1a 48%,#7a1d08 75%,#1a0603 100%);animation:bxFade 1.6s var(--bxe,0s) both linear}
+.bx-blast .bx-ray{position:absolute;left:50%;top:45%;width:800px;height:8px;margin-left:-400px;background:linear-gradient(90deg,#0000,#fff,#0000);animation:bxRay 1.6s var(--bxe,0s) both}
+.bx-blast .bx-st{position:absolute;font-size:34px;filter:drop-shadow(0 0 6px #ff8a1a)}
+.bx-blast b{position:absolute;left:0;right:0;top:36%;text-align:center;white-space:nowrap;font:900 66px "NQ Dela",sans-serif;color:#fff;-webkit-text-stroke:5px #c8260a;paint-order:stroke;text-shadow:0 8px 0 #7a1d08;animation:bxShake 1.6s var(--bxe,0s) both}
+@keyframes bxFade{0%{opacity:0;transform:scale(.4)}8%{opacity:1;transform:scale(1.05)}55%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
+@keyframes bxRay{0%{opacity:0}10%{opacity:1}100%{opacity:.2}}
+@keyframes bxShake{0%{transform:rotate(-8deg) scale(.3)}12%{transform:rotate(-8deg) scale(1.25)}20%{transform:rotate(-6deg) translate(4px,-3px) scale(1)}30%{transform:rotate(-9deg) translate(-4px,3px) scale(1)}100%{transform:rotate(-8deg) scale(1)}}
+#tenGame .match-bomb .md-title-art{animation:h1Gold .8s calc(.15s + var(--mds,0s)) both cubic-bezier(.15,.7,.25,1)}
+.match-bomb.md-seen .bx-blast{display:none}
+@media(prefers-reduced-motion:reduce){.bx-blast{animation-duration:.5s}}
+#tenGame .match-bomb .md-safe-players.bx-safe{display:block;top:75.5%;height:auto}
+
+/* ボタンのゲーム：誰の番か */
+.gturn{display:flex;justify-content:center;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
+.gt{display:flex;flex-direction:column;align-items:center;width:58px;opacity:.55;transition:transform .25s,opacity .25s}
+.gt .av{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid #6f8f7c;display:block}
+.gt .av img{width:100%;height:100%;object-fit:cover}
+.gt b{font-weight:400;font-size:11px;margin-top:3px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cfe6d8}
+.gt i{font-style:normal;font-size:11px;color:#9fe8c0;min-height:13px}
+.gt.on{opacity:1;width:92px;transform:translateY(-2px)}
+.gt.on .av{width:76px;height:76px;border:4px solid #ffcf6a;box-shadow:0 0 0 3px #7a5410,0 0 26px #ffcf6aaa;animation:gtPulse 1.2s ease-in-out infinite}
+.gt.on b{font-size:15px;color:#ffe9a3}.gt.on i{font-size:13px;color:#ffcf6a}
+@keyframes gtPulse{50%{box-shadow:0 0 0 3px #7a5410,0 0 38px #ffcf6a}}
+.gturnTxt{margin:2px 0 0}
+@media(prefers-reduced-motion:reduce){.gt.on .av{animation:none}}
+
+.gt.on .av{width:62px;height:62px}.gt.on{width:80px}.gt .av{width:38px;height:38px}
+.gturnTxt{font-size:20px!important;margin:0!important}
+#tenGame .grid12{gap:6px;margin:8px 0}
+#tenGame .grid12 button{min-height:46px}
+
+/* ボタン：爆弾が最初の人に落ちる */
+.gt{position:relative}
+.gt .gbomb{position:absolute;left:50%;top:-8px;font-size:40px;margin-left:-20px;z-index:3;animation:gbDrop .9s cubic-bezier(.3,.1,.6,1) both;pointer-events:none}
+.gt.drop .av{animation:gbHit .5s .75s both}
+@keyframes gbDrop{0%{transform:translateY(-190px) scale(.5) rotate(-40deg);opacity:0}15%{opacity:1}70%{transform:translateY(24px) scale(1.5) rotate(10deg)}85%{transform:translateY(8px) scale(1.2)}100%{transform:translateY(20px) scale(1.1);opacity:0}}
+@keyframes gbHit{0%{transform:scale(1)}30%{transform:scale(.88) rotate(-5deg)}60%{transform:scale(1.1) rotate(4deg)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.gt .gbomb{animation-duration:.01s}}
+
+/* ドキドキ：爆弾が最初の人に落ちる */
+.bmHeld.bmDrop{animation:bmDropIn .9s cubic-bezier(.3,.1,.6,1) both}
+@keyframes bmDropIn{0%{transform:translateY(-260px) scale(.5) rotate(-40deg);opacity:0}15%{opacity:1}70%{transform:translateY(8px) scale(1.7) rotate(10deg)}85%{transform:translateY(-4px) scale(1.2)}100%{transform:none;opacity:1}}
+.bmPl.hit .bmAv{animation:gbHit .5s .75s both}
+@media(prefers-reduced-motion:reduce){.bmHeld.bmDrop,.bmPl.hit .bmAv{animation:none}}
+
+/* ボタン：岩（ヒビ=爆弾っぽい／金=お助けっぽい。ブラフ入り）と強欲 */
+.grid12 button.rock{position:relative;overflow:hidden;color:#fff;text-shadow:0 1px 2px #000}
+.grid12 button.rock-c{background:linear-gradient(145deg,#6b6b72,#34343a);border-color:#15151a}
+.grid12 button.rock-c:after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 46'><path d='M30 0L26 12 34 20 24 30 32 46M26 12L12 18M34 20L50 16M24 30L10 36' fill='none' stroke='%23e6e2d4' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/90% 90% no-repeat;opacity:.85;pointer-events:none}
+.grid12 button.rock-g{background:linear-gradient(145deg,#fff2b0,#e6b53a 55%,#a56d12);border-color:#5b3a05;color:#4a2d00;text-shadow:none}
+.grid12 button.rock-g:after{content:'✨';position:absolute;right:3px;top:0;font-size:14px;animation:rkTw 1.2s ease-in-out infinite}
+.grid12 button.rock-g:before{content:'';position:absolute;top:-40%;left:-60%;width:30%;height:200%;transform:rotate(25deg);background:linear-gradient(90deg,transparent,#fff9,transparent);animation:rkShine 2.2s ease-in-out infinite;pointer-events:none}
+@keyframes rkTw{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes rkShine{0%,60%{left:-60%}100%{left:140%}}
+#tenGame .grid12 button.rock{animation:rkDrop .55s var(--rd,0s) both cubic-bezier(.3,.1,.6,1)}
+@keyframes rkDrop{0%{transform:translateY(-220px) scale(.6) rotate(-25deg);opacity:0}20%{opacity:1}70%{transform:translateY(6px) scale(1.15)}100%{transform:none;opacity:1}}
+.grid12 button.broke{animation:rkBreak .4s both}
+@keyframes rkBreak{0%{transform:scale(1.2) rotate(-6deg)}60%{transform:scale(.95) rotate(3deg)}100%{transform:none}}
+.grid12 button.hit-g{box-shadow:0 0 0 3px #ff7a1a,0 0 14px #ff7a1a}
+.greedTelop{position:fixed;left:0;right:0;top:34%;z-index:70;text-align:center;pointer-events:none;color:#ffe9a3;font-family:"Mochiy Pop One",sans-serif;background:linear-gradient(90deg,#0000,#000c 20%,#000c 80%,#0000);padding:14px 0;animation:gtel 2.6s var(--gte,0s) both linear}
+.greedTelop small{display:block;font-size:14px;letter-spacing:.3em;color:#ffcf6a}.greedTelop b{display:block;font-size:30px;font-weight:400;text-shadow:0 0 18px #ff9a2a;margin-top:4px}
+@keyframes gtel{0%{opacity:0;transform:scale(.9)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+.gturnTxt.greedy{color:#ffb347;text-shadow:0 0 14px #ff7a1a}
+.greedNote{margin:2px 0;text-align:center;font-size:13px;color:#ffb347}
+@media(prefers-reduced-motion:reduce){#tenGame .grid12 button.rock,.greedTelop{animation-duration:.01s}.grid12 button.rock-g:after,.grid12 button.rock-g:before{animation:none}}
+
+/* ボタン：岩（発掘）。四角い枠なし。前に作った四角い岩の見た目は使わない */
+#tenGame .grid12{gap:2px 4px;margin:6px 0;padding:8px 6px;border-radius:16px;background:radial-gradient(ellipse at 50% 15%,#6a4a2c,#3a2616 80%);border:2px solid #17120d;box-shadow:inset 0 0 18px #0009}
+#tenGame .grid12 button.rk{min-height:0;height:54px;padding:0;border:0;background:none;box-shadow:none;position:relative;display:block;overflow:visible;font-size:0;transform:none;opacity:1}
+#tenGame .grid12 button.rk:disabled{transform:none;opacity:1}
+#tenGame .grid12 button.rk:not(:disabled):active .rkSvg{transform:scale(.94)}
+.rkSvg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 2px #000a);transition:transform .12s}
+.grid12 button.rk .who{position:absolute;left:0;right:0;bottom:-3px;font:9px "Mochiy Pop One",sans-serif;color:#ffe9a3;text-shadow:0 1px 2px #000,0 0 3px #000;text-align:center}
+.grid12 button.rk.hint-g .rkSvg{filter:drop-shadow(0 0 7px #ffcf6a) drop-shadow(0 3px 2px #000a)}
+.grid12 button.rk.hit-g .rkSvg{filter:drop-shadow(0 0 9px #ff7a1a)}
+#tenGame .grid12 button.rk.dropIn{animation:rkDrop .55s var(--rd,0s) both cubic-bezier(.3,.1,.6,1)}
+.grid12 button.rk.fresh .rkSvg{animation:rkPop .45s .22s both}
+@keyframes rkPop{0%{transform:scale(.3) rotate(-12deg);opacity:0}70%{transform:scale(1.18)}100%{transform:none;opacity:1}}
+.pickSwing{position:absolute;left:50%;top:-8px;width:46px;height:42px;margin-left:-23px;z-index:4;pointer-events:none;animation:pkSwing .45s both ease-in;transform-origin:50% 100%}
+.pickSwing .pickSvg{width:100%;height:100%;display:block}
+.pickSwing .sparkSvg{position:absolute;left:-20px;top:14px;width:90px;height:56px;opacity:0;animation:pkSpark .45s both}
+@keyframes pkSwing{0%{transform:rotate(-75deg) translateY(-6px);opacity:0}20%{opacity:1}60%{transform:rotate(15deg) translateY(10px)}100%{transform:rotate(15deg) translateY(10px);opacity:0}}
+@keyframes pkSpark{0%,50%{opacity:0;transform:scale(.4)}62%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.3)}}
+@media(prefers-reduced-motion:reduce){.pickSwing,.grid12 button.rk.fresh .rkSvg,#tenGame .grid12 button.rk.dropIn{animation-duration:.01s}}
+
+/* 派閥抗争：選んだ結果の一覧／持ち越し／警告 */
+.abCols{display:flex;gap:10px;margin:10px 0}
+.abCol{flex:1;border-radius:14px;padding:10px 6px;text-align:center;background:#14402c;border:2px solid #2f7a52}
+.abCol.k1{background:#402a14;border-color:#a6612a}
+.abCol>b{display:block;font:400 24px/1.2 var(--disp,inherit);color:#ffe08a}
+.abCol.k1>b{color:#ffc89a}
+.abCol>small{display:block;font-size:12px;color:#dfe;margin-bottom:8px}
+.abAvs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.abAv{width:64px;font-size:11px;color:#fff;text-align:center}
+.abAv .av{display:block;width:48px;height:48px;margin:0 auto 2px}
+.abBar{height:6px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden;margin:10px 0 0}
+.abBar i{display:block;height:100%;width:100%;background:#e8c15a;transform-origin:left;animation:abbar linear forwards}
+@keyframes abbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.abCarry{margin:16px auto;width:78%;border:3px solid #ff6a5a;border-radius:16px;background:#4a1212;text-align:center;padding:12px;color:#fff}
+.abCarry small{display:block;font-size:13px;color:#ffd}
+.abCarry b{display:block;font-size:44px;line-height:1.1;color:#ff8a7a}
+.abCarry span{font-size:13px}
+.abWarn{position:relative;margin:10px 0 0;height:116px;overflow:hidden}
+.abWarn b,.abWarn i{position:absolute;display:block;font-style:normal;font-weight:900;padding:10px 16px;box-shadow:0 5px #000}
+.abWarn b{left:-6px;right:50px;top:4px;background:#f2c230;color:#300;font-size:19px;transform:rotate(-3deg);animation:abinL .45s ease-out both}
+.abWarn i{left:50px;right:-6px;top:64px;background:#d01818;color:#fff;font-size:19px;text-align:right;transform:rotate(2deg);animation:abinR .45s .15s ease-out both}
+@keyframes abinL{from{transform:translateX(-120%) rotate(-3deg)}to{transform:rotate(-3deg)}}
+@keyframes abinR{from{transform:translateX(120%) rotate(2deg)}to{transform:rotate(2deg)}}
+
+.lcard .mug.gain{animation:gainpop .7s .3s ease-out both}
+@keyframes gainpop{0%{transform:scale(1)}40%{transform:scale(1.25);filter:brightness(1.5)}100%{transform:scale(1)}}
+
+#tenGame .stage.art p.abPlain{background:none!important;border:0!important;box-shadow:none!important;padding:3px 0!important;text-align:center;font-size:14px;color:#dfe}
+
+/* お助けをゲットした表示／お助けタブを光らせる */
+.gotHelp{font-weight:800;color:#ffe08a;text-align:center;margin:4px 0}.gotHelp.miss{color:#bbb;font-weight:500;font-size:13px}
+#tabHelp.helpGlow{animation:helpglow 1s ease-in-out 3;box-shadow:0 0 0 0 rgba(255,224,138,.9)}
+#tabHelp.helpGlow::after{content:"";position:absolute;left:12%;right:12%;bottom:0;height:4px;border-radius:4px;background:#ffe08a;box-shadow:0 0 14px 4px #ffd24a}
+@keyframes helpglow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.8)}}

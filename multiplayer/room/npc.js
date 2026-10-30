@@ -1,9 +1,9 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get,serverTimestamp} from './fb.js?v=pop0.69.1';
-import {attachTen} from './ten.js?v=pop0.69.1';
-import {currentTurn} from './turn.js?v=pop0.69.1';
-import {rlOrder,chainOf as rlChain,curSpinner as rlCur,pickOutcome as rlPick,newArt as rlArt} from './roulette.js?v=pop0.69.1';
-import {replay as gridReplay,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.69.1';
+import {ref,set,get,serverTimestamp} from './fb.js?v=pop0.70.0';
+import {attachTen} from './ten.js?v=pop0.70.0';
+import {currentTurn} from './turn.js?v=pop0.70.0';
+import {rlOrder,chainOf as rlChain,curSpinner as rlCur,pickOutcome as rlPick,newArt as rlArt} from './roulette.js?v=pop0.70.0';
+import {replay as gridReplay,CELLS as GCELLS,PASS as GPASS,startOf as gridStart} from './grid.js?v=pop0.70.0';
 const devMode=typeof location!=='undefined'&&new URL(location.href).searchParams.get('dev')==='1';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。
@@ -17,7 +17,7 @@ export function npcAnswer({card,isActor,isTarget,slots,others,actorAns,rand=Math
   case 'majority':return int(2);
   case 'check':case 'rest':return int(4);
   case 'tapking':return 15+int(45);
-  case 'battery':return int(101);
+  case 'battery':return int(101)+(rand()<0.5?1000:0); // 0.70：ウソ申告つき（1000を足す）
   case 'reaction':return 300+int(600);
   default:return 7000+int(6000);
  }
@@ -37,7 +37,11 @@ export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
   if(!st||dead||st.phase==='results')return;
   if(st.card==='grid'){ // マス目：自分の番なら、少し待って押す／回す
    const o=(await get(ref(d,`${base}/gm/${st.round}/lg`))).val()||{},recs=Object.entries(o).filter(([,x])=>x&&typeof x.u==='string').map(([k,x])=>({k:Number(k),u:x.u,c:x.c,r:x.r})).sort((a,b)=>a.k-b.k);
-   const g=gridReplay(recs,Object.values(st.order||[]),st.actor);
+   if(st.phase==='measuring'&&u.rdy!==st.round){u.rdy=st.round;const rd=st.round;setTimeout(()=>{set(ref(d,`${base}/bm/${rd}/rdy/${u.n.uid}`),true).catch(()=>{});},(1500+Math.random()*2500)*scale);}
+   const go=(await get(ref(d,`${base}/bm/${st.round}/go`))).val();
+   if(typeof go==='number'){if(Date.now()-go<(globalThis.__nqBmCdMs??4000)+2800)return;}
+   else{if(u.gw!==st.round){u.gw=st.round;u.gwt=Date.now();}if(Date.now()-u.gwt<(globalThis.__nqGateFallbackMs??55000)+3000)return;}
+   const order=Object.values(st.order||[]),g=gridReplay(recs,order,gridStart(order,go,st.actor));
    if(g.over||g.cur!==u.n.uid){u.gk=null;return;}
    const key=st.round+':'+recs.length;if(u.gk!==key){u.gk=key;u.due=Date.now()+(900+Math.random()*2500)*scale;u.sent=0;return;}
    if(Date.now()<u.due||u.busy||(u.sent&&Date.now()-u.sent<6000))return;
@@ -45,11 +49,12 @@ export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
    u.busy=true;try{const cur=(await get(ref(d,`${base}/gm/${st.round}/rq/${u.n.uid}`))).val();await set(ref(d,`${base}/gm/${st.round}/rq/${u.n.uid}`),{n:(Number(cur?.n)||0)+1,c});u.sent=Date.now();}catch{}finally{u.busy=false;}
    return;
   }
+  if((st.card==='reaction'||st.card==='ten'||st.card==='tapking')&&st.phase==='measuring'&&u.rdy!==st.round){u.rdy=st.round;const rd=st.round;setTimeout(()=>{set(ref(d,`${base}/bm/${rd}/rdy/${u.n.uid}`),true).catch(()=>{});},(1500+Math.random()*2500)*scale);}
   if(st.card==='reaction'){ // 爆弾：持っていたら、少し待ってからランダムな人へ渡す
    if(st.phase!=='measuring')return;
    const o=(await get(ref(d,`${base}/bm/${st.round}/p`))).val()||{},recs=Object.entries(o).filter(([,x])=>x&&typeof x.u==='string').map(([k,x])=>({n:Number(k),u:x.u})).sort((a,b)=>a.n-b.n),last=recs.at(-1);
    if(!last||last.u!==u.n.uid){u.bk=null;return;}
-   const key=st.round+':'+last.n;if(u.bk!==key){u.bk=key;u.due=Date.now()+(900+Math.random()*3500)*scale;return;}
+   const key=st.round+':'+last.n;if(u.bk!==key){u.bk=key;u.due=Date.now()+((last.n===0?3200+(globalThis.__nqBmDropMs??1500):0)+900+Math.random()*3500)*scale;return;}
    if(Date.now()<u.due||u.busy)return;
    const others=players.filter(p=>p.uid!==u.n.uid);if(!others.length)return;
    u.busy=true;try{await set(ref(d,`${base}/bm/${st.round}/p/${last.n+1}`),{u:others[Math.floor(Math.random()*others.length)].uid,t:serverTimestamp(),k:last.n});}catch{}finally{u.busy=false;}
@@ -57,13 +62,18 @@ export function attachNpcs({db,roomId,npcs,players,hostUid,message=()=>{}}){
   }
   if(st.card==='roulette'){ // ルーレット：自分の番なら、少し待って回す／もう一度回す／確定する
    const o=(await get(ref(d,`${base}/rl/${st.round}`))).val()||{},cur=rlCur(rlOrder(st.order,st.actor),o);
+   if(o.go!==true){ // スタート前：担当がNPCなら、少し待ってスタートする
+    if(st.actor!==u.n.uid){u.rk=null;return;}
+    const gk=st.round+':go';if(u.rk!==gk){u.rk=gk;u.due=Date.now()+2500*scale;return;}
+    if(Date.now()<u.due||u.busy)return;u.busy=true;try{await set(ref(d,`${base}/rl/${st.round}/go`),true);}catch{}finally{u.busy=false;}return;
+   }
    if(cur!==u.n.uid){u.rk=null;return;}
    const ch=rlChain(o[u.n.uid]),n=ch.length,key=st.round+':'+n;
    if(u.rk!==key){u.rk=key;u.due=Date.now()+(n===0?4500+Math.random()*2500:n===3?12500:7500+Math.random()*2000)*scale;return;}
    if(Date.now()<u.due||u.busy)return;
    const p=`${base}/rl/${st.round}/${u.n.uid}`;u.busy=true;
    try{
-    if(n===0)await(Math.random()<0.2?set(ref(d,p+'/d'),'skip'):set(ref(d,p+'/0'),{k:1,o:rlPick(1),a:rlArt()}));
+    if(n===0)await set(ref(d,p+'/0'),{k:1,o:rlPick(1),a:rlArt()});
     else if(n<3&&Math.random()<(n===1?0.5:0.35))await set(ref(d,`${p}/${n}`),{k:n+1,o:rlPick(n+1),a:rlArt()});
     else await set(ref(d,p+'/d'),ch[n-1].o);
    }catch{}finally{u.busy=false;}

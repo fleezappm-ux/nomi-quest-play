@@ -96,8 +96,15 @@ export function chooseCard(history,ctx){
  // 投票系：山から次のお題を取る
  const tokens=voteTokens(ctx.sizes,ctx.mind);
  if(!tokens.length)return{key:'vote:0',kind:'vote'};
- const n=rounds.filter(r=>isVoteKey(history[r])).length,epoch=Math.floor(n/tokens.length);
- return{key:shuffled(tokens,rngFrom(seed+':vote'+epoch))[n%tokens.length],kind:'vote'};
+ // 出たお題の記録から、「いま何周目で、どれが使用済みか」を数える（全部使い切ったら次の周でシャッフルし直し）
+ const inPool=new Set(tokens);let epoch=0,used=new Set();
+ for(const r of rounds){const k=history[r];if(!isVoteKey(k))continue;if(used.size>=tokens.length){epoch++;used=new Set();}if(inPool.has(k))used.add(k);}
+ if(used.size>=tokens.length){epoch++;used=new Set();}
+ const order=shuffled(tokens,rngFrom(seed+':vote'+epoch));
+ let cand=order.filter(t=>!used.has(t));
+ // 多数派で「答えが割れずに飛ばしたお題」は、この端末が見たぶんを使用済みにする（最初の周だけ。通信は増えない）
+ if(epoch===0&&ctx.usedExtra&&ctx.usedExtra.length){const ex=new Set(ctx.usedExtra),c2=cand.filter(t=>!ex.has(t));if(c2.length)cand=c2;}
+ return{key:cand[0],kind:'vote'};
 }
 // これまでの記録から「このアクターがすでにキス顔を終えたか」。終えた回だけ md（deck/md/<ラウンド>）に1が記録される
 // （「やらない」「やり直し」で終わった回は記録されず、また選ばれうる）。md を渡さない場合は、引いた回すべてを終えたものとして数える（旧動作）。

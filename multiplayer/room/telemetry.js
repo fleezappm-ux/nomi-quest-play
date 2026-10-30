@@ -1,7 +1,7 @@
 // 利用ログ（匿名の端末番号＋ニックネーム）をスプレッドシートへ送る。
 // LOG_URL が空なら何もしない。送信に失敗してもゲームには一切影響しない。
 import { LOG_URL } from './log-config.js';
-const VER = '0.69';
+const VER = '0.70';
 function did() {
   try {
     let d = localStorage.getItem('nq-did');

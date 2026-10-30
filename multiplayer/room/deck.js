@@ -1,4 +1,4 @@
-import {itemsOfCode,meterOfCode} from './roulette.js?v=pop0.69.1';
+import {itemsOfCode,meterOfCode} from './roulette.js?v=pop0.70.0';
 // Titles and outcomes follow game-src/catalog.json and cards.js at v0.6.49.
 export const muttsuriPrompts=["一番むっつりだと思う人は？", "普段おとなしいのに夜は激しそうな人は？", "スマホの検索履歴が一番ヤバそうな人は？", "実は一番経験豊富そうな人は？", "真面目な顔で妄想が止まらなそうな人は？", "ひとりの時間が多そうな人は？", "秘密のアカウントを持ってそうな人は？", "こっそりコレクションを隠してそうな人は？", "清楚に見えてギャップがありそうな人は？", "ベッドの上で豹変しそうな人は？", "夜ふかしして動画を見てそうな人は？", "下ネタに赤くなるけど実は好きな人は？", "写真フォルダに秘密がありそうな人は？", "合コンで静かに本命を狙ってそうな人は？", "実は一番ロマンチストな妄想家は？", "ばれないように準備だけは万全な人は？","ひとりで盛り上がるタイプは？","隠しフォルダが多そうな人は？","実はコスプレに興味がありそうな人は？","本命にだけ甘えん坊になりそうな人は？","実は一番Mっぽい人は？","実は一番Sっぽい人は？","こっそり官能小説を読んでそうな人は？","ホテルの部屋選びに口を出しそうな人は？","マイおもちゃ（大人の）を持ってそうな人は？"];
 export const votePrompts=["エロそうな人は？","エッチが上手そうな人は？","むっつりスケベは誰？","電マ使ってそうな人は？","ウーマナイザー使ってそうな人は？","リアルよりアニメが好きそうな人は？","今夜ホテルへ行きたいと思ってそうな人は？","パンツの臭いをこっそり嗅いでそうな人は？","浮気をしそうな人は？","複数プレイが好きそうな人は？","NTR（ネトラレ）が好きそうな人は？","ハメ撮りが好きそうな人は？","舐めるの好きそうな人は？","夜に赤ちゃんになりそうな人は？","下着にこだわりがありそうな人は？","大人のお店に一人で入れそうな人は？","夜のお誘いが一番うまそうな人は？","彼女（彼）の前で別人になりそうな人は？","恥ずかしい動画を持っていそうな人は？","最初のデートで手を出しそうな人は？","マッチングアプリを一番使いこなしてそうな人は？","1回じゃ終わらなさそうな人は？"];
@@ -9,20 +9,20 @@ export function pickPrompt(seen,random=Math.random,size=votePrompts.length){cons
 export const cards = {
  check: {title:'ドリンクタイム',rule:'8ターンごとに自動で始まります。結果発表 → 全員が「結果を確認した」→ お助けカード受付（30秒）→ イッテキーラ！'},
   rest: {title:'休憩カード',rule:'今の自分の状態を選ぶと、全員の状態が見える。確認するだけのカード。ターンには数えません。無理せず、水も飲もう。'},
- muttsuri: {title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
- tapking: {title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がメーター＋1（同数ならルーレットで1人）。'},
- majority: {title:'多数派だと思った？',rule:'A/Bの二択に全員が秘密で回答。人数を発表したあと、ルーレットで「A」か「B」が選ばれ、選んだ人がメーター＋1。全員同じ答えなら、次のお題で答え直し。'},
- mind: {title:'この中で一番は誰だ！',rule:'お題を読んで、「これはこの人！」と思う人に投票。一番票を集めた人がメーター＋1（同率ならルーレットで1人）。匿名投票です。'},
- vote: {title:'変態を探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
- king: {title:'👑 王様の命令',rule:'今回の担当が王様。相手を1人指名して口頭で命令。従えば何もなし、拒否するとメーター＋2。'},
- ten: {title:'10秒ジャスト', rule:'時計を見ずに10秒を狙ってSTOP。1人ずつ挑戦。10秒から最も遠い人がメーター＋1（同率で最も遠い人が複数いたら全員）。10秒±0.1秒以内の人はお助けカード獲得。'},
- buttons: {title:'そのボタン、押して大丈夫？',rule:'今回の担当が謎ボタンを2つのうち1つ選ぶ。中身は「自分がメーター」か「自分以外の全員がメーター」。配置は毎回シャッフル。'},
- mission: {title:'あなたのキスはどんな顔！？',rule:'担当は「やる」か「やらない」を選ぶ。やらないなら担当がメーター＋2。やるなら、ほかの人が「最高／いいね／やり直し」で採点。全員が最高なら担当にお助け＋1。'},
- danger: {title:'GO TO HEAVEN OR HELL',rule:'今回の担当が、タイプの人を1人誘う。断られたら誘った人がメーター＋1（相手は罰なし）。承諾ならルーレット：HEAVENは2人ともお助け獲得、HELLは2人ともメーター＋2。'},
- roulette: {title:'GO TO HEAVEN OR HELL',rule:'全員が1人ずつルーレットを回すゲームです。やる／やらないは任意。結果が気に入らなければ、もう一度回して上書きもできます（最大3段階）。最後はヘブンオアヘル：天国はお助け＋3、地獄はメーター＋5（ライム）。'},
- grid: {title:'そのボタン、押して大丈夫？',rule:'マス目のボタンを順番に押す。爆弾（メーター＋2・ここで終了）か、お助け（お助け＋1）か、空振りか…。各自最低1回は押す。'},
- reaction: {title:'ドキドキしてんじゃねーよ！',rule:'ハートの爆弾を回そう。爆発したとき持っていた人がメーター＋1。一番長く持っていた人は、爆発しなければお助け＋1、爆発したらメーター＋2。いつ爆発するかは誰にも分からない。'},
- battery: {title:'充電マウント合戦！', rule:'今の充電残量を入力。ウソ（ブラフ）を入れてもOK！全員が入力したら「ダウト」の時間（10秒）。ブラフだと思う人を1人選んでダウトできます（自分にはダウトできません）。ダウトされた人はスマホの充電画面を見せ、ダウトした人が成功／失敗を押します。成功なら疑われた人が、失敗ならダウトした人がメーター＋2。ダウトがあったらそこで終了。誰もダウトしなかったときだけ、HIGH／LOWを抽選（HIGHは最も多い人、LOWは最も少ない人。同率はルーレットで1人）。'},
+ muttsuri: {intro:['お題を読んで、一番当てはまりそうな人に匿名で1票。', '得票1位がメーター＋1。', '同率ならルーレットで1人。'],title:'むっつりを探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
+ tapking: {intro:['5秒間、ボタンを連打！', 'タップが一番少ない人が負け（メーター＋1）。', '同数ならルーレットで1人。'],title:'タップ王',rule:'5秒間でボタンを連打。タップ回数が最も少ない人がメーター＋1（同数ならルーレットで1人）。'},
+ majority: {intro:['お題を読んで、AかBを選ぶ。', '集計後、ルーレットで負ける派閥が決まる。', '選ばれた派閥の人がメーター＋1。'],title:'派閥抗争', rule:'好きな派閥を選ぼう。ルーレットで選ばれた派閥の人がメーター＋1。', brief:'お題を読んで、好きな派閥を選ぼう。\n集計後、ルーレットで負ける派閥が決まる。\n選ばれた派閥の人がメーター＋1！\n詳しくは右上の📖を読んでね。', steps:[['派閥を選ぶ','お題を読んで、AかBか好きなほうを選ぼう。答えは結果まで秘密。'],['集計','全員が選んだら、A・Bの人数を発表。人数に差があれば、多数派と少数派が決まる。'],['ルーレット','3・2・1のあと、ルーレットで負ける派閥が決まる。差があるときは「多数派」か「少数派」、ちょうど半々のときは「A派」か「B派」。'],['メーター','選ばれた派閥の人が、メーター＋1。'],['派閥が決まらないとき','全員が同じ答えのときだけ、派閥が決まらず次のお題へ。やり直すたびに、次の負けが＋1ずつ重くなる（最大＋5）。']]},
+ mind: {intro:['お題を読んで、「この人！」と思う人に匿名で1票。', '得票1位がメーター＋1。', '同率ならルーレットで1人。'],title:'この中で一番は誰だ！',rule:'お題を読んで、「これはこの人！」と思う人に投票。一番票を集めた人がメーター＋1（同率ならルーレットで1人）。匿名投票です。'},
+ vote: {intro:['お題を読んで、一番当てはまりそうな人に匿名で1票。', '得票1位がメーター＋1。', '同率ならルーレットで1人。'],title:'変態を探せ',rule:'お題に一番当てはまりそうな人に、全員が匿名で1票。得票1位がメーター＋1（同率1位はルーレットで1人）。'},
+ king: {intro:['カードを引いた人が王様。相手を指名して、命令を1つ選ぶ。', '従えばお助け＋1。', '拒否するとメーター＋2。'],title:'👑 王様の命令',rule:'今回カードを引いた人が王様。相手を1人指名し、4つの命令から1つ選んで命令します（王様を譲ることも1回だけできます）。従えばお助け＋1、拒否するとメーター＋2。'},
+ ten: {title:'10秒ジャスト', rule:'時計を見ずに10秒を狙ってSTOP。1人ずつ挑戦。10秒から最も遠い人がメーター＋1（同率で最も遠い人が複数いたら全員）。10秒±0.1秒以内の人はお助けカード獲得。',intro:['心の中で10秒数えて、ぴったりで止める。','10秒から一番遠い人が負け（メーター＋1）。','途中で数字は見えなくなる。ぴったり±0.1秒ならお助けGET！']},
+ buttons: {intro:['カードを引いた人が、謎のボタンを2つから1つ選ぶ。', '中身は「自分がメーター」か「自分以外の全員がメーター」。', '配置は毎回シャッフル。'],title:'そのボタン、押して大丈夫？',rule:'今回カードを引いた人が謎ボタンを2つのうち1つ選ぶ。中身は「自分がメーター」か「自分以外の全員がメーター」。配置は毎回シャッフル。'},
+ mission: {intro:['カードを引いた人は「やる」か「やらない」を選ぶ。', 'やらないとカードを引いた人がメーター＋2。', 'やるなら、みんなが採点。全員「最高」ならカードを引いた人にお助け＋1。'],title:'あなたのキスはどんな顔！？',rule:'カードを引いた人は「やる」か「やらない」を選ぶ。やらないならカードを引いた人がメーター＋2。やるなら、ほかの人が「最高／いいね／やり直し」で採点。全員が最高ならカードを引いた人にお助け＋1。'},
+ danger: {intro:['カードを引いた人が、タイプの人を1人誘う。', '断られたら、誘った人がメーター＋1。', '承諾ならルーレット。HEAVENは2人ともお助け、HELLは2人ともメーター＋2。'],title:'GO TO HEAVEN OR HELL',rule:'今回カードを引いた人が、タイプの人を1人誘う。断られたら誘った人がメーター＋1（相手は罰なし）。承諾ならルーレット：HEAVENは2人ともお助け獲得、HELLは2人ともメーター＋2。'},
+ roulette: {title:'GO TO HEAVEN OR HELL',rule:'1人ずつルーレットを回すゲーム。気に入らなければ、もう一度回せます（前回の結果は無効）。',intro:['カードを引いた人がスタート。順番に、1人ずつ回す。','1人1回は必ず回す。','気に入らなければ、もう一度回せる（前回の結果は無効）。最大3回。']},
+ grid: {intro:['岩を順番に掘っていく。','爆弾を掘るとメーター＋2で終了。','お助けならお助け＋1。みんな最低1回は掘る。'],title:'お宝発掘大作戦',rule:'岩を順番に掘る。爆弾（メーター＋2・ここで終了）か、お助け（お助け＋1）か、空振りか…。硬い岩は何回か叩かないと割れない。各自最低1回は掘る。'},
+ reaction: {intro:['爆弾が来たら「次の人へ渡す」を押す。渡す相手はランダム。', '爆発したとき持っていた人がメーター＋1。', '一番長く持っていた人は、爆発しなければお助け＋1。'],title:'ドキドキしてんじゃねーよ！',rule:'爆弾をランダムに回そう。爆発したとき持っていた人がメーター＋1。一番長く持っていた人は、爆発しなければお助け＋1、爆発したらメーター＋2。いつ爆発するかは誰にも分からない。'},
+ battery: {intro:['今の充電残量を入力。ウソ（ブラフ）もOK！', 'ウソっぽい人にはダウトできる。', '成功なら相手が＋2、失敗なら自分が＋2。'],title:'充電マウント合戦！', brief:'今の充電を入力。\nブラフOK！\n結果発表でダウトもできるよ！\nダウト失敗は自分が＋2、ダウト成功は相手が＋2。\n詳しくは右上の📖を読んでね。', steps:[['充電残量を決める','スライダーで、今の充電残量に合わせよう。ウソの数字でもOK！'],['ホント／ウソを選んで送信','「ホントの数字で送信」か「ウソの数字で送信」を選ぶ。選んだ内容は、結果発表まで秘密。'],['ダウトタイム（10秒）','出た数字を見て、ウソっぽい人を1人選んでダウト！（自分にはできません）'],['自動で判定','ウソで送信していた → ダウト成功！ 疑われた人がメーター＋2。\nホントで送信していた → ダウト失敗… ダウトした人がメーター＋2。'],['ダウトがなかったら','HIGH／LOWを抽選。HIGH＝最も多い人、LOW＝最も少ない人がメーター＋1（同率はルーレットで1人）。\nダウトがあったら、そこで終了。']], rule:'今の充電残量を入力。ウソ（ブラフ）を入れてもOK！全員が入力したら「ダウト」の時間（10秒）。ブラフだと思う人を1人選んでダウトできます（自分にはダウトできません）。送信するとき「ウソで送信／ホントで送信」を選びます（結果まで秘密）。ダウトされた人がウソで送信していたらダウト成功、ホントで送信していたらダウト失敗（自動で判定）。成功なら疑われた人が、失敗ならダウトした人がメーター＋2。ダウトがあったらそこで終了。誰もダウトしなかったときだけ、HIGH／LOWを抽選（HIGHは最も多い人、LOWは最も少ない人。同率はルーレットで1人）。'},
 };
 // 出し方：1人用4種は一度出たら40ターン出ない。ほかの8種は1周するまで重複なし。
 export const SPECIAL_CARDS=['ten','battery','reaction','tapking','buttons','mission','danger','king','roulette'];
@@ -38,11 +38,16 @@ export function drawCard(random=Math.random,exclude=[]) {
  return pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];
 }
 export function drawDirection(random=Math.random) {return random()<0.5?'HIGH':'LOW';}
+// 充電マウント合戦（0.70）：送る数字は「充電残量 0〜100」に、ウソで送信したときだけ 1000 を足した1つの数字（書き込みは増えない）。
+export const BAT_LIE=1000;
+export const batPct=v=>v%BAT_LIE;
+export const batLie=v=>typeof v==='number'&&v>=BAT_LIE;
 export function targetsFor(card, results, direction) {
  const entries=Object.entries(results);
- const values=entries.map(([,value])=>card==='ten'?Math.abs(value-10000):value);
+ const val=(value)=>card==='ten'?Math.abs(value-10000):card==='battery'?batPct(value):value;
+ const values=entries.map(([,value])=>val(value));
  const edge=(card==='battery'&&direction==='LOW')||card==='tapking'?Math.min(...values):Math.max(...values);
- return entries.filter(([,value])=>(card==='ten'?Math.abs(value-10000):value)===edge).map(([uid])=>uid);
+ return entries.filter(([,value])=>val(value)===edge).map(([uid])=>uid);
 }
 
 // 2つのボタンのうち、中身は「自分が対象(1)」と「自分以外の全員が対象(2)」。3つ目(0)は使わない予備（ルールの形式のため）。
@@ -56,7 +61,9 @@ export function doubtAmount(s,uid){
  for(const [d,t] of Object.entries(s.dbt||{})){if(t==='skip')continue;const j=s.dbj?.[d];if(j===1&&t===uid)caught=true;if(j===0&&d===uid)failed=true;}
  return(caught?2:0)+(failed?2:0);
 }
-function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='check'||state.card==='rest')return 0;if(state.card==='battery'&&hasDoubt(state))return doubtAmount(state,uid);if(state.card==='majority')return state.mall||state.side===2?0:state.results?.[uid]===state.side?1:0;if(state.card==='vote'||state.card==='muttsuri'||state.card==='mind'){const slot=players?.find(p=>p.uid===uid)?.slot;return slot!==undefined&&state.topVotes!==undefined&&Number(state.votes?.[slot])===state.topVotes?1:0;}if(state.card==='grid')return uid===state.bx?2:0;if(state.card==='roulette')return meterOfCode(state.results?.[uid]);if(state.card==='reaction')return uid===state.bx?(state.bl===state.bx?2:1):0;if(state.card==='mission'){const actor=state.order[(state.round-1)%state.order.length];return uid===actor&&state.results?.[actor]===0?2:0;}if(state.card==='king'){const o=dangerOutcome(state);return o&&uid===o.target&&!o.accepted?2:0;}if(state.card==='danger'){const o=dangerOutcome(state);if(!o)return 0;return uid===o.actor?(!o.accepted?1:o.fate==='HELL'?2:0):uid===o.target&&o.accepted&&o.fate==='HELL'?2:0;}if(state.card==='buttons'){const actor=state.order[(state.round-1)%state.order.length];return state.buttonOutcome===2?(uid!==actor?1:0):state.buttonOutcome===1&&uid===actor?1:0;}return targetsFor(state.card||'ten',state.results,state.direction).includes(uid)?1:0;}
+// 多数派？少数派？：やり直し(mk)のたびに負けが＋1ずつ重くなる（最大5）
+export const majW=state=>Math.min(5,1+(state.mk||0));
+function drinkBase(state,uid,players){if(state.phase!=='results'||state.card==='check'||state.card==='rest')return 0;if(state.card==='battery'&&hasDoubt(state))return doubtAmount(state,uid);if(state.card==='majority')return state.mall||state.side===2?0:state.results?.[uid]===state.side?majW(state):0;if(state.card==='vote'||state.card==='muttsuri'||state.card==='mind'){const slot=players?.find(p=>p.uid===uid)?.slot;return slot!==undefined&&state.topVotes!==undefined&&Number(state.votes?.[slot])===state.topVotes?1:0;}if(state.card==='grid')return uid===state.bx?(state.gb===1?4:2):0;if(state.card==='roulette')return meterOfCode(state.results?.[uid]);if(state.card==='reaction')return uid===state.bx?(state.bl===state.bx?2:1):0;if(state.card==='mission'){const actor=state.order[(state.round-1)%state.order.length];return uid===actor&&state.results?.[actor]===0?2:0;}if(state.card==='king'){const o=dangerOutcome(state);return o&&uid===o.target&&!o.accepted?2:0;}if(state.card==='danger'){const o=dangerOutcome(state);if(!o)return 0;return uid===o.actor?(!o.accepted?1:o.fate==='HELL'?2:0):uid===o.target&&o.accepted&&o.fate==='HELL'?2:0;}if(state.card==='buttons'){const actor=state.order[(state.round-1)%state.order.length];return state.buttonOutcome===2?(uid!==actor?1:0):state.buttonOutcome===1&&uid===actor?1:0;}return targetsFor(state.card||'ten',state.results,state.direction).includes(uid)?1:0;}
 
 // Items are used by hand at the break-turn settlement (see tequilaOutcome); they no longer act when a ticket is credited.
 export const items={
@@ -65,8 +72,13 @@ export const items={
  angel:{icon:'👼',name:'身代わり',desc:'最終結果が出てからの10秒間に、飲む人の代わりに1杯を飲んであげる。',usable:true}
 };
 export const itemKinds=Object.keys(items);
-// お助けカードは、バリア・なすりつけ・身代わりの3種からランダムに配る
-export function drawItem(random=Math.random){return itemKinds[Math.min(itemKinds.length-1,Math.floor(random()*itemKinds.length))];}
+// お助けカードは、バリア・なすりつけ・身代わりの3種を、重みつきのランダムで配る
+// 出る確率（仮）：バリア30％／なすりつけ20％／身代わり50％（身代わりは「ハズレ」役）
+export const ITEM_WEIGHTS={barrier:30,cute:20,angel:50};
+// 持てる数：バリア＋なすりつけで合わせて3枚、身代わりは別枠で3枚（計6枚まで）。いっぱいのときの獲得は取り損ね。
+export const ITEM_CAP={main:3,angel:3};
+export const itemGroup=kind=>kind==='angel'?'angel':'main';
+export function drawItem(random=Math.random){const tot=itemKinds.reduce((a,k)=>a+ITEM_WEIGHTS[k],0);let x=random()*tot;for(const k of itemKinds){x-=ITEM_WEIGHTS[k];if(x<0)return k;}return itemKinds[itemKinds.length-1];}
 // base: tickets from drinkAward. used: {slot,kind} when an item was already spent this round. choice: 'barrier' | 'angel' | 'skip' | undefined.
 // Returns {amount,spend} to record now, or null while the player still has to choose.
 export function decideCredit({base,barrierSlot,angelSlot,cuteSlot,used,choice}){
@@ -99,6 +111,9 @@ export function dangerOutcome(state){
 }
 // 10秒ジャスト±0.5秒でお助けカード：Firebaseルール(grants)の更新を公開したあとに true にする
 export let TEN_REWARD=true;
+// 10秒ジャスト：10.000秒ちょうど（10000ミリ秒）はお助けカード＋3（2026-10-28 確定。持てるのは3つまで）
+export const TEN_JUST=10000;
+export const tenExact=(state,uid)=>state?.card==='ten'&&state?.results?.[uid]===TEN_JUST;
 // キス顔の採点まとめ。担当の答え 1=やる 0=やらない／ほかの人 1=最高 2=いいね 3=やり直し
 // ok＝全員が最高（担当にお助け）／counted＝「一人1回」に数える（やり直しがあって最高が0人のときは数えず、また選ばれうる）
 export function missionStats(state){

@@ -1,0 +1,41 @@
+// 充電マウント「ダウト成功（負け1人）」の結果画面（H1）。描画だけ。判定・通信・次ターン処理は持たない。
+// 入力はゲームが計算済みの値（rows[].amt はそのまま表示）。
+const zoomSrc=id=>"gold/avatars-zoom/" + id + ".webp";
+export function doubtH1({losers,rows,uid,state,div,txt,popImg,avatarOf}){
+   const clean=s=>String(s||'').replace(/（NPC）|\(NPC\)/g,'').trim();
+   const face=p=>{const n=div('av result-avatar'),im=document.createElement('img'),a=avatarOf(p?.avatar);im.src=a?.src||'';im.alt='';im.width=im.height=128;im.decoding='async';n.append(im);return n;};
+   const r=losers[0],other=rows.filter(x=>x.p.uid!==r.p.uid&&x.p.uid!==uid),mine=rows.find(x=>x.p.uid===uid);
+   const ns='http://www.w3.org/2000/svg',S=(tag,attrs={})=>{const n=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
+   const goldText=(value,kind)=>{
+    const num=kind==='number',vb=num?'0 0 300 230':'0 0 844 300',w=num?300:844,x=num?150:422,y=num?186:217,sz=num?185:185,id='mdg'+state.round+(num?'n':'t')+String(uid).replace(/\W/g,'');
+    const svg=S('svg',{viewBox:vb,'aria-hidden':'true',class:'md-svg-text '+(num?'md-coral':'md-gold'),preserveAspectRatio:'xMidYMid meet'}),defs=S('defs'),g=S('linearGradient',{id,x1:'0',y1:'0',x2:'0',y2:'1'});
+    for(const[o,c]of (num?[[0,'#ffe0c9'],[.15,'#ffb2a0'],[.48,'#ff7663'],[.65,'#eb4b3b'],[.9,'#ffb0a0'],[1,'#b72e26']]:[[0,'#fffce4'],[.16,'#fff6bf'],[.36,'#ffe19a'],[.54,'#f4b746'],[.73,'#d78b1a'],[.9,'#ffe9a2'],[1,'#af6b10']]))g.append(S('stop',{offset:o,'stop-color':c}));
+    defs.append(g);svg.append(defs);
+    const attrs={x,y,'text-anchor':'middle','font-family':'NQ Dela, Noto Sans JP, sans-serif','font-size':sz,'font-weight':900,'letter-spacing':num?-8:-2,textLength:num?270:795,lengthAdjust:'spacingAndGlyphs','stroke-linejoin':'round','paint-order':'stroke fill'};
+    for(let i=9;i>=1;i--){const t=S('text',{...attrs,transform:`translate(${i*.65},${i*1.15})`,fill:num?'#9b2a1d':'#9d5d0d',stroke:num?'#5d100c':'#472a08','stroke-width':3});t.textContent=value;svg.append(t);}
+    const front=S('text',{...attrs,fill:`url(#${id})`,stroke:num?'#ffd0ad':'#fff0ad','stroke-width':num?2:2.5});front.textContent=value;svg.append(front);return svg;
+   };
+   const trim=()=>{const n=S('svg',{viewBox:'0 0 844 318',preserveAspectRatio:'none','aria-hidden':'true',class:'md-trim'});for(const d of ['M46 3H798Q841 3 841 46V272Q841 315 798 315H46Q3 315 3 272V46Q3 3 46 3Z','M7 46Q27 40 27 23Q43 22 47 7M797 7Q802 24 817 24Q817 41 837 46M7 272Q27 277 27 294Q43 294 47 311M797 311Q803 294 817 294Q817 278 837 272'])n.append(S('path',{d,fill:'none',stroke:'#f4d17e','stroke-width':2.5}));return n;};
+   const shield=()=>{const n=S('svg',{viewBox:'0 0 60 70','aria-hidden':'true',class:'md-shield'});n.innerHTML='<path d="M30 4L53 13V34Q51 52 30 65Q9 52 7 34V13Z" fill="#14d681" stroke="#abffbe" stroke-width="4"/><path d="M18 33L27 42L43 24" fill="none" stroke="#effff4" stroke-width="6" stroke-linecap="square"/>';return n;};
+   const laurel=S('svg',{viewBox:'0 0 230 90','aria-hidden':'true',class:'md-laurel'});laurel.innerHTML='<g fill="#e9bd54" stroke="#f5d984" stroke-width="1"><path d="M94 76Q34 71 30 18M137 76Q197 71 200 18" fill="none" stroke-width="2"/>'+[0,1,2,3].map(i=>`<ellipse cx="${32+i*13}" cy="${30+i*12}" rx="5" ry="13" transform="rotate(${-35-i*7} ${32+i*13} ${30+i*12})"/><ellipse cx="${198-i*13}" cy="${30+i*12}" rx="5" ry="13" transform="rotate(${35+i*7} ${198-i*13} ${30+i*12})"/>`).join('')+'<g transform="rotate(18 96 48)"><rect x="80" y="30" width="27" height="39" rx="4" fill="#ffc43f" stroke="#fff1a3" stroke-width="3"/><path d="M107 37H115V57H107" fill="none" stroke-width="4"/><path d="M84 37V60" stroke="#fff4b5" stroke-width="3"/><path d="M80 31Q87 16 94 28Q104 17 108 31" fill="#fff8d3"/></g><g transform="rotate(-18 135 48)"><rect x="122" y="30" width="27" height="39" rx="4" fill="#ffc43f" stroke="#fff1a3" stroke-width="3"/><path d="M149 37H157V57H149" fill="none" stroke-width="4"/><path d="M127 37V60" stroke="#fff4b5" stroke-width="3"/><path d="M122 31Q129 16 136 28Q145 17 149 31" fill="#fff8d3"/></g></g>';
+   const w=div('board result-board match-doubt k-battery result-has-penalty');w.setAttribute('data-reference','doubt-clean-v1');
+   const brand=div('md-brand',txt('span','md-crown','♛'),txt('span','md-wordmark','NOMI QUEST'));
+   const header=div('md-card-title',popImg('battery','md-card-icon',''),txt('h2','','充電マウント合戦！'));header.append(trim());
+   const heading=txt('h3','md-headline',''),titleArt=document.createElement('img');titleArt.src='gold/match-doubt-title-v1.webp';titleArt.alt='';titleArt.className='md-title-art';heading.append(txt('span','md-accessible','ダウト成功！'),titleArt,laurel);
+   const portrait=face(r.p);portrait.classList.add('md-portrait');
+   const heroImg=portrait.querySelector('img'),heroAv=avatarOf(r.p.avatar);if(heroImg&&heroAv){const fallback=heroImg.src;heroImg.src=zoomSrc(heroAv.id);heroImg.onerror=()=>{heroImg.onerror=null;heroImg.src=fallback;};}
+   const pName=div('md-name',txt('b','',clean(r.p.name)),...( /NPC/.test(r.p.name)?[txt('small','','(NPC)')]:[]));
+   const battery=txt('i','md-battery','');battery.setAttribute('aria-hidden','true');
+   const person=div('md-person',pName,div('md-charge',battery,txt('span','','')));
+   const penalty=div('md-penalty',txt('span','md-penalty-label','メーター'),goldText('+'+r.amt,'number'));
+   const lightning=S('svg',{viewBox:'0 0 864 480','aria-hidden':'true',class:'md-lightning'});lightning.innerHTML='<g fill="none" stroke-linejoin="miter"><g stroke="#f9b520" stroke-width="12" opacity=".4"><path d="M0 310L109 270L89 230L229 206M43 56L108 93L75 122L204 171M864 317L769 270L784 229L646 198M843 43L783 98L817 126L668 166"/></g><g stroke="#fff5ad" stroke-width="3"><path d="M0 310L109 270L89 230L229 206M43 56L108 93L75 122L204 171M864 317L769 270L784 229L646 198M843 43L783 98L817 126L668 166"/></g></g>';
+   const mask=S('svg',{viewBox:'0 0 160 180','aria-hidden':'true',class:'md-mask'});mask.innerHTML='<defs><linearGradient id="maskIvory" x2=".8" y2="1"><stop stop-color="#fff5d9"/><stop offset=".5" stop-color="#e7d9b4"/><stop offset="1" stop-color="#948a71"/></linearGradient></defs><g class="mask-left"><path d="M22 24Q45 8 77 18L85 40L70 57L83 76L70 104L80 127L66 157Q37 139 28 107Q15 69 22 24Z" fill="url(#maskIvory)" stroke="#e4cf9b" stroke-width="2"/><path d="M29 58Q46 42 65 63L62 77Q43 80 29 58" fill="#102319"/><path d="M45 115Q55 117 64 127" stroke="#6e6252" stroke-width="3" fill="none"/></g><g class="mask-right"><path d="M77 18Q113 9 140 27Q144 78 126 113Q110 144 82 161L66 157L80 127L70 104L83 76L70 57L85 40Z" fill="url(#maskIvory)" stroke="#e4cf9b" stroke-width="2"/><path d="M94 62Q113 44 133 60Q117 79 98 78Z" fill="#102319"/><path d="M77 18L85 40L70 57L83 76L70 104L80 127L66 157" fill="none" stroke="#bc392a" stroke-width="2"/><path d="M90 128Q108 125 116 114" stroke="#6e6252" stroke-width="3" fill="none"/></g>';
+   const sparks=div('md-sparks');sparks.setAttribute('aria-hidden','true');for(let i=0;i<22;i++){const n=document.createElement('i');n.style.setProperty('--x',(5+(i*37)%91)+'%');n.style.setProperty('--y',(4+(i*23)%87)+'%');n.style.setProperty('--s',(i%4===0?2.8:1.2)+'cqw');n.style.setProperty('--r',(i*19)+'deg');sparks.append(n);}
+   const hero=div('md-result-hero',div('md-aura'),div('md-rays'),lightning,portrait,div('md-ring'),mask,person,txt('span','md-lie','ウソ'),penalty,sparks);hero.setAttribute('data-player',r.p.uid);hero.setAttribute('data-amount',r.amt);
+   const safe=div('md-safe-players',...other.map(x=>{const av=face(x.p),medal=div('md-safe-medal',av,shield());return div('md-safe-player',medal,txt('b','',clean(x.p.name)),txt('span','md-safe-word','セーフ'));}));safe.style.setProperty('--safe-count',Math.max(other.length,1));
+   penalty.setAttribute('aria-label','メーター ＋'+r.amt);penalty.setAttribute('role','img');
+   const userIcon=S('svg',{viewBox:'0 0 50 60','aria-hidden':'true',class:'md-person-icon'});userIcon.innerHTML='<circle cx="25" cy="14" r="11" fill="#7affc6"/><path d="M6 55V43Q6 29 25 29Q44 29 44 43V55Z" fill="#7affc6"/>';
+   const status=div('md-self-status'+(mine?.amt?' md-self-penalty':''),userIcon,txt('span','',mine?.amt?'あなたのメーター':'あなたは'),txt('strong','',mine?.amt?'＋'+mine.amt:'セーフ'));status.append(trim());
+   w.append(brand,header,heading,hero,safe,status);return w;
+
+}

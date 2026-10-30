@@ -244,3 +244,13 @@ Rollback: restore commit bb1dfff (GOLD 0.48).
 
 ## GOLD 0.69a
 - 利用ログに記録する版番号を、古い「0.39」から「0.69」に修正（ログで新旧の版を見分けるため）。送る項目・回数・通信量は変わらない。Firebaseルールの変更なし。
+
+## GOLD 0.70
+Released 2026-10-30 with explicit user approval ("全部本番にプッシュ"). Firebase rules 0.70h were published by the user before this release.
+- お宝発掘大作戦（旧：そのボタン、押して大丈夫？）：岩の発掘UI、硬い岩（叩いた回数・ヒビ）、ヒビ岩／金岩のヒント、強欲（10〜15回で点灯、爆弾2倍、お助け2枚）、ツルハシ演出。
+- ドキドキ：ランダムな最初の人、爆弾投下、よーい1秒、赤い前触れ、早爆発、爆弾専用の結果画面。
+- 派閥抗争：選んだ結果の一覧（A派／B派）、「確認した」（20秒で自動）、A派／B派ルーレット、全員同じ答えは持ち越し＋警告テロップ、黒板・A/Bの印を削除。
+- 結果画面：メーターの＋1がグラスに反映。「担当」→「カードを引いた人」に統一。カード→説明ポップのつなぎ。
+- お助けカード：同時に持てる数方式（バリア＋なすりつけ3枚・身代わり3枚）、確率 バリア30／なすりつけ20／身代わり50、取り損ね、獲得表示とお助けタブの光、ゲーム開始時の1枚のみ。
+- Firebaseルール：0.70h（広げるだけ。古いコードも動く）。アバター21〜25は従来どおり除外。
+Rollback: code → branch backup/pre-gold070-20261030 of fleezappm-ux/nomi-quest-play. Rules: widening-only, so old code keeps working; if needed, republish the previous 0.70g copy page.
