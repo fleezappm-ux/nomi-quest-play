@@ -1,6 +1,6 @@
 // 10番「GO TO HEAVEN OR HELL」（ルーレット三段勝負・2026-10-27 確定）の純粋な計算ロジック。画面や通信には触らない。
 // 回す人の端末が「結果の名前 o」と「演出の種 a」を記録に書き、全員の端末が (stage,o,a) から同じ見た目を作る。
-import {rngFrom} from './draw.js?v=pop0.70.1';
+import {rngFrom} from './draw.js?v=pop0.70.2';
 
 // ---- 調整用の設定（実機で調整するのでここにまとめる）----
 export const RL_CONFIG={

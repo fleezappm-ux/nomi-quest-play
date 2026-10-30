@@ -260,3 +260,9 @@ Released 2026-10-30 with explicit user approval ("本番にプッシュ").
 - ホーム「友達に教える」にQRコード。QRから来た人（?from=qr）に、1回だけ「ホーム画面に追加しますか？」（Androidは本物の追加画面、iPhoneは手順の案内。「あとで」で7日間出さない）。
 - 通信・Firebaseルールの変更なし。
 Rollback: code → branch backup/pre-gold070a-20261030 of fleezappm-ux/nomi-quest-play (= GOLD 0.70).
+
+## GOLD 0.70b
+Released 2026-10-30 with explicit user approval ("保留にしてたアイコンを採用…一時的に採用してまた消します").
+- アイコン21〜25（特殊1〜5）を一時的に公開（avatars.js の HOLD を空に、画像21〜25を公開側に置く）。通信・Firebaseルールの変更なし（ルールは01〜99を許可済み）。
+- 再び見合わせるとき：avatars.js のコメント行の HOLD を戻し、公開側の gold/avatars と gold/avatars-zoom の nq-avatar-21〜25 を消す。
+Rollback: code → branch backup/pre-gold070b-20261030 of fleezappm-ux/nomi-quest-play (= GOLD 0.70a).
