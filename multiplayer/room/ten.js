@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.2';
-import {showItemFx} from './itemfx.js?v=pop0.70.2';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.2';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.2';
-import {REST_CARD} from './deck.js?v=pop0.70.2';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.2';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.2';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.2';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.2';
-import {avatarOf} from './avatars.js?v=pop0.70.2';
-import {doubtH1} from './result-h1.js?v=pop0.70.2';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.2';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.2';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.3';
+import {showItemFx} from './itemfx.js?v=pop0.70.3';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.3';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.3';
+import {REST_CARD} from './deck.js?v=pop0.70.3';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.3';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.3';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.3';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.3';
+import {avatarOf} from './avatars.js?v=pop0.70.3';
+import {doubtH1} from './result-h1.js?v=pop0.70.3';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.3';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.3';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -1343,7 +1343,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    bmIniting=true;const round=state.round,cs=players.filter(p=>connOf(p.uid)),pool=cs.length?cs:players,actor=players.some(p=>p.uid===globalThis.__nqBmFirst)?globalThis.__nqBmFirst:pool[Math.floor(Math.random()*pool.length)].uid; // 最初の持ち主は全員からランダム
    try{
     const cur=(await get(ref(db,`${base}/bm/${round}/x`))).val();
-    if(cur===null||cur===undefined)await set(ref(db,`${base}/bm/${round}/x`),pickBombX());
+    if(cur===null||cur===undefined){const xv=pickBombX();try{await set(ref(db,`${base}/bm/${round}/x`),xv);}catch(e){if(xv>=10000)throw e;await set(ref(db,`${base}/bm/${round}/x`),10000+Math.floor(Math.random()*30001));}} // 古いルールで短い秒数が拒否されても、10秒以上で書き直す
     await set(ref(db,`${base}/bm/${round}/p/0`),{u:actor,t:serverTimestamp(),k:-1});
    }catch{message('爆弾を準備できませんでした。ホストは再読み込みして再接続してください。');}
    finally{bmIniting=false;}
