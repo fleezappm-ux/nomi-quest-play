@@ -1500,5 +1500,24 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   try{if((await get(ref(db,base+'/deck/seed'))).val()===null){const seed=newSeed();await set(ref(db,base+'/deck/mind'),mindToText(pickMindPool(seed,mindPrompts.length)));await set(ref(db,base+'/deck/seed'),seed);}}
   catch{message('ゲーム接続ルールの反映が必要です（カードの記録）。');}
  })();}
- return()=>{window.removeEventListener('popstate',onPop);closeDtHelp(true);document.removeEventListener('nq-help',onHelp);document.removeEventListener('nq-members',onMembers);document.removeEventListener('nq-conn',onConn);dead=true;clearFx();clearInterval(cdTimer);nvStop?.();clearTimeout(spinTimer);clearTimeout(flipTimer);rxClear();inviteStop?.();stops.forEach(fn=>fn());allDrinksStops.forEach(fn=>fn());tqStop?.();dtStop?.();dgStop?.();clearTimeout(botTimer);clearTimeout(angelBotTimer);document.getElementById('tabHelp')?.classList.remove('glowTab');answerStop?.();ownStop?.();settledStop?.();box.replaceChildren();};
+ return()=>{
+  if(dead)return;
+  dead=true; // 解除中の画面更新や、遅れて戻る処理を止める。
+  window.removeEventListener('popstate',onPop);
+  document.removeEventListener('nq-help',onHelp);
+  document.removeEventListener('nq-members',onMembers);
+  document.removeEventListener('nq-conn',onConn);
+  closeDtHelp(true);closeCardHelp();introEl?.remove();introEl=null;clearFx();
+  for(const stop of [nvStop,inviteStop,tqStop,dtStop,dgStop,answerStop,ownStop,settledStop,
+   btStop,gmStop,gmRqStop,gmLayStop,gmHintStop,rlStop,bmStop,bmXStop,bmWStop,bmRdyStop,gateGoStop,kgStop])stop?.();
+  stops.forEach(fn=>fn());allDrinksStops.forEach(fn=>fn());
+  for(const timer of [cdTimer,btHostTimer,btCd,gmTimer,rlHostT,bmTimer,bmTick])clearInterval(timer);
+  for(const timer of [tapTimer,pickTimer,spinTimer,flipTimer,hlTimer,revealTm,botTimer,angelBotTimer,
+   rlTimerT,bmLockTimer,bmWaitT,gTel.rt,gAnim.rt])clearTimeout(timer);
+  bmCd.forEach(clearTimeout);bmCd=[];
+  rlView?.stop();rxClear();
+  const helpTab=document.getElementById('tabHelp');
+  helpTab?.classList.remove('glowTab','helpGlow');
+  box.replaceChildren();
+ };
 }
