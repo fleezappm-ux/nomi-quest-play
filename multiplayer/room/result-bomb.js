@@ -1,6 +1,6 @@
 // ドキドキしてんじゃねーよ！（爆弾）専用の結果画面。ダウト成功(H1)の構図を土台に、描画だけを差し替える。
 // 判定・通信・次ターン処理は持たない。入力はゲームが計算済みの値。
-import {doubtH1} from './result-h1.js?v=pop0.70.3';
+import {doubtH1} from './result-h1.js?v=pop0.70.4';
 export const BLAST_S=1.6; // 爆発の演出の長さ（この間は結果を出さない）
 export function bombResult({losers,rows,uid,state,div,txt,popImg,avatarOf,elapsed=99}){
  const w=doubtH1({losers,rows,uid,state,div,txt,popImg,avatarOf});

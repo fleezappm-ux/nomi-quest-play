@@ -1,9 +1,9 @@
 // 練習モード用のNPC。見えない画面(attachTen)を1人ずつ動かし、回答はここで自動入力する。
-import {ref,set,get,serverTimestamp} from './fb.js?v=pop0.70.3';
-import {attachTen} from './ten.js?v=pop0.70.3';
-import {currentTurn} from './turn.js?v=pop0.70.3';
-import {rlOrder,chainOf as rlChain,curSpinner as rlCur,pickOutcome as rlPick,newArt as rlArt} from './roulette.js?v=pop0.70.3';
-import {replay as gridReplay,CELLS as GCELLS,PASS as GPASS,startOf as gridStart} from './grid.js?v=pop0.70.3';
+import {ref,set,get,serverTimestamp} from './fb.js?v=pop0.70.4';
+import {attachTen} from './ten.js?v=pop0.70.4';
+import {currentTurn} from './turn.js?v=pop0.70.4';
+import {rlOrder,chainOf as rlChain,curSpinner as rlCur,pickOutcome as rlPick,newArt as rlArt} from './roulette.js?v=pop0.70.4';
+import {replay as gridReplay,CELLS as GCELLS,PASS as GPASS,startOf as gridStart} from './grid.js?v=pop0.70.4';
 const devMode=typeof location!=='undefined'&&new URL(location.href).searchParams.get('dev')==='1';
 export const npcNames=['ココ','ミミ','ナナ','リリ','ユユ'];
 // カードごとのNPCの回答（1人分）。undefinedなら今は答える立場ではない。

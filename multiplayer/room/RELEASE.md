@@ -271,3 +271,12 @@ Rollback: code → branch backup/pre-gold070b-20261030 of fleezappm-ux/nomi-ques
 
 ドキドキ：爆弾の秒数が公開済みルールに拒否されたとき、10秒以上で書き直すようにした（「爆弾を準備できませんでした」対策）。
 Rollback: backup/pre-gold070c-20261030 (nomi-quest-play).
+
+## GOLD 0.70d (2026-10-31)
+Released 2026-10-31 with explicit user approval ("そのまま引き続きお願いします"). Firebase rules 0.70j were published by the user beforehand.
+- ホスト自動引き継ぎ：ホストが約20秒つながらないと、つながっている最若席の人が自動で新ホストに（元ホストは復帰後に普通の参加者）。待合室・鬼ごっこは対象外。
+- ドキドキ：爆発前の約5.5秒間「次の人へ渡す」がルールに断られていた不具合を、ルール0.70jで修正。
+- 離脱・つなぎ直し時に、爆弾・発掘・ルーレット等の通信監視とタイマーを解除（ChatGPTレビュー 01）。
+- 説明文：派閥抗争の持ち越し（最大＋5）、お宝発掘の強欲（爆弾＋4・お助け2枚）を実際の加算に合わせた（文章のみ）。
+- Firebaseルール：0.70j が必要（hostUid の交代、ドキドキの渡し期限）。
+Rollback: code → branch backup/pre-gold070d-20261031 of fleezappm-ux/nomi-quest-play (= GOLD 0.70c).

@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.3';
-import {showItemFx} from './itemfx.js?v=pop0.70.3';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.3';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.3';
-import {REST_CARD} from './deck.js?v=pop0.70.3';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.3';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.3';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.3';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.3';
-import {avatarOf} from './avatars.js?v=pop0.70.3';
-import {doubtH1} from './result-h1.js?v=pop0.70.3';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.3';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.3';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.4';
+import {showItemFx} from './itemfx.js?v=pop0.70.4';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.4';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.4';
+import {REST_CARD} from './deck.js?v=pop0.70.4';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.4';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.4';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.4';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.4';
+import {avatarOf} from './avatars.js?v=pop0.70.4';
+import {doubtH1} from './result-h1.js?v=pop0.70.4';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.4';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.4';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -300,7 +300,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function closeCardHelp(){cardHelpEl?.remove();cardHelpEl=null;}
  // 初めてそのゲームが出たときだけ、大きな字のポップで説明する（「次から出さない」で二度と出ない／あとは右上の📖）
  const BAND_CARDS=new Set(['ten','battery','buttons','reaction','tapking','vote','muttsuri','majority','mind','king','mission','danger']); // 説明の箱をやめて、キャッチフレーズの「帯」だけにするゲーム
- let bmWaitRound=0,introKey='',introEl=null,mdAt={round:0,t:0,skip:false};const INTRO_ON=new Set(['roulette','ten','battery','buttons','reaction','grid','tapking','vote','muttsuri','majority','mind','king','mission','danger']);
+ let bmWaitRound=0,introKey='',introEl=null,introTimer=null,mdAt={round:0,t:0,skip:false};const INTRO_ON=new Set(['roulette','ten','battery','buttons','reaction','grid','tapking','vote','muttsuri','majority','mind','king','mission','danger']);
  function maybeIntro(){try{maybeIntro0();}catch{}try{gateHost();}catch{}}
  function maybeIntro0(){
   if(bot||dead||!state||state.phase!=='measuring'||!INTRO_ON.has(state.card)||!cards[state.card]?.intro)return;
@@ -313,7 +313,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   setTimeout(()=>{if(dead||!state||state.round!==rd||state.phase!=='measuring')return;try{showIntro(card,lk,!!g);}catch{}},globalThis.__nqIntroMs??(g?120:700));
  }
  function showIntro(card,lk,fromCard){
-  introEl?.remove();
+  clearTimeout(introTimer);introEl?.remove();
   const chk=document.createElement('input');chk.type='checkbox';try{chk.checked=LS.getItem(lk)==='1';}catch{}
   const lab=document.createElement('label');lab.className='dthNo introNo';lab.append(chk,document.createTextNode(' 次から表示しない'));
   const ok=el('button','OK！');ok.type='button';
@@ -322,7 +322,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const calm=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}};
   const origin=()=>{const bb=bookBtn()?.getBoundingClientRect?.(),r=box.getBoundingClientRect();return bb?`${bb.left+bb.width/2-r.left}px ${bb.top+bb.height/2-r.top}px`:'100% 0';};
   let closing=false;
-  const auto=setTimeout(()=>close(),globalThis.__nqIntroMaxMs??30000); // 30秒たつと自動で閉じる
+  const auto=introTimer=setTimeout(()=>close(),globalThis.__nqIntroMaxMs??30000); // 30秒たつと自動で閉じる
   const close=()=>{if(closing)return;closing=true;clearTimeout(auto);
    try{if(chk.checked)LS.setItem(lk,'1');else LS.removeItem(lk);}catch{}
    bookBtn()?.classList.toggle('glow',!!chk.checked);
@@ -1500,5 +1500,24 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   try{if((await get(ref(db,base+'/deck/seed'))).val()===null){const seed=newSeed();await set(ref(db,base+'/deck/mind'),mindToText(pickMindPool(seed,mindPrompts.length)));await set(ref(db,base+'/deck/seed'),seed);}}
   catch{message('ゲーム接続ルールの反映が必要です（カードの記録）。');}
  })();}
- return()=>{window.removeEventListener('popstate',onPop);closeDtHelp(true);document.removeEventListener('nq-help',onHelp);document.removeEventListener('nq-members',onMembers);document.removeEventListener('nq-conn',onConn);dead=true;clearFx();clearInterval(cdTimer);nvStop?.();clearTimeout(spinTimer);clearTimeout(flipTimer);rxClear();inviteStop?.();stops.forEach(fn=>fn());allDrinksStops.forEach(fn=>fn());tqStop?.();dtStop?.();dgStop?.();clearTimeout(botTimer);clearTimeout(angelBotTimer);document.getElementById('tabHelp')?.classList.remove('glowTab');answerStop?.();ownStop?.();settledStop?.();box.replaceChildren();};
+ return()=>{
+  if(dead)return;
+  dead=true; // 解除中の画面更新や、遅れて戻る処理を止める。
+  window.removeEventListener('popstate',onPop);
+  document.removeEventListener('nq-help',onHelp);
+  document.removeEventListener('nq-members',onMembers);
+  document.removeEventListener('nq-conn',onConn);
+  closeDtHelp(true);closeCardHelp();introEl?.remove();introEl=null;clearFx();
+  for(const stop of [nvStop,inviteStop,tqStop,dtStop,dgStop,answerStop,ownStop,settledStop,
+   btStop,gmStop,gmRqStop,gmLayStop,gmHintStop,rlStop,bmStop,bmXStop,bmWStop,bmRdyStop,gateGoStop,kgStop])stop?.();
+  stops.forEach(fn=>fn());allDrinksStops.forEach(fn=>fn());
+  for(const timer of [cdTimer,btHostTimer,btCd,gmTimer,rlHostT,bmTimer,bmTick])clearInterval(timer);
+  for(const timer of [tapTimer,pickTimer,spinTimer,flipTimer,hlTimer,revealTm,botTimer,angelBotTimer,
+   rlTimerT,bmLockTimer,bmWaitT,introTimer,gTel.rt,gAnim.rt])clearTimeout(timer);
+  bmCd.forEach(clearTimeout);bmCd=[];
+  rlView?.stop();rxClear();
+  const helpTab=document.getElementById('tabHelp');
+  helpTab?.classList.remove('glowTab','helpGlow');
+  box.replaceChildren();
+ };
 }
