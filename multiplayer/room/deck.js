@@ -1,4 +1,5 @@
-import {itemsOfCode,meterOfCode} from './roulette.js?v=pop0.70.4';
+import {itemsOfCode,meterOfCode} from './roulette.js?v=pop0.70.6';
+import {hashStr} from './draw.js?v=pop0.70.6';
 // Titles and outcomes follow game-src/catalog.json and cards.js at v0.6.49.
 export const muttsuriPrompts=["一番むっつりだと思う人は？", "普段おとなしいのに夜は激しそうな人は？", "スマホの検索履歴が一番ヤバそうな人は？", "実は一番経験豊富そうな人は？", "真面目な顔で妄想が止まらなそうな人は？", "ひとりの時間が多そうな人は？", "秘密のアカウントを持ってそうな人は？", "こっそりコレクションを隠してそうな人は？", "清楚に見えてギャップがありそうな人は？", "ベッドの上で豹変しそうな人は？", "夜ふかしして動画を見てそうな人は？", "下ネタに赤くなるけど実は好きな人は？", "写真フォルダに秘密がありそうな人は？", "合コンで静かに本命を狙ってそうな人は？", "実は一番ロマンチストな妄想家は？", "ばれないように準備だけは万全な人は？","ひとりで盛り上がるタイプは？","隠しフォルダが多そうな人は？","実はコスプレに興味がありそうな人は？","本命にだけ甘えん坊になりそうな人は？","実は一番Mっぽい人は？","実は一番Sっぽい人は？","こっそり官能小説を読んでそうな人は？","ホテルの部屋選びに口を出しそうな人は？","マイおもちゃ（大人の）を持ってそうな人は？"];
 export const votePrompts=["エロそうな人は？","エッチが上手そうな人は？","むっつりスケベは誰？","電マ使ってそうな人は？","ウーマナイザー使ってそうな人は？","リアルよりアニメが好きそうな人は？","今夜ホテルへ行きたいと思ってそうな人は？","パンツの臭いをこっそり嗅いでそうな人は？","浮気をしそうな人は？","複数プレイが好きそうな人は？","NTR（ネトラレ）が好きそうな人は？","ハメ撮りが好きそうな人は？","舐めるの好きそうな人は？","夜に赤ちゃんになりそうな人は？","下着にこだわりがありそうな人は？","大人のお店に一人で入れそうな人は？","夜のお誘いが一番うまそうな人は？","彼女（彼）の前で別人になりそうな人は？","恥ずかしい動画を持っていそうな人は？","最初のデートで手を出しそうな人は？","マッチングアプリを一番使いこなしてそうな人は？","1回じゃ終わらなさそうな人は？"];
@@ -160,13 +161,18 @@ export function tequilaPlanOne(map,round,lastSettlement=0){
  const tickets=sumTickets(map,lastSettlement+1,round-1);
  return {tickets,carryIn:0,total:tickets,count:0,carry:0,lime:tickets>=NOTCHES};
 }
-// ライムの人は全員1杯。ライムがいなければ一番多い人（同率は全員）が1杯。全員0なら誰も飲まない。
+// ライムの人は全員1杯。ライムがいなければ一番多い人が1杯（同率ならルーレットで1人＝2026-11-01確定）。全員0なら誰も飲まない。
+// 同率のルーレットは、全端末で同じ結果になるよう「ラウンド番号＋同率の人たち」から決める（通信は増えない）。
 export function tequilaPlan(drinkMaps,uids,round,lastSettlement=0){
  const out={};let max=0,lime=false;
  for(const u of uids){out[u]=tequilaPlanOne(drinkMaps?.[u],round,lastSettlement);max=Math.max(max,out[u].tickets);lime=lime||out[u].lime;}
- for(const u of uids)out[u].count=lime?(out[u].lime?1:0):(max>0&&out[u].tickets===max?1:0);
+ const tied=lime||max<=0?[]:[...uids].filter(u=>out[u].tickets===max).sort();
+ const win=tied.length>1?tied[hashStr('tie:'+round+':'+tied.join(','))%tied.length]:null;
+ for(const u of uids){out[u].tie=tied.length>1&&tied.includes(u);out[u].count=lime?(out[u].lime?1:0):(max>0&&out[u].tickets===max&&(win===null||u===win)?1:0);}
  return out;
 }
+// 同率のルーレットが行われたか（ライムなし・最多が2人以上）
+export const tieRoulette=plan=>Object.values(plan||{}).filter(q=>q.tie).length>1;
 // kept for the tickets-this-cool view
 export function ticketsFor(drinkMaps,uids,round,n){const {from,to}=ticketWindow(round,n),out={};for(const u of uids)out[u]=sumTickets(drinkMaps?.[u],from,to);return out;}
 // tq: {b: loser's barrier, c: cute (value = who gets it), x: barrier of that player, a: angel taker}. Returns who finally drinks the one tequila.

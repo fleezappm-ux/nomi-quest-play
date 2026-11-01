@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.4';
-import {showItemFx} from './itemfx.js?v=pop0.70.4';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.4';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.4';
-import {REST_CARD} from './deck.js?v=pop0.70.4';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.4';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.4';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.4';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.4';
-import {avatarOf} from './avatars.js?v=pop0.70.4';
-import {doubtH1} from './result-h1.js?v=pop0.70.4';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.4';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.4';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.6';
+import {showItemFx} from './itemfx.js?v=pop0.70.6';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.6';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.6';
+import {REST_CARD} from './deck.js?v=pop0.70.6';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.6';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.6';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.6';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.6';
+import {avatarOf} from './avatars.js?v=pop0.70.6';
+import {doubtH1} from './result-h1.js?v=pop0.70.6';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.6';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.6';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -352,13 +352,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   {const ph=chk?null:h.querySelector?.('.ph');if(ph){const tt=ph.querySelector?.('.pop-title');if(tt){const len=[...tt.textContent].length;tt.style.fontSize=Math.max(17,Math.min(24,Math.floor(200/len)))+'px';}const ib=el('button','📖');ib.type='button';ib.className='cardInfo';try{if(LS.getItem('nq-intro-'+card)==='1')ib.classList.add('glow');}catch{}ib.setAttribute('aria-label','このゲームの説明を読む');ib.onclick=()=>{if(cards[card]?.intro&&INTRO_ON.has(card)){try{showIntro(card,'nq-intro-'+card,false);}catch{openCardHelp(card);}}else openCardHelp(card);};ph.classList.add('hasInfo');ph.append(ib);}}
   h.setAttribute('data-g',glyphs[card]||'');return h;}
   function finalUi(){
-  const box2=div('settle');box2.append(popImg('check','hero','最終ドリンクタイム'),txt('h3','verdict finH','🥃 最終ドリンクタイム！'));
-  if(!drinksReady()||!historyLoaded){box2.append(txt('p','sub','みんなのメーターを集計しています…'));return box2;}
-  const done=state.card==='check'&&state.phase==='results',av=p=>avatars[Number(p.slot)]||'🍻';
-  const plan=tequilaPlan(allDrinks,ids(),done?state.round+1:state.round+1,done?state.round:previousSettlement(state.round+1));
-  if(!done)showImpact(ids().filter(u=>plan[u].count>0),'final');
-  box2.append(txt('p','sub',done?'直前の休憩で精算ずみです。おつかれさま！':'最後に、いまのメーターで1回だけ。ライムの人は1杯、いなければ一番多い人（同率は全員）が1杯。'));
-  box2.append(div('rows',...[...players].sort((x,y)=>plan[y.uid].tickets-plan[x.uid].tickets).map(p=>{const q=plan[p.uid];return div('row '+(q.count?'lose':'safe'),avImgEl(p),txt('span','who',p.name),shot(q.tickets,'rank'),txt('span','cups',q.count?'🥃 1杯':'セーフ'));})));
+  const box2=div('settle');box2.append(popImg('check','hero','ゲーム終了'),txt('h3','verdict finH','🍻 おつかれさま！'));
+  box2.append(txt('p','sub','ゲームはここまで。最後の精算はありません。直前のドリンクタイムで終わりです。'));
   box2.append(txt('p','fine','飲む量は自己申告です。無理せず、水も飲もう 🚰'));
   return box2;
  }
@@ -748,7 +743,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    const upd=()=>{const dl=Math.max(entryStart+ENTRY_MS,extUntil?extUntil+EXT_MS:0),left=Math.max(0,Math.ceil((dl-performance.now())/1000));cd.textContent=left;cdn.textContent=extUntil&&left<=Math.ceil(EXT_MS/1000)?'🥺 なすりつけ発生！ 防ぎたい人は、いま使えます':'';if(left<=0){clearInterval(cdTimer);if(!dead){dtStep='tq';render();}}};
    upd();clearInterval(cdTimer);cdTimer=setInterval(upd,500);
   }
-  if(total)box2.append(txt('p','sub',anyLime?'ライム（メーター5）が付いた人は1杯確定。':'ライムなし。一番メーターが多い人が1杯（同率1位は全員1杯）。'));
+  if(total)box2.append(txt('p','sub',anyLime?'ライム（メーター5）が付いた人は1杯確定。':tieRoulette(plan)?'ライムなし。一番メーターが多い人が同率だったので、ルーレットで1人に決まりました 🎰':'ライムなし。一番メーターが多い人が1杯（同率ならルーレットで1人）。'));
   box2.append(div('rows',...[...players].sort((x,y)=>plan[y.uid].tickets-plan[x.uid].tickets).map(p=>{const q=plan[p.uid];return div('row '+(q.count?'lose':'safe'),avImgEl(p),txt('span','who',p.name),shot(q.tickets,'rank'),txt('span','cups',q.count?'🥃 1杯':'セーフ'));})));
   if(!total){box2.append(txt('p','fine','乾杯だけして、次へ。メーターは0に戻ります。'));return box2;}
   box2.append(txt('p','fine',inEntry?'受付が終わると、イッテキーラ発表です。':'飲んだら、次へ。メーターは休憩のあと0に戻ります。'));

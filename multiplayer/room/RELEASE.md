@@ -280,3 +280,10 @@ Released 2026-10-31 with explicit user approval ("そのまま引き続きお願
 - 説明文：派閥抗争の持ち越し（最大＋5）、お宝発掘の強欲（爆弾＋4・お助け2枚）を実際の加算に合わせた（文章のみ）。
 - Firebaseルール：0.70j が必要（hostUid の交代、ドキドキの渡し期限）。
 Rollback: code → branch backup/pre-gold070d-20261031 of fleezappm-ux/nomi-quest-play (= GOLD 0.70c).
+
+## GOLD 0.70f（pop0.70.6）— 0.70d の上に作成（お休みモード 0.70e は含まない）
+確定仕様（2026-11-01 ユーザー指示）だけを反映。通信・Firebaseルールの変更なし。
+- 8ターンごとのドリンクタイム：ライムなしで一番多い人が同率なら、ルーレットで1人に決める（ラウンド番号＋同率の人から全端末で同じ結果。画面は文章のみ、リール演出なし）。
+- 最終ドリンクタイム：メーターの精算をやめ、「おつかれさま！」だけですっぱり終わる。
+- 試験：tests/tie-roulette.test.mjs（6項目＋1000回の偏り確認）。
+Rollback: code → backup/pre-gold070f-20261101 (nomi-quest-play) = GOLD 0.70d.
