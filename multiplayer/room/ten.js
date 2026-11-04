@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.6';
-import {showItemFx} from './itemfx.js?v=pop0.70.6';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.6';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.6';
-import {REST_CARD} from './deck.js?v=pop0.70.6';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.6';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.6';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.6';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.6';
-import {avatarOf} from './avatars.js?v=pop0.70.6';
-import {doubtH1} from './result-h1.js?v=pop0.70.6';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.6';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.6';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.7';
+import {showItemFx} from './itemfx.js?v=pop0.70.7';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.7';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.7';
+import {REST_CARD} from './deck.js?v=pop0.70.7';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.7';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.7';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.7';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.7';
+import {avatarOf} from './avatars.js?v=pop0.70.7';
+import {doubtH1} from './result-h1.js?v=pop0.70.7';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.7';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.7';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -56,14 +56,15 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   try{if(drinksReady()&&historyLoaded)plan=tequilaPlan(allDrinks,ids(),state.round,previousSettlement());}catch{}
   const conn=globalThis.__nqConn||{};
   memBody.replaceChildren(div('mlist',...players.map(p=>{
-   const tk=plan?plan[p.uid].tickets:null,on=conn[p.uid]!==false,lime=tk!==null&&tk>=NOTCHES;
+   const tk=plan?plan[p.uid].tickets:null,aw=globalThis.__nqAway?.[p.uid]===true,on=conn[p.uid]!==false&&!aw,lime=tk!==null&&tk>=NOTCHES;
    const av=avImgEl(p);av.classList.add('mzoom');av.onclick=()=>document.dispatchEvent(new CustomEvent('nq-zoom',{detail:{id:p.avatar}}));
    return div('mrow'+(lime?' lime':'')+(on?'':' off'),av,
     div('minfo',div('mname',txt('b','',p.uid===uid?`${p.name}（あなた）`:p.name),...(p.uid===hostUid?[txt('span','mhost','ホスト')]:[])),
-     txt('span','mcon'+(on?' on':''),on?'● 接続中':'🕒 未接続'),
+     txt('span','mcon'+(on?' on':''),aw?'💤 離席中':on?'● 接続中':'🕒 未接続'),
      txt('span','mcum',`累計 ${plan?cumDrinks(p.uid):'…'}杯`)),
     div('mmeter',...(tk===null?[txt('span','cups','集計中…')]:[shot(tk,'rank'),txt('span','cups',Math.min(tk,NOTCHES)+'/'+NOTCHES)])));})),
-   txt('p','fine','ショットグラスはみんなのメーターです。5つでライム＝1杯確定。累計は今夜飲む確定になった杯数です。'));
+   txt('p','fine','ショットグラスはみんなのメーターです。5つでライム＝1杯確定。累計は今夜飲む確定になった杯数です。'),
+   ...(players.some(p=>p.uid===uid)?[(()=>{const b=document.createElement('button');b.type='button';b.className='ok awayToggle';b.textContent=awayOf(uid)?'💤 戻る':'💤 離席する（トイレ・電話など）';b.onclick=()=>document.dispatchEvent(new CustomEvent('nq-away'));return b;})(),txt('p','fine','離席中は、あなたの番が飛ばされ、みんなは待たずに進みます。マイページからも押せます。')]:[]));
  }
  function fillHelp(){
   if(!helpBody||!helpBody.isConnected){helpBody=null;return;}
@@ -75,7 +76,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  }
  const onMembers=e=>{if(bot||dead)return;e.detail.handled=true;memBody=e.detail.body;fillMembers();};
  document.addEventListener('nq-members',onMembers);
- const onConn=()=>{if(!dead)fillMembers();};document.addEventListener('nq-conn',onConn);
+ let drawSig='';const onConn=()=>{if(dead)return;fillMembers();trackLost();restCheck();try{if(state?.phase==='draw'){const t=currentTurn(state,players);const g=t?(restOf(t.uid)?'r':connOf(t.uid)?'c':'d'):'';if(g!==drawSig){drawSig=g;render();}}}catch(e){}};document.addEventListener('nq-conn',onConn);
  const onHelp=e=>{if(bot||dead)return;e.detail.handled=true;helpBody=e.detail.body;fillHelp();};
  document.addEventListener('nq-help',onHelp);
  const el=(tag,text)=>{const n=document.createElement(tag);n.textContent=text;return n;};
@@ -232,12 +233,12 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function maybeSettlement(){} // 0.56: ドリンクタイムは、8ターン目の結果のあと「次へ」で始まる
  // 休憩ターン：全員が「準備OK」を押したら（満場一致で）ホストの端末が次のターンへ進める。ホストは待たずに進めることもできる。
  let advancing=false;
- function maybeAdvance(){if(!host||dead||advancing||state?.phase!=='results'||state.card!=='check'||state.round>=MAX_ROUND)return;if(!players.every(p=>nvMap[p.uid])||!settledAll())return;advancing=true;advanceRound().catch(()=>message('次のターンへ進めませんでした。')).finally(()=>{advancing=false;});}
+ function maybeAdvance(){if(!host||dead||advancing||state?.phase!=='results'||state.card!=='check'||state.round>=MAX_ROUND)return;if(!players.every(p=>nvMap[p.uid]||restOf(p.uid))||!settledAll())return;advancing=true;advanceRound().catch(()=>message('次のターンへ進めませんでした。')).finally(()=>{advancing=false;});}
  function imDrinker(){try{if(!drinksReady()||!historyLoaded)return false;const plan=tequilaPlan(allDrinks,ids(),state.round,previousSettlement());for(const p of players)for(let j=0;j<plan[p.uid].count;j++){const o=tequilaOutcome(p.uid,chainOf(p.uid,j));if(!o.cancelled&&o.drinker===uid)return true;}}catch{}return false;}
  function breakNext(){
-  const ready=players.filter(p=>nvMap[p.uid]).length,me=!!nvMap[uid];
-  box.append(txt('p','fine',`次のターンへ：${ready}/${players.length}人が準備OK。全員がそろうと進みます。`));
-  button(me?`✓ 準備OK（みんなを待っています ${ready}/${players.length}）`:(imDrinker()?'飲んだ → 次へ':'確認して次へ →')+`（${ready}/${players.length}人OK）`,()=>set(ref(db,`${base}/nv/${state.round}/${uid}`),true),me||pending);
+  const act=players.filter(p=>!restOf(p.uid)||p.uid===uid),ready=act.filter(p=>nvMap[p.uid]).length,me=!!nvMap[uid];
+  box.append(txt('p','fine',`次のターンへ：${ready}/${act.length}人が準備OK。全員がそろうと進みます。${act.length<players.length?'（お休み中の人は待ちません）':''}`));
+  button(me?`✓ 準備OK（みんなを待っています ${ready}/${act.length}）`:(imDrinker()?'飲んだ → 次へ':'確認して次へ →')+`（${ready}/${act.length}人OK）`,()=>set(ref(db,`${base}/nv/${state.round}/${uid}`),true),me||pending);
   if(host)button('みんなを待たずに次のターンへ（ホスト）',advanceRound,pending||ownBusy||!settledAll()||state.round>=MAX_ROUND,'secondary');
  }
  function nextButton(){if(host)button(thresholdReached()?'🥃 ドリンクタイムへ':'次のターン',advanceRound,pending||ownBusy||!settledAll()||!creditsReady()||!coolReady()||state.round>=MAX_ROUND);
@@ -370,7 +371,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    box.append(div('deckwrap',div('deck',cardBack()),div('deckshadow')),...(isBreak(state.round,turn.order.length)?[el('h2','休憩カード！')]:[]),...(isBreak(state.round,turn.order.length)?[el('p','今回はカードを引かずに、みんなの状態をチェックします。そのあと、たまったメーターを精算します（お助けカードも使えます）。')]:[]));
    if(dev)box.append(devPanel());
    if(turn.uid===uid&&!dev)button('カードを引く',()=>drawNow(turn),pending||!coolReady()||!deckReady());
-   else box.append(el('p',`${byUid.get(turn.uid)?.name||'今回カードを引いた人'}がカードを引くのを待っています。`));
+   else box.append(el('p',restOf(turn.uid)?`💤 ${byUid.get(turn.uid)?.name||'今回カードを引く人'}さんはお休み中です。次の人へ進みます…`:!connOf(turn.uid)?`${byUid.get(turn.uid)?.name||'今回カードを引く人'}さんの接続が切れています。つながるのを待っています（約1分で次の人へ進みます）。`:`${byUid.get(turn.uid)?.name||'今回カードを引いた人'}がカードを引くのを待っています。`));
    dock.append(whoStrip(turn));
    return;
   }
@@ -381,7 +382,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
     const o=dangerOutcome(state);if(!o){box.append(el('p','結果を確認しています…'));return;}
     if(card==='danger'&&o.accepted&&spinRound!==state.round){roulette(o.fate);return;}
    }
-   if(card!=='buttons'&&card!=='danger'&&card!=='king'&&card!=='mission'&&players.some(p=>typeof state.results?.[p.uid]!=='number')){box.append(el('p','結果を確認しています…'));return;}
+   if(card!=='buttons'&&card!=='danger'&&card!=='king'&&card!=='mission'&&!Object.keys(state.results||{}).length){box.append(el('p','結果を確認しています…'));return;}
    if(card==='check')ensureAllDrinks();
    if(card==='battery'&&!hasDoubt(state)&&state.direction&&hlRound!==state.round){hlRoulette();return;}
    if(state.pick&&pickRound!==state.round&&card!=='check'){pickRoulette();return;}
@@ -417,7 +418,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    box.append(el('h3',`${promptLists[card][state.prompt]??'確認中'}`));
    if(typeof own==='number')box.append(el('p','投票済み · 全員の投票を待っています。（誰に入れたかは他の人には見えません）'));
    else{box.append(el('p','当てはまりそうな人に1票。匿名です。'));for(const p of players)button(p.uid===uid?`${p.name}（自分）`:p.name,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),Number(p.slot)),pending);}
-   if(host)box.append(el('p',`投票 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+   if(host)box.append(el('p',`投票 ${voters().filter(p=>hasNum(p.uid)).length}/${voters().length}人`));
    return;
   }
   if(card==='check'||card==='rest'){
@@ -426,13 +427,13 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
     box.append(podiumBoard());setDtStage(1);
     if(typeof own==='number')box.append(el('p','✓ 確認しました。みんなを待っています。'));
     else button('✓ 結果を確認した',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),0),pending||!drinksReady()||!historyLoaded);
-    if(host)box.append(el('p',`確認 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+    if(host)box.append(el('p',`確認 ${voters().filter(p=>hasNum(p.uid)).length}/${voters().length}人`));
     return;
    }
    box.append(el('h3','今の自分の状態は？'));
    if(typeof own==='number')box.append(el('p','回答済み · みんなの回答を待っています。'));
    else for(const [i,[ic,lab]] of checkStates.entries())button(`${ic} ${lab}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),i),pending);
-   if(host)box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+   if(host)box.append(el('p',`回答 ${voters().filter(p=>hasNum(p.uid)).length}/${voters().length}人`));
    return;
   }
   if(card==='majority'){
@@ -447,7 +448,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    if(done)box.append(txt('p','fine abPlain','回答済み · みんなの回答を待っています。（結果まで秘密）'));
    else{
     for(const [i,label] of ['A','B'].entries())button(`${label}：${pair[i]}`,()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),2*mk+i),pending);}
-   if(host)box.append(txt('p','fine abPlain',`回答 ${players.filter(p=>typeof answers[p.uid]==='number'&&Math.floor(answers[p.uid]/2)===mk).length}/${players.length}人`));
+   if(host)box.append(txt('p','fine abPlain',`回答 ${voters().filter(p=>hasNum(p.uid)&&Math.floor(answers[p.uid]/2)===mk).length}/${voters().length}人`));
    return;
   }
   if(card==='battery'&&btData.vals&&typeof own==='number'){doubtUi();return;}
@@ -471,7 +472,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   }else if(elapsed!==null){box.append(el('p','計測完了。結果を送信してください。'));button('結果を送信',()=>set(ref(db,`${base}/answers/${state.round}/${uid}`),elapsed),pending);}
   else if(began!==null){const bn=txt('div','bigNum','0.0'),t0=began,iv=setInterval(()=>{if(!bn.isConnected||began!==t0){clearInterval(iv);return}const e=(performance.now()-t0)/1000;bn.textContent=e<3?e.toFixed(1):'？？？'},50);box.append(txt('p','hint2','数え始めて…'),bn,txt('p','hint2','10秒だと思ったら STOP！'));button('STOP',async()=>{elapsed=Math.min(120000,Math.round(performance.now()-began));began=null;},pending);}
   else{box.append(txt('div','bigNum','10.00'),txt('p','hint2','準備ができたらスタート'));button('START',async()=>{began=performance.now();},pending);}
-  if(host&&card!=='roulette'&&card!=='grid')box.append(el('p',`回答 ${players.filter(p=>typeof answers[p.uid]==='number').length}/${players.length}人`));
+  if(host&&card!=='roulette'&&card!=='grid')box.append(el('p',`回答 ${voters().filter(p=>hasNum(p.uid)).length}/${voters().length}人`));
  }
  const settledAll=()=>players.every(p=>settledMap[p.uid]===true);
  const itemsReady=()=>drinkMap!==undefined&&itemMap!==undefined&&spentMap!==undefined&&grantMap!==undefined&&(Object.keys(itemMap).length>0||grantFailed);
@@ -678,7 +679,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const cuteAll=Object.values(tqMap||{}).flatMap(o=>Object.values(o||{}));
   if(!extUntil&&cuteAll.some(c=>c&&c.c)){extUntil=nowT;setTimeout(()=>{if(!dead)render();},EXT_MS+80);}
   const deadline=Math.max(entryStart+ENTRY_MS,extUntil?extUntil+EXT_MS:0),cuteHold=!!extUntil&&nowT<extUntil+EXT_MS&&cuteAll.some(c=>c&&c.c&&!c.x&&!c.a);
-  const myMark=dtMap[uid],marks=players.map(p=>dtMap[p.uid]),noHolder=marks.every(Boolean)&&!marks.includes('h')&&!cuteHold;
+  const myMark=dtMap[uid],marks=players.map(p=>dtMap[p.uid]||(restOf(p.uid)?'n':undefined)),noHolder=marks.every(Boolean)&&!marks.includes('h')&&!cuteHold;
   const skipMark=()=>set(ref(db,`${base}/dt/${state.round}/${uid}`),'s').catch(()=>{});
   const wkey=state.round+':'+(heldE.length?'h':'n');
   if(dtWroteKey!==wkey&&!myMark){dtWroteKey=wkey;set(ref(db,`${base}/dt/${state.round}/${uid}`),heldE.length?'h':'n').catch(()=>{});}
@@ -701,7 +702,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    for(const c of cups)if(c.ch.a){const k=c.p.uid+':'+c.j;if(!angelSeen.has(k)){angelSeen.add(k);if(angelSched)angelQ.push(c.ch.a);}}
    if(angelQ.length&&!angelPlaying)playAngel();
    if(!angelSched){angelSched=true;setTimeout(()=>{angelReady=true;startAngel();},IMPACT_MS);}
-   const marks3=players.map(p=>dgMap[p.uid]),skipWin=marks3.every(Boolean)&&!marks3.includes('y');
+   const marks3=players.map(p=>dgMap[p.uid]||(restOf(p.uid)?'n':undefined)),skipWin=marks3.every(Boolean)&&!marks3.includes('y');
    const left=angelStart?Math.max(0,angelStart+ANG-performance.now()):ANG,open=dr.length>0&&!skipWin&&left>0;
    const usable=open&&!!angelStart&&canUse;
    dtLocked=open;angelUsable=usable;
@@ -1013,17 +1014,17 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  function btTick(){
   if(!host||dead||state?.card!=='battery'||state.phase!=='measuring'||!btValsAt){clearInterval(btHostTimer);btHostTimer=null;return;}
   const now=performance.now(),d=dMap(),j=jMap(),round=state.round;
-  if(now-btValsAt>=DOUBT_MS()+2000)for(const p of players)if(d[p.uid]===undefined)set(ref(db,`${base}/bt/${round}/d/${p.uid}`),'skip').catch(()=>{});
+  for(const p of players)if(d[p.uid]===undefined&&(now-btValsAt>=DOUBT_MS()+2000||restOf(p.uid)))set(ref(db,`${base}/bt/${round}/d/${p.uid}`),'skip').catch(()=>{});
   if(dAllIn()&&doubters().length&&!btJudgeAt)btJudgeAt=now;
   if(dAllIn())for(const p of doubters()){const k=round+':'+p.uid;if(j[p.uid]!==undefined||btJSent.has(k))continue;const a=answers[d[p.uid]];if(typeof a!=='number')continue;btJSent.add(k);set(ref(db,`${base}/bt/${round}/j/${p.uid}`),batLie(a)?1:0).catch(()=>btJSent.delete(k));}
   if(btJudgeAt&&now-btJudgeAt>=JUDGE_MS())for(const p of doubters())if(j[p.uid]===undefined)set(ref(db,`${base}/bt/${round}/j/${p.uid}`),2).catch(()=>{});
  }
  // 充電の値をみんなに見せる（ダウトの材料）。全員が入力したらホストが1回だけ書く。ダウトの選択・判定がそろったら true を返す
  async function batteryGate(){
-  if(!players.every(p=>typeof answers[p.uid]==='number'))return false;
+  if(!voters().every(p=>hasNum(p.uid)))return false;
   if(!btData.vals){
    if(btWriting)return false;btWriting=true;
-   try{await set(ref(db,`${base}/bt/${state.round}/vals`),Object.fromEntries(players.map(p=>[p.uid,batPct(answers[p.uid])])));btValsAt=performance.now();clearInterval(btHostTimer);btHostTimer=setInterval(btTick,500);}
+   try{await set(ref(db,`${base}/bt/${state.round}/vals`),Object.fromEntries(players.filter(p=>hasNum(p.uid)).map(p=>[p.uid,batPct(answers[p.uid])])));btValsAt=performance.now();clearInterval(btHostTimer);btHostTimer=setInterval(btTick,500);}
    catch{message('充電の公開に失敗しました。ホストは再読み込みして再接続してください。');btWriting=false;}
    return false;
   }
@@ -1258,6 +1259,45 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const gateGoT=()=>state?.card==='reaction'?(bmP[0]?.t??null):gateGo;
  const normP=o=>Object.entries(o||{}).filter(([k,x])=>x&&typeof x==='object'&&typeof x.u==='string'&&typeof x.t==='number').map(([k,x])=>({n:Number(k),u:x.u,t:x.t})).sort((a,b)=>a.n-b.n);
  const srvNow=()=>Date.now()+svOff,connOf=u=>globalThis.__nqConn?.[u]!==false;
+ // ===== お休み扱い：離席ボタン、または切断が約1分続いた人は「お休み」。待つ相手から外す（負け扱いにはしない） =====
+ const REST_MS=()=>globalThis.__nqRestMs??60000,lostSince={};let restT=null,skipping=false;
+ const awayOf=u=>globalThis.__nqAway?.[u]===true,lostFor=u=>lostSince[u]?Date.now()-lostSince[u]:0;
+ const restOf=u=>awayOf(u)||(!connOf(u)&&lostFor(u)>=REST_MS());
+ const voters=()=>{const a=players.filter(p=>!restOf(p.uid));return a.length>=2?a:players;}; // 回答を待つ人（お休み中の人は待たない）
+ const hasNum=u=>typeof answers[u]==='number';
+ function trackLost(){for(const p of players){if(connOf(p.uid))delete lostSince[p.uid];else if(!lostSince[p.uid])lostSince[p.uid]=Date.now();}}
+ function restCheck(){ // ホストだけ：カードを引く人がお休みなら、その番を飛ばして次の人へ
+  clearTimeout(restT);restT=null;
+  if(!dead&&state?.phase==='results'&&state.card==='check'){const sg=players.map(p=>restOf(p.uid)?1:0).join('');if(sg!==restSig){restSig=sg;render();}}
+  if(!dead&&state?.phase==='results'&&players.some(p=>!restOf(p.uid)&&!connOf(p.uid)))restT=setTimeout(restCheck,2000);
+  if(!dead&&host&&state?.phase==='results'){restSettle();maybeAdvance();}
+  if(!dead&&state?.phase==='measuring'&&players.some(p=>!restOf(p.uid)&&!connOf(p.uid)))restT=setTimeout(restCheck,2000);
+  if(!dead&&host&&state?.phase==='measuring'){settle();actorSkip();}
+  if(dead||!host||skipping||!state||state.phase!=='draw')return;
+  const turn=currentTurn(state,players),u=turn.uid;
+  if(!restOf(u)){if(!connOf(u))restT=setTimeout(restCheck,Math.max(200,REST_MS()-lostFor(u)+200));return;}
+  if(players.filter(p=>!restOf(p.uid)).length<2)return; // つながっている人が2人未満のときは進めず待つ（全員を休み扱いにしない）
+  skipping=true;const round=state.round,order=Object.values(state.order||turn.order);
+  runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='draw'&&s.actor===u?{round:round+1,phase:'draw',order,actor:order[round%order.length],accounting:true}:undefined,{applyLocally:false}).catch(()=>message('ターンを飛ばせませんでした。再接続してください。')).finally(()=>{skipping=false;});
+ }
+ trackLost();
+ let restSettling=false,restSig='';
+ function actorSkip(){ // ホストだけ：引いた人が必要なカード（誘う・王様・キス顔・ボタン）で、その人がお休みなら、番を飛ばす
+  if(dead||!host||skipping||!state||state.phase!=='measuring'||!['danger','king','mission','buttons'].includes(state.card))return;
+  const u=state.card==='king'&&state.ky&&state.actor?state.actor:currentTurn(state,players).uid;
+  if(!restOf(u)||players.filter(p=>!restOf(p.uid)).length<2)return;
+  skipping=true;const round=state.round,order=Object.values(state.order||{});
+  runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'&&s.actor===u&&order.length?{round:round+1,phase:'draw',order,actor:order[round%order.length],accounting:true}:undefined,{applyLocally:false}).catch(()=>message('ターンを飛ばせませんでした。再接続してください。')).finally(()=>{skipping=false;});
+ }
+ async function restSettle(){ // ホストだけ：結果画面で、お休み中の人はメーター変化なし（0）で確定して待たない
+  if(dead||!host||restSettling||state?.phase!=='results'||!settledLoaded)return;
+  const list=players.filter(p=>p.uid!==uid&&restOf(p.uid)&&!settledMap[p.uid]);if(!list.length)return;
+  restSettling=true;const round=state.round;
+  try{await Promise.allSettled(list.map(async p=>{
+   try{await set(ref(db,`personal/${roomId}/${p.uid}/drinks/${round}`),0);}catch{}
+   await set(ref(db,`${base}/settled/${round}/${p.uid}`),true);
+  }));}finally{restSettling=false;}
+ }
  async function bombReady(){
   if(dead||!GATE_CARDS.has(state?.card)||state.phase!=='measuring'||bmRdySent===state.round)return;
   bmRdySent=state.round;
@@ -1406,18 +1446,19 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   let results,fate=null;
   if(danger){
    const a=answers[actor],t=typeof a==='number'?players.find(p=>Number(p.slot)===a):null;
+   if(t&&typeof answers[t.uid]!=='number'&&restOf(t.uid)&&t.uid!==actor){set(ref(db,`${base}/answers/${state.round}/${t.uid}`),0).catch(()=>{});return;} // 誘われた人がお休み中なら「断った」扱い
    if(!t||typeof answers[t.uid]!=='number')return;
    results={[actor]:a,[t.uid]:answers[t.uid]};if(!king&&answers[t.uid]===1)fate=Math.random()<0.5?'HEAVEN':'HELL';
-  }else if(mission){if(typeof answers[actor]!=='number')return;if(answers[actor]===1&&!players.every(p=>typeof answers[p.uid]==='number'))return;}else if(buttons?(!buttonDeck||typeof answers[actor]!=='number'):!players.every(p=>typeof answers[p.uid]==='number'))return;
+  }else if(mission){if(typeof answers[actor]!=='number')return;if(answers[actor]===1&&!voters().every(p=>hasNum(p.uid)))return;}else if(buttons?(!buttonDeck||typeof answers[actor]!=='number'):!voters().every(p=>hasNum(p.uid)))return;
   let votes=null,topVotes=null;
-  if(VL.has(state.card)){const c={};for(const p of players)c[p.slot]=0;for(const p of players)c[answers[p.uid]]=(c[answers[p.uid]]||0)+1;votes=c;topVotes=Math.max(...Object.values(c));}
+  if(VL.has(state.card)){const c={};for(const p of players)c[p.slot]=0;for(const p of players.filter(p=>hasNum(p.uid)))c[answers[p.uid]]=(c[answers[p.uid]]||0)+1;votes=c;topVotes=Math.max(...Object.values(c));}
   let side=null;
   let mall=false;
   if(state.card==='majority'){
    const mk=state.mk||0,round0=state.round;
-   if(!players.every(p=>typeof answers[p.uid]==='number'&&Math.floor(answers[p.uid]/2)===mk))return;
-   const nb=players.filter(p=>answers[p.uid]%2===1).length;
-   const tieKind=nb===0||nb===players.length?0:-1; // 0=全員同じ（派閥が決まらない）。半々はA派/B派のルーレットで決める
+   const mAns=players.filter(p=>hasNum(p.uid)&&Math.floor(answers[p.uid]/2)===mk);if(!voters().every(p=>mAns.includes(p)))return;
+   const nb=mAns.filter(p=>answers[p.uid]%2===1).length;
+   const tieKind=nb===0||nb===mAns.length?0:-1; // 0=全員同じ（派閥が決まらない）。半々はA派/B派のルーレットで決める
    if(tieKind>=0){
     // 割れなかったお題・答えたお題はすべて使用済み。次は、まだ出ていないお題から選ぶ（なければ「使い切った」扱い）
     const usedM=new Set([...seenPrompts.majority,state.prompt]);for(const k of Object.values(deckDrawn)){const q=parseKey(k);if(q.card==='majority'&&typeof q.prompt==='number')usedM.add(q.prompt);}
@@ -1430,12 +1471,12 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
      return;
     }
     mall=true;side=2; // お題を使い切っても割れなかった → 全員にお助け
-   }else{const majL=nb>players.length-nb?1:0;side=Math.random()<0.5?majL:1-majL;} // 多数派／少数派をルーレットで選び、その派閥の答え(A=0/B=1)をsideに入れる
+   }else{const majL=nb>mAns.length-nb?1:0;side=Math.random()<0.5?majL:1-majL;} // 多数派／少数派をルーレットで選び、その派閥の答え(A=0/B=1)をsideに入れる
   }
   let pick=null,dbt=null,dbj=null;
   if(state.card==='battery'&&doubters().length){dbt={};dbj={};for(const p of doubters()){dbt[p.uid]=dMap()[p.uid];dbj[p.uid]=jMap()[p.uid];}}
   settling=true;const round=state.round,direction=state.card==='battery'?drawDirection():null,buttonOutcome=buttons?buttonDeck[answers[actor]]:null;
-  if(!danger)results=buttons||(mission&&answers[actor]!==1)?{[actor]:answers[actor]}:Object.fromEntries(players.map(p=>[p.uid,state.card==='majority'?answers[p.uid]%2:answers[p.uid]]));
+  if(!danger)results=buttons||(mission&&answers[actor]!==1)?{[actor]:answers[actor]}:Object.fromEntries(players.filter(p=>hasNum(p.uid)&&(state.card!=='majority'||Math.floor(answers[p.uid]/2)===(state.mk||0))).map(p=>[p.uid,state.card==='majority'?answers[p.uid]%2:answers[p.uid]]));
   const kiss=mission?missionStats({order:state.order,round,results}):null;
   if(!dbt&&tieCards.includes(state.card)&&(state.card!=='majority'||side===2)){const probe={...state,phase:'results',results,...(direction?{direction}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{})};const tied=tiedTargets(probe,players);if(tied.length>1)pick=tied[Math.floor(Math.random()*tied.length)];}
   try{await runTransaction(ref(db,base+'/state'),s=>s?.round===round&&s.phase==='measuring'?{...s,phase:'results',results,...(pick?{pick}:{}),...(direction?{direction}:{}),...(buttons?{buttonOutcome}:{}),...(fate?{fate}:{}),...(votes?{votes,topVotes}:{}),...(side!==null?{side}:{}),...(dbt?{dbt,dbj}:{}),...(kiss?.ok?{kok:true}:{}),...(mall?{mall:true}:{})}:undefined,{applyLocally:false}).then(async r=>{if(kiss?.counted&&r?.committed)await set(ref(db,`${base}/deck/md/${round}`),1).catch(()=>{});});}
@@ -1450,7 +1491,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  stops.push(onValue(ref(db,base+'/state'),snap=>{
   state=snap.val();if(state?.card==='mission'&&Array.isArray(state.order)){const a=state.order[(state.round-1)%state.order.length];if(a&&!missionDone.has(a)){missionDone.add(a);saveSeen();}}if(state?.card){lastCard=state.card;if(state.round>countedRound&&ALL_CARDS.includes(state.card)){countedRound=state.round;if(SOLO_CARDS.includes(state.card))soloAt[state.card]=state.round;else specialSeen.add(state.card);const left=LAP_CARDS.filter(c=>!specialSeen.has(c)),n=state.order?.length||1,nr=isBreak(state.round+1,n)?state.round+2:state.round+1,nextA=state.order?.[(nr-1)%n];if(!left.length||(left.length===1&&left[0]==='mission'&&missionDone.has(nextA)))specialSeen.clear();saveSeen();}}buttonDeck=buttonDecks[state?.round];if(seenPrompts[state?.card]&&typeof state.prompt==='number'&&!seenPrompts[state.card].has(state.prompt)){seenPrompts[state.card].add(state.prompt);saveSeen();}
   if(state?.round!==roundSeen){roundSeen=state?.round;began=null;elapsed=null;batteryDraft='';tapStart=null;tapCount=0;clearTimeout(tapTimer);tapTimer=null;own=undefined;answers={};choice=undefined;settledMap={};settledLoaded=false;spinRound=null;hlRound=null;clearTimeout(hlTimer);hlTimer=null;clearTimeout(spinTimer);spinTimer=null;pickRound=null;clearTimeout(pickTimer);pickTimer=null;flipRound=null;clearTimeout(flipTimer);flipTimer=null;rxClear();invite=undefined;inviteStop?.();inviteStop=null;btStop?.();btStop=null;btData={};btSeenAt=0;btValsAt=0;btJudgeAt=0;clearInterval(btHostTimer);btHostTimer=null;btWriting=false;clearInterval(btCd);btCd=null;btBotKey='';btMineD=false;btMineJ=false;gmStop?.();gmStop=null;gmRqStop?.();gmRqStop=null;gmLayStop?.();gmLayStop=null;gmHintStop?.();gmHintStop=null;gmHint=null;gmHintIniting=false;gTel={key:'',t:0};gmLg=[];gmRq={};gmLay=null;gmIniting=false;gmBusy=false;gmSeq=0;gmDone={};clearInterval(gmTimer);gmTimer=null;gmDisc=0;gmWaitLen=-1;gmWaitUntil=0;rlStop?.();rlStop=null;rlData={};rlLoaded=false;rlView?.stop();rlView=null;rlQueue=Promise.resolve();rlSeen=new Set();rlAnimDone=new Set();rlHoldUntil={};rlHoldQ=new Set();rlTimerKey='';clearTimeout(rlTimerT);rlTimerT=null;clearInterval(rlHostT);rlHostT=null;rlFinishing=false;rlSig='';rlSigAt=0;rlDisc=0;bmStop?.();bmStop=null;bmP=[];bmWStop?.();bmWStop=null;bmW=null;bmWarnPlan=null;bmWarned=0;bmRdyStop?.();bmRdyStop=null;gateGoStop?.();gateGoStop=null;gateGo=null;gateSince=0;gateIniting=false;bmRdy={};bmWait=0;bmCd.forEach(clearTimeout);bmCd=[];clearTimeout(bmWaitT);bmXStop?.();bmXStop=null;bmX=null;bmIniting=false;clearInterval(bmTimer);bmTimer=null;bmLockUntil=0;bmSeenN=-1;bmDisc=0;clearTimeout(bmLockTimer);bmLockTimer=null;kgStop?.();kgStop=null;kgData={};kingTarget=null;kingYield=false;yielding=false;answerStop?.();ownStop?.();settledStop?.();tqStop?.();tqMap={};dtStop?.();dtMap={};dgStop?.();dgMap={};angelStart=0;angelReady=false;angelSched=false;dgSKey='';angelSeen=new Set();angelChoose=false;clearTimeout(angelBotTimer);angelBotTimer=null;extUntil=0;botTries=0;clearTimeout(botTimer);botTimer=null;cuteMode=null;nvStop?.();nvStop=null;nvMap={};settlePage=state?.card==='check';
-   if(state){const round=state.round;dgStop=onValue(ref(db,`${base}/dg/${round}`),v=>{if(round!==roundSeen||dead)return;dgMap=v.val()||{};render();},()=>{dgMap={};});dtStop=onValue(ref(db,`${base}/dt/${round}`),v=>{if(round!==roundSeen||dead)return;dtMap=v.val()||{};render();},()=>{dtMap={};});tqStop=onValue(ref(db,`${base}/tq/${round}`),v=>{if(round!==roundSeen||dead)return;tqMap=v.val()||{};render();},()=>{tqMap={};});nvStop=onValue(ref(db,`${base}/nv/${round}`),v=>{if(round!==roundSeen||dead)return;nvMap=v.val()||{};render();maybeAdvance();},()=>{nvMap={};});settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();maybeAdvance();maybeSettlement();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
+   if(state){const round=state.round;dgStop=onValue(ref(db,`${base}/dg/${round}`),v=>{if(round!==roundSeen||dead)return;dgMap=v.val()||{};render();},()=>{dgMap={};});dtStop=onValue(ref(db,`${base}/dt/${round}`),v=>{if(round!==roundSeen||dead)return;dtMap=v.val()||{};render();},()=>{dtMap={};});tqStop=onValue(ref(db,`${base}/tq/${round}`),v=>{if(round!==roundSeen||dead)return;tqMap=v.val()||{};render();},()=>{tqMap={};});nvStop=onValue(ref(db,`${base}/nv/${round}`),v=>{if(round!==roundSeen||dead)return;nvMap=v.val()||{};render();maybeAdvance();},()=>{nvMap={};});settledStop=onValue(ref(db,`${base}/settled/${round}`),v=>{if(round!==roundSeen||dead)return;settledMap=v.val()||{};settledLoaded=true;render();settleOwn();restSettle();maybeAdvance();maybeSettlement();},()=>message('確定状況を取得できませんでした。'));ownStop=onValue(ref(db,`${base}/answers/${round}/${uid}`),v=>{if(round!==roundSeen||dead)return;own=v.val();render();},()=>message('回答の取得に失敗しました。'));
     if(host)answerStop=onValue(ref(db,`${base}/answers/${round}`),v=>{if(round!==roundSeen||dead)return;answers=v.val()||{};render();settle();},()=>message('集計の取得に失敗しました。'));
    }
   }
@@ -1477,7 +1518,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(inviteStop&&state?.card==='king'&&state.ky&&state.actor&&inviteFor!==state.actor){inviteStop();inviteStop=null;invite=undefined;} // 王様が譲られたら、新しい王様の回答を見に行き直す
   if((state?.card==='danger'||state?.card==='king'||state?.card==='mission')&&state.phase==='measuring'&&!inviteStop){const round=state.round,actor=state.card==='king'&&state.ky&&state.actor?state.actor:currentTurn(state,players).uid;inviteFor=actor;inviteStop=onValue(ref(db,`${base}/answers/${round}/${actor}`),v=>{if(round!==roundSeen||dead)return;invite=v.val();render();settle();},()=>message('誘いの取得に失敗しました。再接続してください。'));}
   if(host&&state?.card==='buttons'&&state.phase==='measuring')runTransaction(ref(db,`${base}/buttonDeck/${state.round}`),d=>d?undefined:shuffleButtons(),{applyLocally:false}).catch(()=>message('ボタンの準備に失敗しました。再接続してください。'));
-  ensureAllDrinks();render();settle();settleOwn();maybeSettlement();
+  ensureAllDrinks();render();settle();settleOwn();maybeSettlement();restCheck();
  },()=>message('ゲーム接続ルールが未反映、または部屋が終了しています。')));
  stops.push(onValue(ref(db,`personal/${roomId}/${uid}/drinks`),snap=>{drinkMap=snap.val()||{};drinks=Object.values(drinkMap).reduce((a,v)=>a+v,0);render();settleOwn();},()=>{drinks=null;message('自分のメーターを取得できませんでした。再接続してください。');render();}));
  stops.push(onValue(ref(db,`personal/${roomId}/${uid}/items`),snap=>{
@@ -1507,7 +1548,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
    btStop,gmStop,gmRqStop,gmLayStop,gmHintStop,rlStop,bmStop,bmXStop,bmWStop,bmRdyStop,gateGoStop,kgStop])stop?.();
   stops.forEach(fn=>fn());allDrinksStops.forEach(fn=>fn());
   for(const timer of [cdTimer,btHostTimer,btCd,gmTimer,rlHostT,bmTimer,bmTick])clearInterval(timer);
-  for(const timer of [tapTimer,pickTimer,spinTimer,flipTimer,hlTimer,revealTm,botTimer,angelBotTimer,
+  for(const timer of [restT,tapTimer,pickTimer,spinTimer,flipTimer,hlTimer,revealTm,botTimer,angelBotTimer,
    rlTimerT,bmLockTimer,bmWaitT,introTimer,gTel.rt,gAnim.rt])clearTimeout(timer);
   bmCd.forEach(clearTimeout);bmCd=[];
   rlView?.stop();rxClear();
