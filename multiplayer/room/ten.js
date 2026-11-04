@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.7';
-import {showItemFx} from './itemfx.js?v=pop0.70.7';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.7';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.7';
-import {REST_CARD} from './deck.js?v=pop0.70.7';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.7';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.7';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.7';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.7';
-import {avatarOf} from './avatars.js?v=pop0.70.7';
-import {doubtH1} from './result-h1.js?v=pop0.70.7';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.7';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.7';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.8';
+import {showItemFx} from './itemfx.js?v=pop0.70.8';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.8';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.8';
+import {REST_CARD} from './deck.js?v=pop0.70.8';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.8';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.8';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.8';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.8';
+import {avatarOf} from './avatars.js?v=pop0.70.8';
+import {doubtH1} from './result-h1.js?v=pop0.70.8';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.8';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.8';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -482,7 +482,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(!itemsReady()){box.append(el('p','あなたのお助けを確認しています…'));return;}
   if(winnerNow()){
    const head=state.card==='reaction'?'あなたが最速！':state.card==='roulette'?'ルーレット！':state.card==='ten'?(tenExact(state,uid)?'ピッタリ賞！':'ほぼピッタリ！'):state.card==='grid'?'お宝ゲット！':'HEAVEN！';
-   const g=grantMap[String(state.round)],got=g===undefined?[]:[itemMap[String(g)],...(needSecond()?[itemMap[String(Number(g)+1)]]:[])].filter(v=>v!==undefined);
+   const g=grantMap[String(state.round)],got=g===undefined?[]:Array.from({length:giftCount()},(_,i)=>itemMap[String(Number(g)+i)]).filter(v=>v!==undefined);
    box.append(el('p',grantPending()?'お助けを受け取っています…':head+(got.length?'':'お助けを獲得しました。')));
    if(!grantPending())for(const k of got)box.append(txt('p','gotHelp'+(items[k]?'':' miss'),items[k]?`${items[k].icon} ${items[k].name}をゲット！`:'持ちきれず、取り損ね…（バリア＋なすりつけは3枚、身代わりは3枚まで）'));
   }
@@ -938,16 +938,16 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   box.append(grid);
  }
  const winnerNow=()=>rewardees(state).includes(uid);
- const needSecond=()=>state.card==='roulette'&&itemsOfCode(state.results?.[uid])>=2||tenExact(state,uid)||(state.card==='grid'&&(state.results?.[uid]||0)>=10000); // 2枚目：ルーレット＋2／＋3・10秒ジャスト・強欲中のお助け
+ const giftCount=()=>state.card==='roulette'?Math.max(1,itemsOfCode(state.results?.[uid])):tenExact(state,uid)?3:(state.card==='grid'&&(state.results?.[uid]||0)>=10000)?2:1; // もらう枚数：ルーレット＋2／＋3・10秒ジャスト＋3・強欲中のお助け2枚
  const nextSlot=()=>Math.max(-1,...Object.keys(itemMap||{}).map(Number))+1;
- const grantPending=()=>{if(!winnerNow()||grantMap===undefined||itemMap===undefined)return false;if(nextSlot()>=59)return false;const g=grantMap[String(state.round)];if(g===undefined)return true;if(itemMap[String(g)]===undefined)return true;return needSecond()&&itemMap[String(Number(g)+1)]===undefined;};
+ const grantPending=()=>{if(!winnerNow()||grantMap===undefined||itemMap===undefined)return false;if(nextSlot()>=59)return false;const g=grantMap[String(state.round)];if(g===undefined)return true;if(itemMap[String(g)]===undefined)return true;for(let i=1;i<giftCount();i++)if(itemMap[String(Number(g)+i)]===undefined)return true;return false;};
  function heldIn(grp){let n=0;for(const [k,v] of Object.entries(itemMap||{}))if(items[v]&&spentMap?.[k]===undefined&&itemGroup(v)===grp)n++;return n;}
  async function grantOwn(){
   if(dead||grantBusy||state?.phase!=='results'||!itemsReady()||settledMap[uid]||!grantPending())return;
   const round=state.round,g=grantMap[String(round)];let slot;
   if(g===undefined)slot=nextSlot();
   else if(itemMap[String(g)]===undefined)slot=Number(g);
-  else slot=Number(g)+1;
+  else{slot=Number(g)+1;while(itemMap[String(slot)]!==undefined&&slot<Number(g)+giftCount())slot++;}
   let kind=drawItem();if(heldIn(itemGroup(kind))>=ITEM_CAP[itemGroup(kind)])kind='none'; // いっぱいなら取り損ね
   grantBusy=true;
   try{if(g===undefined)await set(ref(db,`personal/${roomId}/${uid}/grants/${round}`),slot);await set(ref(db,`personal/${roomId}/${uid}/items/${slot}`),kind);if(kind!=='none')glowHelpTab();}
