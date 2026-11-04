@@ -35,9 +35,9 @@ export function replay(lg,order,actor,go){
  return{cur:order[idx],cnt,taps,pressed,helpers,litH,presses,bomb,over:bomb!==null,left:CELLS-Object.keys(pressed).length,greedy,lit,litNow:justLit?order[idx]:null,bombG};
 }
 // そのプレイヤーの手が今できるか（host が確かめる）
-export function canMove(st,uid,c){
+export function canMove(st,uid,c,skip){
  if(st.over||uid!==st.cur)return false;
- if(c===PASS)return st.cnt>=1;
+ if(c===PASS)return st.cnt>=1||skip===true; // skip：つながっていない人の番を、掘らずに飛ばす（host だけが使う）
  return Number.isInteger(c)&&c>=0&&c<CELLS&&!st.pressed[c];
 }
 // 結果：results[uid]=（強欲中にお助けを押したら10000）+お助けを押した回数*100+押した回数（state.results 用）

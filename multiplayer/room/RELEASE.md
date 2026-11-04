@@ -1,3 +1,11 @@
+# GOLD 0.70i
+
+Released 2026-11-04 with explicit user approval to publish ("公開してください").
+
+お宝発掘：接続が切れた人の番は、約3秒後にホストが「掘らずに」次の人へ飛ばす（以前は代わりに1マス掘っていて、爆弾を引くことがあった）。ルール変更なし・Firebaseルール変更なし・通信量は変わらない。変更ファイルは grid.js と ten.js のみ（版表示とモジュールのキャッシュ用タグを pop0.70.9 に更新）。
+
+Rollback: restore the files from branch backup/pre-gold070i-20261104 (= GOLD 0.70h, commit a9b76b3).
+
 # POP UI 0.40
 
 Released 2026-10-19 with explicit user approval to publish.

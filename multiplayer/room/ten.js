@@ -1,17 +1,17 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.8';
-import {showItemFx} from './itemfx.js?v=pop0.70.8';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.8';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.8';
-import {REST_CARD} from './deck.js?v=pop0.70.8';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.8';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.8';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.8';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.8';
-import {avatarOf} from './avatars.js?v=pop0.70.8';
-import {doubtH1} from './result-h1.js?v=pop0.70.8';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.8';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.8';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.9';
+import {showItemFx} from './itemfx.js?v=pop0.70.9';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.9';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.9';
+import {REST_CARD} from './deck.js?v=pop0.70.9';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.9';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.9';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.9';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.9';
+import {avatarOf} from './avatars.js?v=pop0.70.9';
+import {doubtH1} from './result-h1.js?v=pop0.70.9';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.9';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.9';
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -1040,8 +1040,8 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const gridState=()=>gridReplay(gmLg,gridOrder(),gridStartUid(),gateGo);
  // スタート合図〜爆弾が落ちるまでの間は、まだ押せない（合図が来ない古いルールのときは、待ち時間切れで始まる）
  function gridGate(){if(!gateSince)gateSince=performance.now();if(gateGo===null)return performance.now()-gateSince<(globalThis.__nqGateFallbackMs??55000);return srvNow()-gateGo<BMCD()+(globalThis.__nqGridDropMs??900+GDROP_MS);}
- async function gridAppend(u,c,n){ // host：1手を記録（爆弾ならそのままゲーム終了）
-  const st=gridState();if(!gmLay||gridGate()||!gridCan(st,u,c))return false;
+ async function gridAppend(u,c,n,skip){ // host：1手を記録（爆弾ならそのままゲーム終了）。skip=true は掘らずに飛ばす
+  const st=gridState();if(!gmLay||gridGate()||!gridCan(st,u,c,skip))return false;
   const pl=parseLay(gmLay),hd=c===GPASS?0:pl.hard[c]; // 固い岩：耐久度ぶん叩くまで割れない（叩いた分は次の人に引き継ぐ）
   const r=c===GPASS?'p':(hd&&(st.taps?.[c]||0)+1<hd?'t':pl.cells[c]),k=gmLg.length-1;
   await set(ref(db,`${base}/gm/${state.round}/lg/${gmLg.length}`),{u,c,r,k,...(typeof n==='number'?{n}:{})});
@@ -1057,6 +1057,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   const free=[...Array(GCELLS).keys()].filter(c=>!st.pressed[c]);
   const c=st.cnt>=1?GPASS:free[Math.floor(Math.random()*free.length)];
   try{await gridAppend(st.cur,c);}catch{message('マス目を進められませんでした。再読み込みして再接続してください。');}
+ }
+ async function gridSkip(){ // つながっていない／お休み中の人の番は、掘らずに次の人へ飛ばす（爆弾を引かせない）
+  const st=gridState();if(st.over||!gmLay||gridGate())return;
+  try{await gridAppend(st.cur,GPASS,undefined,true);}catch{message('マス目を進められませんでした。再読み込みして再接続してください。');}
  }
  async function gridHost(){
   if(dead||!host||state?.card!=='grid'||state.phase!=='measuring'||gmBusy)return;
@@ -1082,7 +1086,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   if(!gmTimer)gmTimer=setInterval(()=>{
    if(dead||state?.card!=='grid'||state.phase!=='measuring'){clearInterval(gmTimer);gmTimer=null;return;}
    const st=gridState();if(st.over||gridGate())return;
-   if(!connOf(st.cur)){gmDisc+=500;if(gmDisc>=3000){gmDisc=0;gridAuto();}}else gmDisc=0;
+   if(!connOf(st.cur)){gmDisc+=500;if(gmDisc>=3000){gmDisc=0;gridSkip();}}else gmDisc=0; // 切断中の人は掘らずに飛ばす（0.70i）
   },500);
  }
  function gridUi(){
