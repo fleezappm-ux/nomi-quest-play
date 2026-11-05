@@ -1,21 +1,21 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
 const LS=(()=>{const m={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}catch{ok=false;}return{getItem:k=>{if(ok)try{return localStorage.getItem(k);}catch{}return k in m?m[k]:null;},setItem:(k,v)=>{m[k]=String(v);if(ok)try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{delete m[k];if(ok)try{localStorage.removeItem(k);}catch{}}};})();
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.70.9';
+import { isLocal, getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction, serverTimestamp } from './fb.js?v=pop0.70.10';
 import { firebaseConfig } from './firebase-config.js';
 import QRCode from './vendor/qrcode.mjs';
-import { attachTen } from './ten.js?v=pop0.70.9';
-import { attachNpcs, npcNames } from './npc.js?v=pop0.70.9';
-import { FEEDBACK_URL } from './feedback-config.js?v=pop0.70.9';
-import { attachOni, attachOniBots } from './oni.js?v=pop0.70.9';
-import { track, logEnabled } from './telemetry.js?v=pop0.70.9';
-import { ensureAdult } from './agegate.js?v=pop0.70.9';
-import { AVATARS, avatarOf } from './avatars.js?v=pop0.70.9';
+import { attachTen } from './ten.js?v=pop0.70.10';
+import { attachNpcs, npcNames } from './npc.js?v=pop0.70.10';
+import { FEEDBACK_URL } from './feedback-config.js?v=pop0.70.10';
+import { attachOni, attachOniBots } from './oni.js?v=pop0.70.10';
+import { track, trackError, logEnabled } from './telemetry.js?v=pop0.70.10';
+import { ensureAdult } from './agegate.js?v=pop0.70.10';
+import { AVATARS, avatarOf } from './avatars.js?v=pop0.70.10';
 // 20歳以上の確認が済むまで、このあとの処理（部屋への参加など）は動かさない。
 await ensureAdult();
 
 const $ = id => document.getElementById(id);
-const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.70.9'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
+const homePage = new URL('./', location.href); homePage.searchParams.set('v','pop0.70.10'); if (isLocal) homePage.searchParams.set('npc','1'); if (isLocal && new URL(location.href).searchParams.get('dev')==='1') homePage.searchParams.set('dev','1');
 const homeUrl = homePage.href;
 const params = new URL(location.href).searchParams;
 const validRoom = value => /^[a-f0-9]{32}$/.test(value || '');
@@ -105,14 +105,14 @@ if(isLocal){
  gp.innerHTML='練習をはじめる <span aria-hidden="true">→</span><small>1人用・通信なし'+(dv?'・🛠開発者モード':'')+'</small>';
  const bx=document.createElement('div');bx.className='nqh-two';bx.style.marginTop='10px';
  const mk=(t,h)=>{const x=document.createElement('a');x.className='nqh-button nqh-secondary';x.textContent=t;x.href=h;return x;};
- if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.70.9&npc=1&dev=1'));
- bx.append(mk('通常のホームへ','?v=pop0.70.9'));
+ if(!dv)bx.append(mk('🛠 開発者モードで開く','?v=pop0.70.10&npc=1&dev=1'));
+ bx.append(mk('通常のホームへ','?v=pop0.70.10'));
  gp.insertAdjacentElement('afterend',bx);
 }
 // 開発者モード：ホームのスイッチをオンにすると、「1人で遊ぶ」は必ず開発者モードで始まる
 if(!isLocal){
  const DK='nq-dev',lk=$('npcLink'),tg=document.createElement('button');tg.type='button';tg.id='devToggle';tg.className='nqh-button nqh-secondary';tg.style.marginTop='10px';
- const paint=()=>{const on=LS.getItem(DK)==='1';tg.textContent=on?'🛠 開発者モード：オン':'🛠 開発者モード：オフ';tg.innerHTML=on?'🛠 開発者モード：オン<small style="display:block;font-weight:400;margin-top:3px">「1人で遊ぶ」から入ると、好きなゲーム・お題を選べます（部屋を作る場合は使えません）</small>':'🛠 開発者モード：オフ';tg.setAttribute('aria-pressed',on?'true':'false');if(lk){lk.href=on?'?v=pop0.70.9&npc=1&dev=1':'?npc=1';let sm=lk.querySelector('small');if(on){if(!sm){sm=document.createElement('small');lk.append(sm);}sm.textContent='🛠 開発者モードで始まります';}else sm?.remove();}};
+ const paint=()=>{const on=LS.getItem(DK)==='1';tg.textContent=on?'🛠 開発者モード：オン':'🛠 開発者モード：オフ';tg.innerHTML=on?'🛠 開発者モード：オン<small style="display:block;font-weight:400;margin-top:3px">「1人で遊ぶ」から入ると、好きなゲーム・お題を選べます（部屋を作る場合は使えません）</small>':'🛠 開発者モード：オフ';tg.setAttribute('aria-pressed',on?'true':'false');if(lk){lk.href=on?'?v=pop0.70.10&npc=1&dev=1':'?npc=1';let sm=lk.querySelector('small');if(on){if(!sm){sm=document.createElement('small');lk.append(sm);}sm.textContent='🛠 開発者モードで始まります';}else sm?.remove();}};
  tg.onclick=()=>{try{LS.setItem(DK,LS.getItem(DK)==='1'?'0':'1');}catch{}paint();};
  paint();$('tell').parentElement.insertAdjacentElement('afterend',tg);
 }
@@ -153,7 +153,7 @@ const AV_TAKEN='そのアイコンは選ばれました。別のアイコンを�
 function avatarErr(t){const e=new Error(t);e.avatar=true;return e;}
 function avMsg(t){for(const id of ['avErr']){$(id).textContent=t;$(id).hidden=!t;}}
 function nqConfirm(msg){return new Promise(res=>{const w=document.createElement('div');w.className='nqConfirm';w.setAttribute('role','dialog');w.setAttribute('aria-modal','true');const c=document.createElement('div');c.className='nqConfirmBox';const p=document.createElement('p');p.textContent=msg;const ok=document.createElement('button');ok.type='button';ok.className='ok';ok.textContent='はい';const no=document.createElement('button');no.type='button';no.className='no';no.textContent='やめる';const done=v=>{w.remove();res(v);};ok.onclick=()=>done(true);no.onclick=()=>done(false);c.append(p,ok,no);w.append(c);document.body.append(w);ok.focus();});}
-async function action(fn) { if (busy) return; busy = true; controls(); message(''); avMsg(''); try { await fn(); } catch (e) { if(e?.avatar){avMsg(e.message);}else message(errorText(e)); } finally { busy = false; controls(); } }
+async function action(fn) { if (busy) return; busy = true; controls(); message(''); avMsg(''); try { await fn(); } catch (e) { if(e?.avatar){avMsg(e.message);}else{trackError('room.action',e,{room:roomId||''});message(errorText(e));} } finally { busy = false; controls(); } }
 function members() { return Object.entries(room?.slots || {}).sort((a,b)=>Number(a[0])-Number(b[0])); }
 function active() { return room?.meta?.state === 'lobby' && room.meta.expiresAt > Date.now(); }
 function controls() {
@@ -204,7 +204,7 @@ function takeoverCheck(list){
   const alive=list.filter(([,p])=>p.connected===true&&p.uid!==m.hostUid&&!String(p.uid).startsWith('npc')).sort((a,b)=>Number(a[0])-Number(b[0]));
   const rank=alive.findIndex(([,p])=>p.uid===uid);if(rank<0)return; // つながっている人の中で若い席の順。先の人が動かなければ4秒ずつ遅れて次の人が名乗り出る
   const hu=m.hostUid,wait=Math.max(0,hostLostAt+TAKEOVER_MS()+rank*4000-Date.now());
-  takeoverT=setTimeout(()=>{if(room?.meta?.hostUid!==hu)return;set(ref(db,`rooms/${roomId}/meta/hostUid`),uid).catch(()=>{});},wait);
+  takeoverT=setTimeout(()=>{if(room?.meta?.hostUid!==hu)return;set(ref(db,`rooms/${roomId}/meta/hostUid`),uid).then(()=>track('takeover',{uid,room:roomId})).catch(()=>{});},wait);
 }
 /* ===== 離席ボタン（マイページ）：押すと、みんなは待たずに進める。戻るで元通り ===== */
 function awayNow(){return room?.slots?.[slot]?.away===true;}
@@ -214,7 +214,7 @@ function awayUi(){
   $('awayBox').hidden=!inGame;$('awayBar').hidden=!on;
   $('awayBtn').textContent=on?'戻る':'離席する';$('awayBtn').classList.toggle('on',on);
 }
-async function toggleAway(){if(slot===null||!roomId)return;try{await set(ref(db,`rooms/${roomId}/slots/${slot}/away`),!awayNow());}catch(e){message(errorText(e));}}
+async function toggleAway(){if(slot===null||!roomId)return;try{const on=!awayNow();await set(ref(db,`rooms/${roomId}/slots/${slot}/away`),on);track('away',{uid,room:roomId,info:on?'on':'off'});}catch(e){trackError('room.away',e);message(errorText(e));}}
 $('awayBtn').onclick=toggleAway;$('awayBack').onclick=toggleAway;document.addEventListener('nq-away',toggleAway);
 function render() {
   if (!room?.meta) { message('この部屋は見つかりません。招待を確認してください。'); return; }
@@ -275,7 +275,7 @@ async function watch(id, ownSlot) {
   QRCode.toCanvas($('qr'),link.href,{width:300,margin:2}, e=>{if(e) message('QR表示に失敗しました。招待リンクを使ってください。');});
   QRCode.toCanvas($('qrBigCanvas'),link.href,{width:600,margin:2}, ()=>{});
   if(!isLocal)LS.setItem('nq-room-session',JSON.stringify({roomId:id,slot}));
-  roomStop=onValue(ref(db,`rooms/${id}`),snap=>{if(token!==generation)return;room=snap.val(); render(); if(room?.meta){clearTimeout(expiryTimer);expiryTimer=setTimeout(render,Math.max(0,room.meta.expiresAt-Date.now())+50);}},e=>message(errorText(e)));
+  roomStop=onValue(ref(db,`rooms/${id}`),snap=>{if(token!==generation)return;room=snap.val(); render(); if(room?.meta){clearTimeout(expiryTimer);expiryTimer=setTimeout(render,Math.max(0,room.meta.expiresAt-Date.now())+50);}},e=>{trackError('room.watch',e,{room:id});message(errorText(e));});
   connectionStop=onValue(ref(db,'.info/connected'),async snap=>{
     if (!snap.val() || token!==generation) return;
     try {
@@ -310,7 +310,8 @@ function bump(k){const s=stats();s[k]=(s[k]||0)+1;LS.setItem('nq-stats',JSON.str
 $('tabHome').onclick=()=>{if(roomId&&slot!==null){action(leave);}else{show('home');hgo('hm-home');}};
 $('tabLobby').onclick=()=>{if(roomId&&slot!==null){show('lobby');}else if(savedSession()){if($('resume').disabled)message('通信の準備中です。少し待ってからもう一度押してね。');else $('resume').click();}else{show('home');openName('create');}};
 const sheet=(id,open)=>{$(id).hidden=!open;};
-$('tabMy').onclick=()=>{const s=stats();$('myGames').textContent=s.games||0;$('myRooms').textContent=s.rooms||0;$('myName').value=(LS.getItem('nq-room-name')||'').trim();const a=avatarOf(chosenAvatar);$('myAv').src=a?a.src:'gold/card-back-nomi-quest.webp';$('mySaved').hidden=true;favLoad();favPaint();favOpen(false);sheet('mySheet',true);};
+const tabSeen=new Set();function tabLog(k){if(tabSeen.has(k))return;tabSeen.add(k);track('mypage',{uid,room:roomId||'',info:k});}
+$('tabMy').onclick=()=>{tabLog('my');const s=stats();$('myGames').textContent=s.games||0;$('myRooms').textContent=s.rooms||0;$('myName').value=(LS.getItem('nq-room-name')||'').trim();const a=avatarOf(chosenAvatar);$('myAv').src=a?a.src:'gold/card-back-nomi-quest.webp';$('mySaved').hidden=true;favLoad();favPaint();favOpen(false);sheet('mySheet',true);};
 $('mySave').onclick=()=>{const v=$('myName').value.trim();if(!v||[...v].length>10){$('myName').focus();return;}LS.setItem('nq-room-name',v);$('name').value=v;$('mySaved').hidden=false;};
 // 拡大表示は大きい版（gold/avatars-zoom）を、タップしたときだけ読み込む。無い／読めないときは小さい画像のまま出す。
 const zoomPath=id=>'gold/avatars-zoom/'+id+'.webp';
@@ -322,14 +323,14 @@ $('myAv').addEventListener('click',()=>zoomAv(chosenAvatar,$('myAv').src));
 // ゲーム中の下のバー：メンバー・部屋の操作／お助けカード
 let gMoved=null;
 function gClose(){if(gMoved){$('started').append(...gMoved);gMoved=null;}$('gameSheet').hidden=true;$('gameBody').replaceChildren();}
-$('tabMembers').onclick=()=>{$('gameTitle').textContent='メンバーステータス';const body=document.createElement('div');const d={body,handled:false};$('gameBody').replaceChildren(body);document.dispatchEvent(new CustomEvent('nq-members',{detail:d}));if(!d.handled){const ul=document.createElement('ul');ul.className='memfb';for(const [,p] of members()){const li=document.createElement('li');const im=document.createElement('img');const a=avatarOf(p.avatar);if(a)im.src=a.src;im.className='memImg';li.append(im,document.createTextNode(p.name||''));ul.append(li);}body.append(ul);}gMoved=null;$('gameSheet').hidden=false;};
-$('tabHost').onclick=()=>{$('gameTitle').textContent='ホスト設定';const hz=$('hostZone');hz.open=true;gMoved=[hz];$('gameBody').replaceChildren(hz);$('gameSheet').hidden=false;};
+$('tabMembers').onclick=()=>{tabLog('members');$('gameTitle').textContent='メンバーステータス';const body=document.createElement('div');const d={body,handled:false};$('gameBody').replaceChildren(body);document.dispatchEvent(new CustomEvent('nq-members',{detail:d}));if(!d.handled){const ul=document.createElement('ul');ul.className='memfb';for(const [,p] of members()){const li=document.createElement('li');const im=document.createElement('img');const a=avatarOf(p.avatar);if(a)im.src=a.src;im.className='memImg';li.append(im,document.createTextNode(p.name||''));ul.append(li);}body.append(ul);}gMoved=null;$('gameSheet').hidden=false;};
+$('tabHost').onclick=()=>{tabLog('host');$('gameTitle').textContent='ホスト設定';const hz=$('hostZone');hz.open=true;gMoved=[hz];$('gameBody').replaceChildren(hz);$('gameSheet').hidden=false;};
 document.addEventListener('nq-zoom',e=>{const id=e.detail?.id;if(id)zoomAv(id,null);});
-$('tabHelp').onclick=()=>{$('gameTitle').textContent='お助けカード';const body=$('gameBody'),d={body,handled:false};body.replaceChildren();document.dispatchEvent(new CustomEvent('nq-help',{detail:d}));if(!d.handled){const p=document.createElement('p');p.className='myNote';p.textContent='このゲームでは、お助けカードは使いません。';body.append(p);}$('gameSheet').hidden=false;};
+$('tabHelp').onclick=()=>{tabLog('help');$('gameTitle').textContent='お助けカード';const body=$('gameBody'),d={body,handled:false};body.replaceChildren();document.dispatchEvent(new CustomEvent('nq-help',{detail:d}));if(!d.handled){const p=document.createElement('p');p.className='myNote';p.textContent='このゲームでは、お助けカードは使いません。';body.append(p);}$('gameSheet').hidden=false;};
 $('gameClose').onclick=gClose;$('gameSheet').addEventListener('click',e=>{if(e.target===$('gameSheet'))gClose();});
 $('myClose').onclick=()=>sheet('mySheet',false);
 $('tabRules').onclick=()=>$('rulesBtn').click();
-$('tabBox').onclick=()=>{$('boxThanks').hidden=true;$('boxOff').hidden=logEnabled;sheet('boxSheet',true);};
+$('tabBox').onclick=()=>{tabLog('box');$('boxThanks').hidden=true;$('boxOff').hidden=logEnabled;sheet('boxSheet',true);};
 $('boxText').oninput=()=>{$('boxSend').disabled=!$('boxText').value.trim();};
 $('boxSend').onclick=()=>{const t=$('boxText').value.trim();if(!t)return;track('wish',{game:'【投書箱】',names:t.slice(0,200),name:(LS.getItem('nq-room-name')||'').trim()});$('boxText').value='';$('boxSend').disabled=true;$('boxThanks').hidden=false;};
 $('boxClose').onclick=()=>sheet('boxSheet',false);
@@ -411,10 +412,11 @@ $('leave').onclick=()=>action(leave);$('returnHome').onclick=()=>action(leave);
 $('copy').onclick=()=>action(async()=>{try{await navigator.clipboard.writeText($('shareUrl').value);message('招待リンクをコピーしました。');}catch{$('shareUrl').select();message('招待リンクを長押ししてコピーしてください。');}});
 let installPrompt;
 function installSnoozed(){try{const o=JSON.parse(LS.getItem('nq-install-later')||'null');return !!o&&(o.n>=3||Date.now()-o.t<7*864e5);}catch{return false;}}
-$('installLater').onclick=()=>{try{const o=JSON.parse(LS.getItem('nq-install-later')||'null')||{n:0};LS.setItem('nq-install-later',JSON.stringify({n:(o.n||0)+1,t:Date.now()}));}catch{}$('installAsk').hidden=true;};
+$('installLater').onclick=()=>{track('install',{uid,info:'later'});try{const o=JSON.parse(LS.getItem('nq-install-later')||'null')||{n:0};LS.setItem('nq-install-later',JSON.stringify({n:(o.n||0)+1,t:Date.now()}));}catch{}$('installAsk').hidden=true;};
 function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
-$('installYes').onclick=async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
+window.addEventListener('appinstalled',()=>track('install',{uid,info:'installed'}));
+$('installYes').onclick=async()=>{if(installPrompt){const ip=installPrompt;await ip.prompt();ip.userChoice?.then(c=>track('install',{uid,info:c?.outcome||'prompt'})).catch(()=>{});installPrompt=null;$('installAsk').hidden=true;}else{$('installYes').hidden=true;$('installIos').textContent='Android：Chromeの⋮ →「ホーム画面に追加」。iPhone：Safariの共有 →「ホーム画面に追加」。';$('installIos').hidden=false;}};
 if(isStandalone()){$('keep').hidden=true;$('keepTop').hidden=true;}
 // QRから来た人に、1回だけ「ホーム画面に追加しますか？」をたずねる（通信なし・「あとで」は7日間出さない）
 (()=>{try{
@@ -424,10 +426,11 @@ if(isStandalone()){$('keep').hidden=true;$('keepTop').hidden=true;}
  const o=JSON.parse(LS.getItem('nq-install-later')||'null');if(o&&o.t&&Date.now()-o.t<7*86400000)return;
  const box=$('qrInstall');if(!box)return;
  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
- const later=()=>{try{const p=JSON.parse(LS.getItem('nq-install-later')||'null')||{n:0};LS.setItem('nq-install-later',JSON.stringify({n:(p.n||0)+1,t:Date.now()}));}catch{}box.hidden=true;};
+ const later=()=>{track('install',{uid,info:'later_qr'});try{const p=JSON.parse(LS.getItem('nq-install-later')||'null')||{n:0};LS.setItem('nq-install-later',JSON.stringify({n:(p.n||0)+1,t:Date.now()}));}catch{}box.hidden=true;};
  $('qrInstallLater').onclick=later;
  $('qrInstallYes').onclick=async()=>{
-  if(installPrompt){try{await installPrompt.prompt();}catch{}installPrompt=null;box.hidden=true;return;}
+  if(installPrompt){const ip=installPrompt;try{await ip.prompt();ip.userChoice?.then(c=>track('install',{uid,info:'qr_'+(c?.outcome||'prompt')})).catch(()=>{});}catch{}installPrompt=null;box.hidden=true;return;}
+  track('install',{uid,info:'qr_help'});
   const hp=$('qrInstallHelp');hp.textContent=ios?'iPhone：Safariの下の共有ボタン □↑ →「ホーム画面に追加」を押してください。':'Android：Chromeの右上の︙ →「ホーム画面に追加」を押してください。';hp.hidden=false;$('qrInstallYes').hidden=true;};
  setTimeout(()=>{if(roomId||isStandalone())return;box.hidden=false;},1800);
 }catch{}})();
@@ -444,7 +447,7 @@ try {
       const dvOn=new URL(location.href).searchParams.get('dev')==='1',nb=document.createElement('div');
       nb.className='devNote';nb.style.cssText='margin:10px 24px 0;padding:10px 12px;border:1.5px dashed #f2c14e;border-radius:14px;color:#ffe9a3;font-size:13px;text-align:center';
       if(dvOn)nb.textContent='🛠 開発者モード中：スタートすると、画面の右下に🛠が出ます。押すと好きなゲームを選べます。';
-      else{const l=document.createElement('a');l.href='?v=pop0.70.9&npc=1&dev=1';l.textContent='🛠 開発者モードで始め直す（好きなゲームを選べる）';l.style.cssText='color:#ffe9a3;font-weight:800';nb.append(l);}
+      else{const l=document.createElement('a');l.href='?v=pop0.70.10&npc=1&dev=1';l.textContent='🛠 開発者モードで始め直す（好きなゲームを選べる）';l.style.cssText='color:#ffe9a3;font-weight:800';nb.append(l);}
       $('lenBox').insertAdjacentElement('afterend',nb);
     }
     $('lead').innerHTML='通信なしの練習モード。<br>NPCが自動で答えて進みます。';
@@ -460,7 +463,7 @@ try {
   if(roomId&&slot===null)startTakenWatch();
   controls();
   }
-}catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';message(errorText(e));}
+}catch(e){$('connection').textContent='接続エラー';$('connection').dataset.ok='0';trackError('room.init',e);message(errorText(e));}
 
 {const w=document.getElementById('wish');if(w&&logEnabled){
  w.hidden=false;
@@ -471,6 +474,7 @@ try {
  send.onclick=()=>{track('wish',{game:[...chosen].join(' / '),names:txt.value.trim(),name:$('name').value.trim()});send.disabled=true;document.getElementById('wishThanks').hidden=false;chosen.clear();txt.value='';for(const b of chips.children)b.setAttribute('aria-pressed','false');setTimeout(()=>{document.getElementById('wishThanks').hidden=true;upd();},6000);};
 }}
 {const n=document.getElementById('logNote');if(n&&logEnabled)n.hidden=false;}
+document.addEventListener('nq-log',e=>{const {event,...d}=e.detail||{};if(!event)return;if(event==='error')trackError(d.where||'game',{message:d.msg,code:d.code},{room:roomId||'',game:d.game||''});else track(event,{uid,room:roomId||'',...d});});
 {const a=document.getElementById('feedback');if(a&&/^https:\/\/(forms\.gle|docs\.google\.com\/forms)\//.test(FEEDBACK_URL)){a.href=FEEDBACK_URL;a.hidden=false;}}
 
 // ---- ルール説明（招待画面の「ここ」と待合室のボタンから開く）----

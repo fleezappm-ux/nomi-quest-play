@@ -1,11 +1,3 @@
-# GOLD 0.70i
-
-Released 2026-11-04 with explicit user approval to publish ("公開してください").
-
-お宝発掘：接続が切れた人の番は、約3秒後にホストが「掘らずに」次の人へ飛ばす（以前は代わりに1マス掘っていて、爆弾を引くことがあった）。ルール変更なし・Firebaseルール変更なし・通信量は変わらない。変更ファイルは grid.js と ten.js のみ（版表示とモジュールのキャッシュ用タグを pop0.70.9 に更新）。
-
-Rollback: restore the files from branch backup/pre-gold070i-20261104 (= GOLD 0.70h, commit a9b76b3).
-
 # POP UI 0.40
 
 Released 2026-10-19 with explicit user approval to publish.
@@ -289,9 +281,15 @@ Released 2026-10-31 with explicit user approval ("そのまま引き続きお願
 - Firebaseルール：0.70j が必要（hostUid の交代、ドキドキの渡し期限）。
 Rollback: code → branch backup/pre-gold070d-20261031 of fleezappm-ux/nomi-quest-play (= GOLD 0.70c).
 
-## GOLD 0.70f（pop0.70.8）— 0.70d の上に作成（お休みモード 0.70e は含まない）
+## GOLD 0.70f（pop0.70.10）— 0.70d の上に作成（お休みモード 0.70e は含まない）
 確定仕様（2026-11-01 ユーザー指示）だけを反映。通信・Firebaseルールの変更なし。
 - 8ターンごとのドリンクタイム：ライムなしで一番多い人が同率なら、ルーレットで1人に決める（ラウンド番号＋同率の人から全端末で同じ結果。画面は文章のみ、リール演出なし）。
 - 最終ドリンクタイム：メーターの精算をやめ、「おつかれさま！」だけですっぱり終わる。
 - 試験：tests/tie-roulette.test.mjs（6項目＋1000回の偏り確認）。
 Rollback: code → backup/pre-gold070f-20261101 (nomi-quest-play) = GOLD 0.70d.
+
+### GOLD 0.70j（pop0.70.10）利用ログの拡張（ゲームのルール変更なし）
+- ログに「使い方（練習／開発／テスター）」「入り口（QR／招待／ホーム画面／直接）」「メモ」の3列を追加（スプレッドシート側の受け口は2026-11-05に新バージョン2へ更新済み）。
+- 新しい記録：マイページ等のタブ、離席、ホスト交代、ホーム画面追加、ゲーム終了の1行（ホストから1回）、エラー（1回の表示で最大5件・重複なし・名前なし）。
+- Firebaseルールの変更なし。ゲームの通信は増えない（ログ送信が少し増えるだけ）。
+Rollback: code → backup/pre-gold070j-20261105 (nomi-quest-play) = GOLD 0.70i.

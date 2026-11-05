@@ -1,17 +1,19 @@
 import {artPath,isIcon} from './pop-art.js';
-import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.9';
-import {showItemFx} from './itemfx.js?v=pop0.70.9';
-import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.9';
-import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.9';
-import {REST_CARD} from './deck.js?v=pop0.70.9';
-import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.9';
-import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.9';
-import {createRoulette} from './roulette-ui.js?v=pop0.70.9';
-import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.9';
-import {avatarOf} from './avatars.js?v=pop0.70.9';
-import {doubtH1} from './result-h1.js?v=pop0.70.9';
-import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.9';
-import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.9';
+import {ref,set,get,update,onValue,runTransaction,isLocal,serverTimestamp} from './fb.js?v=pop0.70.10';
+import {showItemFx} from './itemfx.js?v=pop0.70.10';
+import {shufflePlayers,currentTurn} from './turn.js?v=pop0.70.10';
+import {majW,ALL_CARDS,SOLO_CARDS,SOLO_COOLDOWN,LAP_CARDS,cardForRound,isBreak,turnsToBreak,checkStates,tiedTargets,tieCards,cards,votePrompts,muttsuriPrompts,majorityPrompts,mindPrompts,pickPrompt,drawCard,drawDirection,targetsFor,shuffleButtons,drinkAward,tieRoulette,items,itemKinds,drawItem,itemGroup,ITEM_CAP,decideCredit,winnersFor,REACTION_FAIL,dangerOutcome,rewardees,missionStats,kingOrders,kingCats,hasDoubt,breakPeriod,ticketWindow,ticketsFor,tequilaPlan,tequilaPlanOne,sumTickets,NOTCHES,BREAK_DRAWS,tequilaOutcome,itemChoices,tenExact,BAT_LIE,batPct,batLie} from './deck.js?v=pop0.70.10';
+import {REST_CARD} from './deck.js?v=pop0.70.10';
+import {genLayout,replay as gridReplay,startOf as gridStartOf,genHints,hintOk,parseLay,canMove as gridCan,resultsOf as gridResults,CELLS as GCELLS,PASS as GPASS} from './grid.js?v=pop0.70.10';
+import {RL_CONFIG,STAGES as RLS,KIND as RLK,pickOutcome as rlPick,newArt as rlArt,planSpin as rlPlan,rlOrder,chainOf as rlChain,finalOf as rlFinal,curSpinner as rlCur,currentChoice as rlChoice,resultsOfRl,itemsOfCode,KEY_OF_CODE} from './roulette.js?v=pop0.70.10';
+import {createRoulette} from './roulette-ui.js?v=pop0.70.10';
+import {chooseCard,didMission,parseKey,newSeed,pickMindPool,mindToText,mindFromText,pickKingOrders} from './draw.js?v=pop0.70.10';
+import {avatarOf} from './avatars.js?v=pop0.70.10';
+import {doubtH1} from './result-h1.js?v=pop0.70.10';
+import {bombResult,BLAST_S} from './result-bomb.js?v=pop0.70.10';
+import {rockSvg,openedSvg,pickSvg,sparkSvg} from './grid-rocks.js?v=pop0.70.10';
+// 利用ログへの記録依頼（telemetry は room.js だけが持つ。ここからは画面イベントで頼む）
+const nqLog=(event,data={})=>{try{document.dispatchEvent(new CustomEvent('nq-log',{detail:{event,...data}}));}catch{}};
 const LS={getItem:k=>{try{return localStorage.getItem(k);}catch{return null;}},setItem:(k,v)=>{try{localStorage.setItem(k,v);}catch{}},removeItem:k=>{try{localStorage.removeItem(k);}catch{}}};
 export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=false,endTurns=0}) {
  const root=given||document.getElementById('tenGame'),top=document.createElement('div'),box=document.createElement('div'),dock=document.createElement('div'),host=uid===hostUid,base=`sessions/${roomId}`;
@@ -42,6 +44,10 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const seenKey='nq-seen-'+roomId;
  function saveSeen(){try{localStorage.setItem(seenKey,JSON.stringify({m:[...missionDone],s:[...specialSeen],c:countedRound,l:soloAt,p:Object.fromEntries(Object.entries(seenPrompts).map(([k,v])=>[k,[...v]]))}));}catch{}}
  try{const o=JSON.parse(localStorage.getItem(seenKey)||'null');if(o){for(const u of o.m||[])missionDone.add(u);for(const c of o.s||[])if(ALL_CARDS.includes(c))specialSeen.add(c);if(typeof o.c==='number')countedRound=o.c;for(const [k,v] of Object.entries(o.l||{}))if(SOLO_CARDS.includes(k)&&typeof v==='number')soloAt[k]=v;for(const [k,v] of Object.entries(o.p||{}))if(seenPrompts[k])for(const x of v)if(typeof x==='number')seenPrompts[k].add(x);}}catch{}
+ // 利用ログ用：エラーの記録と、ゲーム終了の1行（ホストだけが1回送る）
+ let finLogged=false;
+ const errLog=(where,e)=>nqLog('error',{where:'ten.'+where,code:e?.code||e?.name||'Error',msg:`r${typeof state==='undefined'?'':state?.round} ${String(e?.message??e).slice(0,160)}`,game:typeof state==='undefined'?'':state?.card||''});
+ const logFinish=()=>{try{const c={};for(const v of Object.values(deckDrawn||{}))c[v]=(c[v]||0)+1;nqLog('finish',{game:'cards',n:players.length,info:('turns='+turnNo()+' '+Object.entries(c).map(([k,v])=>k+':'+v).join(',')).slice(0,280)});}catch{}};
  let state,own,answers={},began=null,elapsed=null,batteryDraft='',tapStart=null,tapCount=0,tapTimer=null,pickRound=null,pickTimer=null,pending=false,dead=false,answerStop,ownStop,roundSeen,settling=false,buttonDeck,buttonDecks={},drinks=null,drinkMap,itemMap,spentMap,settledMap={},settledLoaded=false,grantMap,grantBusy=false,spinRound=null,spinStart=0,spinTimer,flipRound=null,flipStart=0,flipTimer,rx=null,invite,inviteStop,choice,ownBusy=false,ownError=false,grantTried=false,grantFailed=false,settledStop;
  let angelStart=0,angelRound=null,angelReady=false,dgMap={},dgStop,dgWroteKey='',angelSeen=new Set(),angelQ=[],angelPlaying=false,angelBotTimer=null,angelChoose=false,dtLocked=false,angelUsable=false,angelSched=false,dgSKey='',lastAngelCands=[],angelTapFn=null;
  let dtHolder=null,dtStage=0,dtAutoKey='',dtHelpEl=null,dtHelpPushed=false,dtHelpSave=null,dtHintUntil=0;
@@ -86,7 +92,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  const avImgEl=p=>{const a=avatarOf(p?.avatar);if(!a)return txt('span','av',avatars[Number(p?.slot)]||'🍻');const s=document.createElement('span');s.className='av';const im=document.createElement('img');im.src=a.src;im.alt='';im.width=im.height=128;im.decoding='async';s.append(im);return s;};
  const shortName={barrier:'バリア',cute:'なすりつけ',angel:'身代わり'};
  function note(text){dock.append(el('p',text));dockNotes++;}
- function button(text,fn,disabled=false,cls=''){const b=el('button',text);if(cls)b.className=cls;dockButtons++;b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch{message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};dock.append(b);}
+ function button(text,fn,disabled=false,cls=''){const b=el('button',text);if(cls)b.className=cls;dockButtons++;b.disabled=disabled;b.onclick=async()=>{if(pending||dead)return;pending=true;render();try{await fn();}catch(e){errLog('button',e);message('ゲーム通信に失敗しました。再接続後にもう一度試してください。');}finally{pending=false;if(!dead)render();}};dock.append(b);}
 
  // ---- 開発者モード(?npc=1&dev=1)：全ゲーム・全お題を、いつでも好きなものから試す。練習モード専用（通信なし）。----
  // 右下の🛠ボタン（どの画面でも出る）から、ゲームを選び、お題があるゲームは全お題の一覧から選べる。
@@ -360,7 +366,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
  }
  function paint(){
   root.removeAttribute?.('data-bt');
-  if(fin){root.setAttribute('data-card','final');root.setAttribute('data-phase','final');box.className='stage results';box.append(finalUi());ensureAllDrinks();if(host)button('これでゲームを終了する',async()=>{if(window.confirm('全員のゲームを終了します。よろしいですか？'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');},pending);else box.append(el('p','ホストがゲームを終了するのを待っています。'));return;}
+  if(fin){if(host&&!bot&&!finLogged){finLogged=true;logFinish();}root.setAttribute('data-card','final');root.setAttribute('data-phase','final');box.className='stage results';box.append(finalUi());ensureAllDrinks();if(host)button('これでゲームを終了する',async()=>{if(window.confirm('全員のゲームを終了します。よろしいですか？'))await set(ref(db,`rooms/${roomId}/meta/state`),'closed');},pending);else box.append(el('p','ホストがゲームを終了するのを待っています。'));return;}
   if(!state){box.append(el('p',host?'ゲームを準備しています…':'ホストのゲーム準備を待っています…'));return;}
   box.className='stage '+state.phase+(state.phase!=='draw'?' art':'');if(state.phase!=='draw'){const _c=state.card||'ten';box.style?.setProperty?.('--art','url("'+artPath(_c)+'")');if(isIcon(_c))box.className+=' icon'}
   if(state.phase!=='draw'&&fxEl?.classList.contains('telopFx'))clearFx();
@@ -1384,7 +1390,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
     const cur=(await get(ref(db,`${base}/bm/${round}/x`))).val();
     if(cur===null||cur===undefined){const xv=pickBombX();try{await set(ref(db,`${base}/bm/${round}/x`),xv);}catch(e){if(xv>=10000)throw e;await set(ref(db,`${base}/bm/${round}/x`),10000+Math.floor(Math.random()*30001));}} // 古いルールで短い秒数が拒否されても、10秒以上で書き直す
     await set(ref(db,`${base}/bm/${round}/p/0`),{u:actor,t:serverTimestamp(),k:-1});
-   }catch{message('爆弾を準備できませんでした。ホストは再読み込みして再接続してください。');}
+   }catch(e){errLog('bomb',e);message('爆弾を準備できませんでした。ホストは再読み込みして再接続してください。');}
    finally{bmIniting=false;}
    return;
   }
@@ -1488,7 +1494,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   finally{settling=false;}
  }
  stops.push(onValue(ref(db,'.info/serverTimeOffset'),v=>{svOff=Number(v.val())||0;},()=>{}));
- stops.push(onValue(ref(db,base+'/deck'),v=>{const d=v.val()||{};deckSeed=typeof d.seed==='number'?d.seed:null;deckMind=mindFromText(d.mind);deckDrawn=normDrawn(d.drawn);deckMd=normMd(d.md);render();},()=>{deckSeed=null;message('カードの記録を取得できませんでした。ルールの反映と再接続を確認してください。');}));
+ stops.push(onValue(ref(db,base+'/deck'),v=>{const d=v.val()||{};deckSeed=typeof d.seed==='number'?d.seed:null;deckMind=mindFromText(d.mind);deckDrawn=normDrawn(d.drawn);deckMd=normMd(d.md);render();},e=>{deckSeed=null;errLog('deck',e);message('カードの記録を取得できませんでした。ルールの反映と再接続を確認してください。');}));
  stops.push(onValue(ref(db,base+'/tq'),v=>{tqHist=v.val()||{};tqHistLoaded=true;render();},()=>{tqHist={};tqHistLoaded=false;}));
  stops.push(onValue(ref(db,base+'/nv'),v=>{settlementHistory=v.val()||{};historyLoaded=true;render();maybeSettlement();},()=>{historyLoaded=false;message('精算履歴を取得できませんでした。再接続してください。');}));
  stops.push(onValue(ref(db,base+'/fin'),v=>{fin=v.val()===true;if(fin)ensureAllDrinks();render();},()=>{}));
