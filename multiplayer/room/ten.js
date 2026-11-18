@@ -958,7 +958,7 @@ export function attachTen({db,roomId,uid,players,hostUid,message,root:given,bot=
   grantBusy=true;
   try{if(g===undefined)await set(ref(db,`personal/${roomId}/${uid}/grants/${round}`),slot);await set(ref(db,`personal/${roomId}/${uid}/items/${slot}`),kind);if(kind!=='none')glowHelpTab();}
   catch{message('お助けを受け取れませんでした。再接続してください。');}
-  finally{grantBusy=false;if(!dead)render();}
+  finally{grantBusy=false;if(!dead){render();settleOwn();}}
  }
  function glowHelpTab(){try{const t=document.getElementById('tabHelp');if(!t)return;t.classList.add('helpGlow');setTimeout(()=>t.classList.remove('helpGlow'),3500);}catch{}}
  // ---- ダウト（充電マウント合戦）----
